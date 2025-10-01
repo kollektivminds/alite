@@ -1,0 +1,183 @@
+/* --- 1. CSS Variables for Theming --- */
+:root {
+    --modal-bg: #ffffff;
+    --modal-shadow: rgba(0, 0, 0, 0.15);
+    --modal-backdrop-bg: rgba(0, 0, 0, 0.4);
+    
+    --text-primary: #1a1a1a;
+    --text-secondary: #555555;
+    
+    --input-bg: #f8f9fa;
+    --input-border: #ced4da;
+    --input-border-focus: #4dabf7;
+    
+    --btn-primary-bg: #007bff;
+    --btn-primary-text: #ffffff;
+    --btn-primary-hover-bg: #0056b3;
+    
+    --btn-secondary-bg: #e9ecef;
+    --btn-secondary-text: #343a40;
+    --btn-secondary-hover-bg: #d6d8db;
+  
+    --border-radius: 8px;
+  }
+  
+  /* --- 2. Modal Backdrop and Container Animation --- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0; /* A modern shorthand for top, right, bottom, left = 0 */
+    background-color: var(--modal-backdrop-bg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 500px;
+    max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 1000;
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .modal-content {
+    background-color: var(--modal-bg);
+    /* padding: 2rem; */
+    border-radius: var(--border-radius);
+    box-shadow: 0 10px 30px var(--modal-shadow);
+    /* width: 500px; */
+    max-width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes scaleUp {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  
+  /* --- 3. Form Layout and Typography --- */
+  .modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    font-weight: 600;
+  }
+  
+  .modal-content form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  .modal-content label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: -0.75rem;
+  }
+  
+  /* --- 4. Input Fields (input, select, textarea) --- */
+  .modal-content input,
+  .modal-content select,
+  .modal-content textarea {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: inherit;
+    min-height: 3em;
+    resize: vertical;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius);
+    color: var(--text-primary);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .modal-content select {
+    max-height: 1rem;
+  }
+
+  .modal-content input:focus,
+  .modal-content select:focus,
+  .modal-content textarea:focus {
+    outline: none;
+    border-color: var(--input-border-focus);
+    box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.25);
+  }
+  
+  .context-disclaimer {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-top: -0.5rem;
+    text-align: center;
+  }
+  
+  /* --- 5. Buttons --- */
+  .modal-content form div:last-of-type {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+  
+  .modal-content button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  /* Primary submit button */
+  .modal-content button[type="submit"] {
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+  }
+  
+  .modal-content button[type="submit"]:hover {
+    background-color: var(--btn-primary-hover-bg);
+  }
+  
+  /* Secondary cancel button */
+  .modal-content button[type="button"] {
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+  }
+  
+  .modal-content button[type="button"]:hover {
+    background-color: var(--btn-secondary-hover-bg);
+  }
+  
+  /* Disabled state for all buttons */
+  .modal-content button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* --- 6. Responsive Adjustments --- */
+  @media (max-width: 600px) {
+    .modal-content {
+      padding: 1.5rem;
+    }
+  
+    .modal-content h2 {
+      font-size: 1.5rem;
+    }
+    
+    .modal-content form div:last-of-type {
+      flex-direction: column-reverse; /* Stack buttons vertically on small screens */
+    }
+  
+    .modal-content button {
+      width: 100%;
+    }
+  }

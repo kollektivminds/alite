@@ -1,0 +1,23 @@
+.language-button {
+    /* width: 50px;           Or any desired size */
+    /* height: 50px;          Must be same as width */
+    /* border-radius: 50%;     This makes it a circle */
+    /* border: 8px solid #333; */
+    /* background-color: #ffkf; */
+    color: #ffffff;
+    /* font-size: 1em; */
+    /* font-weight: bold; */
+    /* cursor: pointer; */
+    
+    /* Center the text inside the circle */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    transition: background-color 0.25s, color 0.25s;
+  }
+  
+  .language-button:hover {
+    background-color: #333;
+    color: #fff;
+  }

@@ -1,0 +1,79 @@
+{
+  "site_title": "Vocab Trainer",
+  "choose_fields": "Choose",
+  "language": "Lang",
+  "word_list": "Word Lists",
+  "im_studying": "I'm studying",
+  "im_studying_what": "I'm studying {{item}}",
+  "back": "Back",
+  "flashcards": {
+    "next": "Next",
+    "previous": "Previous",
+    "flashcards": "Flashcards",
+    "flip": "Flip"
+  },
+  "splashMenu": {
+    "words": "words",
+    "sentences": "sentences",
+    "paragraphs": "paragraphs"
+  },
+  "wordsMenu": {
+    "title": "Words",
+    "wordForms": "Word Forms",
+    "verbs": "Verbs",
+    "nouns": "Nouns",
+    "adjectives": "Adjectives",
+    "participles": "Participles",
+    "numerals": "Numerals"
+  },
+  "sentencesMenu": {
+    "sentence_forms": "Sentence Forms"
+  },
+  "modalMenu": {
+    "dashboard": "Dashboard",
+    "info": "Info",
+    "settings": "Settings",
+    "feedback": "Feedback"
+  },
+  "modalDashboard": {
+    "results": "Results"
+  },
+  "modalInfo": {
+    "info": "Info"
+  },
+  "modalFeedback": {
+    "feedback": "Feedback",
+    "submit": "Submit",
+    "category": "Category",
+    "bug_report": "Bug Report",
+    "feature_request": "Feature Request",
+    "general_feedback": "General Feedback",
+    "message": "Message",
+    "email": "Email",
+    "tech_disclaimer": "We automatically include technical details to help us debug.",
+    "cancel": "Cancel",
+    "submitting": "Идёт отправиления",
+    "message_placeholder": "What can be improved?",
+    "email_placeholder": "To follow up with you"
+  },
+  "modalSettings": {
+    "settings": "Settings",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "difficulty": "Difficulty",
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "reduce_motion": "Reduce Motion"
+  },
+  "languages": {
+    "language": "Lang",
+    "english": "English",
+    "russian": "Русский"
+  },
+  "paragraphsMenu": {
+    "paragraph_forms": "Paragraph forms"
+  }
+}

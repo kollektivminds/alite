@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+#root {
+  /* This creates a 1 pixel, solid, light-gray border */
+  border: 2px solid #000000;
+
+  /* Margin creates space OUTSIDE the border. 
+     This adds 20px of space between the border and the edge of the browser window. */
+  margin: 20px;
+
+  /* Padding creates space INSIDE the border.
+     This adds 20px of space between the border and your app's content. */
+  padding: 20px;
+
+  /* Optional but highly recommended for predictable sizing */
+  box-sizing: border-box;
+  
+  /* Optional: Add a subtle shadow for a lifting effect */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  /* Optional: Add rounded corners */
+  border-radius: 8px;
+}
+
+/* Light mode variables (default) */
+:root {
+    --background-color: #ffffff;
+    --text-color: #212529;
+    --primary-color: #007bff;
+  }
+  
+  /* Dark mode variables */
+  :root.dark {
+    --background-color: #1a1a1a;
+    --text-color: #f8f9fa;
+    --primary-color: #4dabf7;
+  }
+  
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    transition: background-color 0.3s, color 0.3s;
+  }

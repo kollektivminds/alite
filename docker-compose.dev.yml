@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend.dev.Dockerfile
+    ports:
+    # expose uvicorn port
+      - "8000:8000"
+    volumes:
+      # mount local backend to app container
+      - ./app/backend:/app
+    environment:
+      # get db url from env
+      - DATABASE_URL=${DATABASE_URL}
+    depends_on:
+      # require db (defined below) before fully executing
+      - db
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend.dev.Dockerfile
+    ports:
+      # expose Vite port
+      - "5173:5173"
+    volumes:
+      # mount local frontend code to container
+      - ./app/frontend:/app
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DN_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
