@@ -1,7 +1,7 @@
 # load.py
 from sqlalchemy.orm import Session
 from app.backend.db import schemas
-from app.backend.db.crud import words as crud_words
+from app.backend.db.crud import word_data as crud_words
 import logging
 
 logger=logging.getLogger(__name__)
