@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>28/06/2008</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 24</title>
+</inf>
+<body>
+<S CLASS="LF" ID="1">
+<W DOM="2" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="1" LEMMA="ДЕПРЕССИЯ" LINK="пролепт">Депрессия</W> - 
+<W DOM="5" FEAT="S ЕД СРЕД ИМ НЕОД" ID="2" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предик">это</W> 
+<W DOM="4" FEAT="PART" ID="3" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="5" FEAT="PART" ID="4" KSNAME="ПРОСТО2" LEMMA="ПРОСТО" LINK="огранич">просто</W> 
+<W DOM="_root" FEAT="S ЕД СРЕД ИМ НЕОД" ID="5" KSNAME="СОСТОЯНИЕ1" LEMMA="СОСТОЯНИЕ">состояние</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН РОД НЕОД" ID="6" LEMMA="ДУША" LINK="квазиагент">души</W>, 
+<W DOM="5" FEAT="CONJ" ID="7" LEMMA="НО" LINK="сочин">но</W> 
+<W DOM="7" FEAT="PART" ID="8" KSNAME="И2" LEMMA="И" LINK="огранич">и</W> 
+<W DOM="10" FEAT="A ЕД СРЕД ИМ" ID="9" LEMMA="ОПАСНЫЙ" LINK="опред">опасное</W> 
+<W DOM="7" FEAT="S ЕД СРЕД ИМ НЕОД" ID="10" LEMMA="ЗАБОЛЕВАНИЕ" LINK="соч-союзн">заболевание</W>, 
+<W DOM="10" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД СРЕД ИМ" ID="11" KSNAME="ВЫЗЫВАТЬ2" LEMMA="ВЫЗЫВАТЬ" LINK="опред">вызывающее</W> 
+<W DOM="13" FEAT="A МН ВИН НЕОД" ID="12" LEMMA="НЕОБРАТИМЫЙ" LINK="опред">необратимые</W> 
+<W DOM="11" FEAT="S МН СРЕД ВИН НЕОД" ID="13" LEMMA="ИЗМЕНЕНИЕ" LINK="1-компл">изменения</W> 
+<W DOM="13" FEAT="S ЕД ЖЕН РОД НЕОД" ID="14" LEMMA="ПСИХИКА" LINK="1-компл">психики</W> 
+<W DOM="11" FEAT="CONJ" ID="15" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="15" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД СРЕД ИМ" ID="16" LEMMA="ПРОВОЦИРОВАТЬ" LINK="соч-союзн">провоцирующее</W> 
+<W DOM="16" FEAT="S ЕД СРЕД ВИН НЕОД" ID="17" LEMMA="РАЗВИТИЕ" LINK="1-компл">развитие</W> 
+<W DOM="19" FEAT="A МН РОД" ID="18" LEMMA="ДРУГОЙ" LINK="опред">других</W> 
+<W DOM="17" FEAT="S МН ЖЕН РОД НЕОД" ID="19" LEMMA="БОЛЕЗНЬ" LINK="1-компл">болезней</W>. 
+<LF LFARG="13" LFFUNC="_CAUSFUNC0" LFVAL="11"/>
+<LF LFARG="10" LFFUNC="_CAUSFUNC0" LFVAL="11"/>
+</S>
+<S ID="2">
+<W DOM="_root" FEAT="CONJ" ID="1" KSNAME="И1" LEMMA="И">И</W> 
+<W DOM="7" FEAT="PR" ID="2" LEMMA="ДЛЯ" LINK="обст">для</W> 
+<W DOM="2" FEAT="S ЕД ЖЕН РОД НЕОД" ID="3" LEMMA="БОРЬБА" LINK="предл">борьбы</W> 
+<W DOM="3" FEAT="PR" ID="4" KSNAME="С3" LEMMA="С" LINK="1-компл">с</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ТВОР ОД" ID="5" LEMMA="ОНА" LINK="предл">ней</W> 
+<W DOM="7" FEAT="S МН МУЖ ДАТ ОД" ID="6" LEMMA="ВРАЧ" LINK="1-компл">врачам</W> 
+<W DOM="1" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="7" KSNAME="ПРИХОДИТЬСЯ1" LEMMA="ПРИХОДИТЬСЯ" LINK="соч-союзн">приходится</W> 
+<W DOM="7" FEAT="V НЕСОВ ИНФ" ID="8" LEMMA="ПРИМЕНЯТЬ" LINK="предик">применять</W> 
+<W DOM="11" FEAT="A МН ВИН НЕОД" ID="9" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">все</W> 
+<W DOM="11" FEAT="A МН ВИН НЕОД" ID="10" LEMMA="ВОЗМОЖНЫЙ" LINK="опред">возможные</W> 
+<W DOM="8" FEAT="S МН МУЖ ВИН НЕОД" ID="11" LEMMA="МЕТОД" LINK="1-компл">методы</W>.
+</S>
+<S ID="3">
+<W DOM="3" FEAT="PR" ID="1" KSNAME="В1" LEMMA="В" LINK="2-компл">В</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ВИН НЕОД" ID="2" KSNAME="ХОД1" LEMMA="ХОД" LINK="предл">ход</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="3" KSNAME="ИДТИ1" LEMMA="ИДТИ">идут</W> 
+<W DOM="3" FEAT="S МН СРЕД ИМ НЕОД" ID="4" LEMMA="ЛЕКАРСТВО" LINK="предик">лекарства</W>, 
+<W DOM="4" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="5" LEMMA="ПСИХОТЕРАПИЯ" LINK="сочин">психотерапия</W> 
+<W DOM="5" FEAT="CONJ" ID="6" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="8" FEAT="PART" ID="7" LEMMA="ДАЖЕ" LINK="огранич">даже</W> 
+<W DOM="9" FEAT="A МН ИМ" ID="8" LEMMA="КОМПЬЮТЕРНЫЙ" LINK="опред">компьютерные</W> 
+<W DOM="6" FEAT="S МН ЖЕН ИМ НЕОД" ID="9" LEMMA="ПРОГРАММА" LINK="соч-союзн">программы</W>.
+</S>
+<S CLASS="LF" ID="4">
+<W DOM="18" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="1" LEMMA="ПРОГРАММА" LINK="предик">Программа</W> 
+<W DOM="1" FEAT="PR" ID="2" KSNAME="ПОД2" LEMMA="ПОД" LINK="атриб">под</W> 
+<W DOM="2" FEAT="S ЕД СРЕД ТВОР НЕОД" ID="3" LEMMA="НАЗВАНИЕ" LINK="предл">названием</W> 
+"<W DOM="3" FEAT="NID" ID="4" KSNAME="ФИКТ-ЛЕКС" LEMMA="BEATING" LINK="аппоз">Beating</W> 
+<W DOM="4" FEAT="NID" ID="5" KSNAME="ФИКТ-ЛЕКС" LEMMA="THE" LINK="аппоз">the</W> 
+<W DOM="5" FEAT="NID" ID="6" KSNAME="ФИКТ-ЛЕКС" LEMMA="BLUES" LINK="аппоз">Blues</W>", 
+<W DOM="1" FEAT="V СОВ СТРАД ПРИЧ ПРОШ ЕД ЖЕН ИМ" ID="7" LEMMA="СОЗДАВАТЬ" LINK="опред">созданная</W> 
+<W DOM="7" FEAT="S МН МУЖ ТВОР ОД" ID="8" LEMMA="ПРОГРАММИСТ" LINK="агент">программистами</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН РОД НЕОД" ID="9" LEMMA="КОМПАНИЯ" LINK="атриб">компании</W> 
+"<W DOM="9" FEAT="NID" ID="10" KSNAME="ФИКТ-ЛЕКС" LEMMA="ULTRASIS" LINK="аппоз">Ultrasis</W> 
+<W DOM="10" FEAT="NID" ID="11" KSNAME="ФИКТ-ЛЕКС" LEMMA="PLC" LINK="аппоз">plc</W>" 
+<W DOM="8" FEAT="CONJ" ID="12" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="12" FEAT="S МН МУЖ ТВОР ОД" ID="13" LEMMA="ВРАЧ" LINK="соч-союзн">врачами</W> 
+<W DOM="13" FEAT="PR" ID="14" LEMMA="ИЗ" LINK="атриб">из</W> 
+<W DOM="16" FEAT="A ЕД МУЖ РОД" ID="15" LEMMA="ЛОНДОНСКИЙ" LINK="опред">лондонского</W> 
+"<W DOM="14" FEAT="NID" ID="16" KSNAME="ФИКТ-ЛЕКС" LEMMA="PRIORY" LINK="предл">Priory</W> 
+<W DOM="16" FEAT="NID" ID="17" KSNAME="ФИКТ-ЛЕКС" LEMMA="HOSPITAL" LINK="аппоз">Hospital</W>", 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="18" LEMMA="ИГРАТЬ">играет</W> 
+<W DOM="18" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="19" LEMMA="РОЛЬ" LINK="1-компл">роль</W> 
+<W DOM="19" FEAT="S ЕД МУЖ РОД ОД" ID="20" LEMMA="СОБЕСЕДНИК" LINK="1-компл">собеседника</W>, 
+<W DOM="22" FEAT="ADV" ID="21" LEMMA="ТАК" LINK="огранич">так</W> 
+<W DOM="20" FEAT="A ЕД МУЖ РОД" ID="22" LEMMA="НЕОБХОДИМЫЙ" LINK="опред">необходимого</W> 
+<W DOM="25" FEAT="A МН ДАТ" ID="23" KSNAME="БОЛЬНОЙ2" LEMMA="БОЛЬНОЙ" LINK="опред">больным</W> 
+<W DOM="23" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="24" LEMMA="ДЕПРЕССИЯ" LINK="1-компл">депрессией</W> 
+<W DOM="22" FEAT="S МН МУЖ ДАТ ОД" ID="25" LEMMA="ЧЕЛОВЕК" LINK="2-компл">людям</W>. 
+<LF LFARG="19" LFFUNC="_OPER1" LFVAL="18"/>
+<LF LFARG="3" LFFUNC="_ADV1-UN" LFVAL="2"/>
+</S>
+</body>
+</text>

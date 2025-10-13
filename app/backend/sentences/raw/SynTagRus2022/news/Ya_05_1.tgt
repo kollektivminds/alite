@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>05.09.2008</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 5</title>
+</inf>
+<body>
+<S CLASS="LF" ID="1">
+<W DOM="4" FEAT="ADV" ID="1" KSNAME="СЕГОДНЯ1" LEMMA="СЕГОДНЯ" LINK="1-компл">Сегодня</W> 
+<W DOM="4" FEAT="PR" ID="2" KSNAME="В2" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="2" FEAT="S ЕД ЖЕН ПР НЕОД" ID="3" LEMMA="РОССИЯ" LINK="предл">России</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="4" KSNAME="ПРОХОДИТЬ4" LEMMA="ПРОХОДИТЬ">проходят</W> 
+<W DOM="6" FEAT="A МН ИМ" ID="5" LEMMA="МАССОВЫЙ" LINK="опред">массовые</W> 
+<W DOM="4" FEAT="S МН ЖЕН ИМ НЕОД" ID="6" KSNAME="АКЦИЯ2" LEMMA="АКЦИЯ" LINK="предик">акции</W> 
+<W DOM="6" FEAT="S ЕД МУЖ РОД НЕОД" ID="7" LEMMA="ПРОТЕСТ" LINK="1-компл">протеста</W> 
+<W DOM="6" FEAT="S МН МУЖ РОД НЕОД" ID="8" LEMMA="ПРОФСОЮЗ" LINK="квазиагент">профсоюзов</W>, 
+<W DOM="4" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="9" KSNAME="СООБЩАТЬ1" LEMMA="СООБЩАТЬ" LINK="вводн">сообщает</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="10" LEMMA="ПРОГРАММА" LINK="предик">программа</W> 
+"<W DOM="10" FEAT="S МН ЖЕН ИМ НЕОД" ID="11" KSNAME="ВЕСТЬ1" LEMMA="ВЕСТЬ" LINK="аппоз">Вести</W>". 
+<LF LFARG="6" LFFUNC="_FUNC0" LFVAL="4"/>
+<LF LFARG="3" LFFUNC="_LOC" LFVAL="2"/>
+<LF LFARG="6" LFFUNC="_MAGN" LFVAL="5"/>
+</S>
+<S CLASS="LF" ID="2">
+<W DOM="_root" FEAT="V НЕСОВ СТРАД ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="1" LEMMA="ОЖИДАТЬ">Ожидается</W>, 
+<W DOM="1" FEAT="CONJ" ID="2" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="предик">что</W> 
+<W DOM="8" FEAT="PR" ID="3" KSNAME="В2" LEMMA="В" LINK="обст">во</W> 
+<W DOM="6" FEAT="A МН ПР" ID="4" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">всех</W> 
+<W DOM="6" FEAT="A МН ПР" ID="5" LEMMA="КРУПНЫЙ" LINK="опред">крупных</W> 
+<W DOM="3" FEAT="S МН МУЖ ПР НЕОД" ID="6" LEMMA="ГОРОД" LINK="предл">городах</W> 
+<W DOM="6" FEAT="S ЕД ЖЕН РОД НЕОД" ID="7" LEMMA="СТРАНА" LINK="атриб">страны</W> 
+<W DOM="2" FEAT="V СОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="8" KSNAME="СОСТОЯТЬСЯ1" LEMMA="СОСТОЯТЬСЯ" LINK="подч-союзн">состоятся</W> 
+<W DOM="8" FEAT="S МН МУЖ ИМ НЕОД" ID="9" LEMMA="МИТИНГ" LINK="предик">митинги</W> 
+<W DOM="9" FEAT="S МН МУЖ РОД ОД" ID="10" LEMMA="РАБОТНИК" LINK="квазиагент">работников</W> 
+<W DOM="12" FEAT="A ЕД ЖЕН РОД" ID="11" LEMMA="БЮДЖЕТНЫЙ" LINK="опред">бюджетной</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН РОД НЕОД" ID="12" LEMMA="СФЕРА" LINK="1-компл">сферы</W>. 
+<LF LFARG="9" LFFUNC="_FUNC0" LFVAL="8"/>
+<LF LFARG="6" LFFUNC="_LOC" LFVAL="3"/>
+</S>
+</body>
+</text>

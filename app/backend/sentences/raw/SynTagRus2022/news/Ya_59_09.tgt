@@ -1,0 +1,40 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 59</title>
+</inf>
+<body>
+<S ID="1">
+<W DOM="3" FEAT="S ЕД СРЕД ИМ НЕОД" ID="1" LEMMA="ПРАВИТЕЛЬСТВО" LINK="предик">Правительство</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН РОД НЕОД" ID="2" LEMMA="РОССИЯ" LINK="1-компл">России</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="3" LEMMA="ВЕРНУТЬСЯ">вернется</W> 
+<W DOM="3" FEAT="PR" ID="4" LEMMA="К" LINK="2-компл">к</W> 
+<W DOM="4" FEAT="S ЕД СРЕД ДАТ НЕОД" ID="5" LEMMA="РАССМОТРЕНИЕ" LINK="предл">рассмотрению</W> 
+<W DOM="5" FEAT="S ЕД МУЖ РОД НЕОД" ID="6" LEMMA="ВОПРОС" LINK="1-компл">вопроса</W> 
+<W DOM="6" FEAT="PR" ID="7" KSNAME="О2" LEMMA="О" LINK="1-компл">о</W> 
+<W DOM="7" FEAT="S ЕД ЖЕН ПР НЕОД" ID="8" LEMMA="ВОЗМОЖНОСТЬ" LINK="предл">возможности</W> 
+<W DOM="8" FEAT="S ЕД СРЕД РОД НЕОД" ID="9" LEMMA="ИЗМЕНЕНИЕ" LINK="1-компл">изменения</W> 
+<W DOM="9" FEAT="S МН МУЖ РОД НЕОД" ID="10" LEMMA="ОБЪЕМ" LINK="1-компл">объемов</W> 
+<W DOM="10" FEAT="S ЕД МУЖ РОД НЕОД" ID="11" LEMMA="ЭКСПОРТ" LINK="квазиагент">экспорта</W> 
+<W DOM="13" FEAT="A ЕД ЖЕН РОД" ID="12" LEMMA="РОССИЙСКИЙ" LINK="опред">российской</W> 
+<W DOM="11" FEAT="S ЕД ЖЕН РОД НЕОД" ID="13" LEMMA="НЕФТЬ" LINK="1-компл">нефти</W> 
+<W DOM="3" FEAT="PR" ID="14" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="14" FEAT="S ЕД ЖЕН ПР НЕОД" ID="15" LEMMA="СЕРЕДИНА" LINK="предл">середине</W> 
+<W DOM="15" FEAT="S ЕД МУЖ РОД НЕОД" ID="16" LEMMA="МАЙ" LINK="квазиагент">мая</W>. 
+</S>
+<S CLASS="LF" ID="2">
+<W DOM="3" FEAT="PR" ID="1" KSNAME="О2" LEMMA="О" LINK="3-компл">Об</W> 
+<W DOM="1" FEAT="S ЕД СРЕД ПР НЕОД" ID="2" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предл">этом</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="3" KSNAME="СООБЩАТЬ1" LEMMA="СООБЩАТЬ">сообщил</W> 
+<W DOM="3" FEAT="PR" ID="4" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="5" LEMMA="ПЯТНИЦА" LINK="предл">пятницу</W> 
+<W DOM="3" FEAT="S МН МУЖ ДАТ ОД" ID="6" LEMMA="ЖУРНАЛИСТ" LINK="2-компл">журналистам</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="7" LEMMA="ВИЦЕ-ПРЕМЬЕР" LINK="предик">вице-премьер</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="8" LEMMA="ВИКТОР" LINK="аппоз">Виктор</W> 
+<W DOM="8" FEAT="S ЕД МУЖ ИМ ОД" ID="9" KSNAME="ХРИСТЕНКО" LEMMA="ХРИСТЕНКО" LINK="аппоз">Христенко</W>. 
+<LF LFARG="5" LFFUNC="_LOC" LFVAL="4"/>
+</S>
+</body>
+</text>

@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>15/06/2009</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 42</title>
+</inf>
+<body>
+<S CLASS="LF" ID="1">
+<W DOM="7" FEAT="S ЕД СРЕД ИМ НЕОД" ID="1" KSNAME="АО" LEMMA="АО" LINK="предик">АО</W> 
+"<W DOM="1" FEAT="S ЕД СРЕД ИМ НЕОД" ID="2" LEMMA="МОСЭНЕРГО" LINK="аппоз">Мосэнерго</W>" 
+<W DOM="7" FEAT="PR" ID="3" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ВИН НЕОД" ID="4" LEMMA="ПОНЕДЕЛЬНИК" LINK="предл">понедельник</W> 
+<W DOM="4" FEAT="PR" ID="5" KSNAME="В1" LEMMA="В" LINK="уточн">в</W> 
+<W DOM="5" FEAT="NUM" ID="6" KSNAME="ЧИСЛ-БОЛЬШ" LEMMA="11.00" LINK="предл">11.00</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="7" LEMMA="ПРЕКРАЩАТЬ">прекратило</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="ЗА1" LEMMA="ЗА" LINK="обст">за</W> 
+<W DOM="8" FEAT="S МН МУЖ ВИН НЕОД" ID="9" KSNAME="ДОЛГ1" LEMMA="ДОЛГ" LINK="предл">долги</W> 
+<W DOM="7" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="10" KSNAME="ПОДАЧА1" LEMMA="ПОДАЧА" LINK="1-компл">подачу</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН РОД НЕОД" ID="11" LEMMA="ЭЛЕКТРОЭНЕРГИЯ" LINK="1-компл">электроэнергии</W> 
+<W DOM="10" FEAT="S ЕД СРЕД ДАТ НЕОД" ID="12" KSNAME="ОАО" LEMMA="ОАО" LINK="2-компл">ОАО</W> 
+"<W DOM="12" FEAT="S ЕД МУЖ ИМ ОД" ID="13" LEMMA="МОСКВИЧ" LINK="аппоз">Москвич</W>". 
+<LF LFARG="4" LFFUNC="_LOC" LFVAL="3"/>
+</S>
+<S ID="2">
+<W DOM="3" FEAT="PR" ID="1" KSNAME="О2" LEMMA="О" LINK="3-компл">Об</W> 
+<W DOM="1" FEAT="S ЕД СРЕД ПР НЕОД" ID="2" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предл">этом</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="3" KSNAME="СООБЩАТЬ1" LEMMA="СООБЩАТЬ">сообщил</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="4" LEMMA="ПРЕСС-СЕКРЕТАРЬ" LINK="предик">пресс-секретарь</W> 
+<W DOM="4" FEAT="S ЕД СРЕД РОД НЕОД" ID="5" KSNAME="АО" LEMMA="АО" LINK="1-компл">АО</W> 
+"<W DOM="5" FEAT="S ЕД СРЕД ИМ НЕОД" ID="6" LEMMA="МОСЭНЕРГО" LINK="аппоз">Мосэнерго</W>" 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ ОД" ID="7" LEMMA="МИХАИЛ" LINK="аппоз">Михаил</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="8" KSNAME="КОРОТКОВ" LEMMA="КОРОТКОВ" LINK="аппоз">Коротков</W>. 
+</S>
+<S CLASS="LF" ID="3">
+<W DOM="5" FEAT="PR" ID="1" KSNAME="В1" LEMMA="В" LINK="обст">В</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="2" LEMMA="ПЯТНИЦА" LINK="предл">пятницу</W> 
+<W DOM="2" FEAT="NUM" ID="3" LEMMA="1" LINK="атриб">1</W> 
+<W DOM="3" FEAT="S ЕД МУЖ РОД НЕОД" ID="4" LEMMA="МАРТ" LINK="атриб">марта</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="5" KSNAME="БЫТЬ" LEMMA="БЫТЬ">был</W> 
+<W DOM="5" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР ЕД МУЖ" ID="6" LEMMA="ОТКЛЮЧАТЬ" LINK="пасс-анал">отключен</W> 
+<W DOM="11" FEAT="A ЕД МУЖ ИМ" ID="7" LEMMA="ПОСЛЕДНИЙ" LINK="опред">последний</W> 
+<W DOM="11" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД МУЖ ИМ" ID="8" KSNAME="ПИТАТЬ1" LEMMA="ПИТАТЬ" LINK="опред">питающий</W> 
+<W DOM="8" FEAT="S ЕД СРЕД ВИН НЕОД" ID="9" KSNAME="ОАО" LEMMA="ОАО" LINK="1-компл">ОАО</W> 
+"<W DOM="9" FEAT="S ЕД МУЖ ИМ ОД" ID="10" LEMMA="МОСКВИЧ" LINK="аппоз">Москвич</W>" 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ НЕОД" ID="11" LEMMA="ФИДЕР" LINK="предик">фидер</W> 
+(<W DOM="11" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="12" LEMMA="ЛИНИЯ" LINK="примыкат">линия</W>, 
+<W DOM="15" FEAT="PR" ID="13" KSNAME="ПО1" LEMMA="ПО" LINK="обст">по</W> 
+<W DOM="13" FEAT="S ЕД ЖЕН ДАТ" ID="14" LEMMA="КОТОРЫЙ" LINK="предл">которой</W> 
+<W DOM="12" FEAT="V НЕСОВ СТРАД ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="15" LEMMA="ОСУЩЕСТВЛЯТЬ" LINK="релят">осуществляется</W> 
+<W DOM="15" FEAT="S ЕД СРЕД ИМ НЕОД" ID="16" LEMMA="ЭНЕРГОПИТАНИЕ" LINK="предик">энергопитание</W> 
+<W DOM="16" FEAT="S ЕД СРЕД РОД НЕОД" ID="17" LEMMA="ПРЕДПРИЯТИЕ" LINK="1-компл">предприятия</W>). 
+<LF LFARG="2" LFFUNC="_LOC" LFVAL="1"/>
+</S>
+</body>
+</text>

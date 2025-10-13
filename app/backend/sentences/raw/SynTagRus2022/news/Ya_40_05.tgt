@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>28/06/2008</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 40</title>
+</inf>
+<body>
+<S ID="1">
+<W DOM="7" FEAT="PR" ID="1" LEMMA="К" LINK="обст">К</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ДАТ НЕОД" ID="2" LEMMA="ПРАЗДНИК" LINK="предл">празднику</W> 
+<W DOM="2" FEAT="NUM" ID="3" KSNAME="ЧИСЛ-БОЛЬШ" LEMMA="8" LINK="атриб">8</W> 
+<W DOM="3" FEAT="S ЕД МУЖ РОД НЕОД" ID="4" LEMMA="МАРТ" LINK="атриб">марта</W> 
+<W DOM="7" FEAT="PR" ID="5" KSNAME="В1" LEMMA="В" LINK="3-компл">в</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="6" LEMMA="МОСКВА" LINK="предл">Москву</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="7" KSNAME="ЗАВОЗИТЬ1" LEMMA="ЗАВОЗИТЬ">завезут</W> 
+<W DOM="7" FEAT="ADV" ID="8" LEMMA="БОЛЕЕ" LINK="1-компл">более</W> 
+<W DOM="8" FEAT="S ЕД МУЖ РОД НЕОД" ID="9" LEMMA="МИЛЛИОН" LINK="сравнит">миллиона</W> 
+<W DOM="9" FEAT="S МН МУЖ РОД НЕОД" ID="10" KSNAME="ЦВЕТЫ" LEMMA="ЦВЕТЫ" LINK="квазиагент">цветов</W>. 
+</S>
+<S ID="2">
+<W DOM="4" FEAT="V НЕСОВ ИНФ" ID="1" KSNAME="ОБЕСПЕЧИВАТЬ2" LEMMA="ОБЕСПЕЧИВАТЬ" LINK="аналит">Обеспечивать</W> 
+<W DOM="1" FEAT="S МН МУЖ ТВОР НЕОД" ID="2" KSNAME="ЦВЕТЫ" LEMMA="ЦВЕТЫ" LINK="2-компл">цветами</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="3" LEMMA="СТОЛИЦА" LINK="1-компл">столицу</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="4" KSNAME="БЫТЬ" LEMMA="БЫТЬ">будут</W> 
+<W DOM="8" FEAT="NUM ИМ" ID="5" LEMMA="ПЯТЬ" LINK="количест">пять</W> 
+<W DOM="8" FEAT="A МН РОД" ID="6" LEMMA="ПОДМОСКОВНЫЙ" LINK="опред">подмосковных</W> 
+<W DOM="8" FEAT="A МН РОД" ID="7" LEMMA="ЦВЕТОВОДЧЕСКИЙ" LINK="опред">цветоводческих</W> 
+<W DOM="4" FEAT="S МН МУЖ РОД НЕОД" ID="8" LEMMA="СОВХОЗ" LINK="предик">совхозов</W>. 
+</S>
+<S CLASS="LF" ID="3">
+<W DOM="15" FEAT="PR" ID="1" LEMMA="НЕСМОТРЯ НА" LINK="обст">Несмотря на</W> 
+<W DOM="1" FEAT="S ЕД СРЕД ВИН НЕОД" ID="2" KSNAME="ТО1" LEMMA="ТО" LINK="предл">то</W>, 
+<W DOM="2" FEAT="CONJ" ID="3" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="эксплет">что</W> 
+<W DOM="5" FEAT="S МН МУЖ ИМ НЕОД" ID="4" LEMMA="СОВХОЗ" LINK="предик">совхозы</W> 
+<W DOM="3" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="5" LEMMA="СТАРАТЬСЯ" LINK="подч-союзн">стараются</W> 
+<W DOM="5" FEAT="V НЕСОВ ИНФ" ID="6" LEMMA="МЕНЯТЬ" LINK="1-компл">менять</W> 
+<W DOM="8" FEAT="A ЕД МУЖ ВИН НЕОД" ID="7" LEMMA="СВОЙ" LINK="опред">свой</W> 
+<W DOM="6" FEAT="S ЕД МУЖ ВИН НЕОД" ID="8" LEMMA="АССОРТИМЕНТ" LINK="1-компл">ассортимент</W>, 
+<W DOM="15" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="9" KSNAME="ВЕСНА" LEMMA="ВЕСНА" LINK="обст">весной</W> 
+<W DOM="15" FEAT="PR" ID="10" KSNAME="У1" LEMMA="У" LINK="1-несобст-компл">у</W> 
+<W DOM="10" FEAT="S МН МУЖ РОД ОД" ID="11" LEMMA="МОСКВИЧ" LINK="предл">москвичей</W> 
+<W DOM="15" FEAT="ADV" ID="12" LEMMA="ПО-ПРЕЖНЕМУ" LINK="обст">по-прежнему</W> 
+<W DOM="14" FEAT="A ЕД ЖЕН ТВОР" ID="13" LEMMA="ОСОБЫЙ" LINK="опред">особой</W> 
+<W DOM="15" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="14" LEMMA="ПОПУЛЯРНОСТЬ" LINK="1-компл">популярностью</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="15" LEMMA="ПОЛЬЗОВАТЬСЯ">пользуются</W> 
+<W DOM="15" FEAT="S МН МУЖ ИМ НЕОД" ID="16" LEMMA="ТЮЛЬПАН" LINK="предик">тюльпаны</W>.
+<LF LFARG="14" LFFUNC="_OPER1" LFVAL="15"/>
+</S>
+</body>
+</text>

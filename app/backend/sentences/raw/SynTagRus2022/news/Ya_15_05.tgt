@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>09/06/2008</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 15</title>
+</inf>
+<body>
+<S CLASS="LF" ID="1">
+<W DOM="10" FEAT="S ЕД МУЖ ИМ ОД" ID="1" LEMMA="СОВЕТНИК" LINK="предик">Советник</W> 
+<W DOM="1" FEAT="S ЕД МУЖ РОД ОД" ID="2" LEMMA="ГУБЕРНАТОР" LINK="1-компл">губернатора</W> 
+<W DOM="5" FEAT="A ЕД МУЖ РОД" ID="3" LEMMA="ЧУКОТСКИЙ" LINK="опред">Чукотского</W> 
+<W DOM="5" FEAT="A ЕД МУЖ РОД" ID="4" LEMMA="АВТОНОМНЫЙ" LINK="опред">автономного</W> 
+<W DOM="2" FEAT="S ЕД МУЖ РОД НЕОД" ID="5" KSNAME="ОКРУГ" LEMMA="ОКРУГ" LINK="1-компл">округа</W> 
+<W DOM="2" FEAT="S ЕД МУЖ РОД ОД" ID="6" KSNAME="РОМАН2" LEMMA="РОМАН" LINK="аппоз">Романа</W> 
+<W DOM="6" FEAT="S ЕД МУЖ РОД ОД" ID="7" KSNAME="АБРАМОВИЧ2" LEMMA="АБРАМОВИЧ" LINK="аппоз">Абрамовича</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ИМ ОД" ID="8" KSNAME="РОМАН2" LEMMA="РОМАН" LINK="аппоз">Роман</W> 
+<W DOM="8" FEAT="S ЕД МУЖ ИМ ОД" ID="9" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="КОПИН" LINK="аппоз">Копин</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="10" LEMMA="ПОБЕЖДАТЬ">победил</W> 
+<W DOM="10" FEAT="PR" ID="11" KSNAME="НА2" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="13" FEAT="A МН ПР" ID="12" LEMMA="ПОВТОРНЫЙ" LINK="опред">повторных</W> 
+<W DOM="11" FEAT="S МН МУЖ ПР НЕОД" ID="13" LEMMA="ВЫБОРЫ" LINK="предл">выборах</W> 
+<W DOM="13" FEAT="S ЕД МУЖ РОД ОД" ID="14" KSNAME="ГЛАВА2" LEMMA="ГЛАВА" LINK="1-компл">главы</W> 
+<W DOM="14" FEAT="S ЕД ЖЕН РОД НЕОД" ID="15" LEMMA="АДМИНИСТРАЦИЯ" LINK="1-компл">администрации</W> 
+<W DOM="17" FEAT="A ЕД МУЖ РОД" ID="16" KSNAME="ФИКТ-ПРИЛ" LEMMA="ЧАУНСКИЙ" LINK="опред">Чаунского</W> 
+<W DOM="15" FEAT="S ЕД МУЖ РОД НЕОД" ID="17" LEMMA="РАЙОН" LINK="1-компл">района</W>. 
+<LF LFARG="15" LFFUNC="_CAP" LFVAL="14"/>
+</S>
+<S CLASS="LF" ID="2">
+<W DOM="2" FEAT="S МН МУЖ ИМ НЕОД" ID="1" LEMMA="ВЫБОРЫ" LINK="предик">Выборы</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ МН" ID="2" KSNAME="СОСТОЯТЬСЯ1" LEMMA="СОСТОЯТЬСЯ">состоялись</W> 
+<W DOM="2" FEAT="PR" ID="3" KSNAME="В1" LEMMA="В" LINK="1-компл">в</W> 
+<W DOM="5" FEAT="A ЕД СРЕД ВИН" ID="4" KSNAME="МИНУВШИЙ" LEMMA="МИНУВШИЙ" LINK="опред">минувшее</W> 
+<W DOM="3" FEAT="S ЕД СРЕД ВИН НЕОД" ID="5" KSNAME="ВОСКРЕСЕНЬЕ" LEMMA="ВОСКРЕСЕНЬЕ" LINK="предл">воскресенье</W>.
+<LF LFARG="1" LFFUNC="_FUNC0" LFVAL="2"/>
+<LF LFARG="5" LFFUNC="_LOC" LFVAL="3"/>
+</S>
+<S ID="3">
+<W DOM="8" FEAT="CONJ" ID="1" KSNAME="КАК1" LEMMA="КАК" LINK="вводн">Как</W> 
+<W DOM="1" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" KSNAME="СООБЩАТЬ1" LEMMA="СООБЩАТЬ" LINK="сравн-союзн">сообщает</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="3" LEMMA="КОРРЕСПОНДЕНТ" LINK="предик">корреспондент</W> 
+<W DOM="3" FEAT="S ЕД ЖЕН РОД НЕОД" ID="4" KSNAME="ФИКТ-СУЩ-Ж" LEMMA="СТРАНА.RU" LINK="1-компл">Страны.Ru</W>, 
+<W DOM="8" FEAT="PR" ID="5" KSNAME="ЗА1" LEMMA="ЗА" LINK="1-компл">за</W> 
+<W DOM="7" FEAT="S ЕД МУЖ РОД ОД" ID="6" KSNAME="ОН" LEMMA="ОН" LINK="квазиагент">его</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="7" LEMMA="КАНДИДАТУРА" LINK="предл">кандидатуру</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ МН" ID="8" LEMMA="ГОЛОСОВАТЬ">проголосовали</W> 
+<W DOM="10" FEAT="PART" ID="9" LEMMA="ПОЧТИ" LINK="огранич">почти</W> 
+<W DOM="11" FEAT="NUM" ID="10" KSNAME="ЧИСЛ-БОЛЬШ" LEMMA="80" LINK="количест">80</W> 
+<W DOM="8" FEAT="S МН МУЖ РОД НЕОД" ID="11" LEMMA="ПРОЦЕНТ" LINK="предик">процентов</W> 
+<W DOM="11" FEAT="S МН МУЖ РОД ОД" ID="12" LEMMA="ИЗБИРАТЕЛЬ" LINK="квазиагент">избирателей</W>, 
+<W DOM="12" FEAT="V СОВ ПРИЧ ПРОШ МН РОД" ID="13" KSNAME="ПРИХОДИТЬ" LEMMA="ПРИХОДИТЬ" LINK="опред">пришедших</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="НА1" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="16" FEAT="A МН ВИН НЕОД" ID="15" LEMMA="ИЗБИРАТЕЛЬНЫЙ" LINK="опред">избирательные</W> 
+<W DOM="14" FEAT="S МН МУЖ ВИН НЕОД" ID="16" LEMMA="УЧАСТОК" LINK="предл">участки</W>. 
+</S>
+<S ID="4">
+<W DOM="2" FEAT="S ЕД МУЖ РОД ОД" ID="1" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">Его</W> 
+<W DOM="6" FEAT="S ЕД МУЖ ИМ ОД" ID="2" LEMMA="СОПЕРНИК" LINK="предик">соперник</W> - 
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="3" LEMMA="ПРЕДПРИНИМАТЕЛЬ" LINK="аппоз">предприниматель</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="4" KSNAME="СЕРГЕЙ" LEMMA="СЕРГЕЙ" LINK="аппоз">Сергей</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ ОД" ID="5" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="ПУШКАРЕВ" LINK="аппоз">Пушкарев</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="6" LEMMA="ПОЛУЧАТЬ">получил</W> 
+<W DOM="8" FEAT="S ЕД СРЕД ТВОР НЕОД" ID="7" LEMMA="НЕМНОГОЕ" LINK="огранич">немногим</W> 
+<W DOM="6" FEAT="ADV" ID="8" LEMMA="БОЛЕЕ" LINK="1-компл">более</W> 
+<W DOM="10" FEAT="NUM" ID="9" KSNAME="ЧИСЛ-БОЛЬШ" LEMMA="10" LINK="количест">10</W> 
+<W DOM="8" FEAT="S МН МУЖ РОД НЕОД" ID="10" LEMMA="ПРОЦЕНТ" LINK="сравнит">процентов</W>. 
+</S>
+</body>
+</text>

@@ -1,0 +1,1763 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>Дина Годер</author>
+<source>https://stengazeta.net/?p=10008951</source>
+<title>Мигранты, экспаты, космополиты</title>
+</inf>
+<body>
+<S ID="1">
+<W DOM="_root" FEAT="S МН МУЖ ИМ ОД" ID="1" KSNAME="МИГРАНТ1" LEMMA="МИГРАНТ">МИГРАНТЫ</W>, 
+<W DOM="1" FEAT="S МН МУЖ ИМ ОД" ID="2" LEMMA="ЭКСПАТ" LINK="сочин">ЭКСПАТЫ</W>, 
+<W DOM="2" FEAT="S МН МУЖ ИМ ОД" ID="3" LEMMA="КОСМОПОЛИТ" LINK="сочин">КОСМОПОЛИТЫ</W>
+</S>
+<S CLASS="LF" ID="2">
+<W DOM="2" FEAT="A ЕД МУЖ ИМ" ID="1" LEMMA="ДОКУМЕНТАЛЬНЫЙ" LINK="опред">ДОКУМЕНТАЛЬНЫЙ</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ИМ НЕОД" ID="2" LEMMA="ТЕАТР" LINK="предик">ТЕАТР</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="3" LEMMA="РАССКАЗЫВАТЬ">РАССКАЗЫВАЕТ</W> 
+<W DOM="3" FEAT="PR" ID="4" KSNAME="О2" LEMMA="О" LINK="3-компл">О</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ПР НЕОД" ID="5" LEMMA="ЖИЗНЬ" LINK="предл">ЖИЗНИ</W> 
+<W DOM="5" FEAT="PR" ID="6" KSNAME="НА2" LEMMA="НА" LINK="1-компл">НА</W> 
+<W DOM="6" FEAT="S ЕД ЖЕН ПР НЕОД" ID="7" LEMMA="ЧУЖБИНА" LINK="предл">ЧУЖБИНЕ</W>
+<LF LFARG="7" LFFUNC="_LOC" LFVAL="6"/>
+</S>
+<S ID="3">
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="1" LEMMA="Я" LINK="предик">Я</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 1-Л" ID="2" KSNAME="ГОВОРИТЬ1" LEMMA="ГОВОРИТЬ" NODETYPE="FANTOM"/>
+<W DOM="4" FEAT="PART" ID="3" KSNAME="ВСЕ2" LEMMA="ВСЕ" LINK="огранич">все</W> 
+<W DOM="2" FEAT="PR" ID="4" KSNAME="О2" LEMMA="О" LINK="3-компл">о</W> 
+<W DOM="4" FEAT="S ЕД СРЕД ПР НЕОД" ID="5" KSNAME="ТО1" LEMMA="ТО" LINK="предл">том</W> 
+<W DOM="5" FEAT="PART" ID="6" LEMMA="ЖЕ" LINK="огранич">же</W>: 
+<W DOM="4" FEAT="PR" ID="7" KSNAME="О2" LEMMA="О" LINK="разъяснит">о</W> 
+<W DOM="7" FEAT="S ЕД ЖЕН ПР НЕОД" ID="8" LEMMA="ВОЗМОЖНОСТЬ" LINK="предл">возможности</W> 
+<W DOM="8" FEAT="V НЕСОВ ИНФ" ID="9" LEMMA="ИССЛЕДОВАТЬ" LINK="1-компл">исследовать</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="10" LEMMA="ЖИЗНЬ" LINK="1-компл">жизнь</W> 
+<W DOM="9" FEAT="PR" ID="11" LEMMA="С ПОМОЩЬЮ" LINK="обст">с помощью</W> 
+<W DOM="11" FEAT="S ЕД МУЖ РОД НЕОД" ID="12" LEMMA="ТЕАТР" LINK="предл">театра</W>, 
+<W DOM="11" FEAT="CONJ" ID="13" KSNAME="ПРИЧЕМ1" LEMMA="ПРИЧЕМ" LINK="сочин">причем</W> 
+<W DOM="15" FEAT="PART" ID="14" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="13" FEAT="ADV" ID="15" LEMMA="ОПОСРЕДОВАННО" LINK="соч-союзн">опосредованно</W>, 
+<W DOM="15" FEAT="CONJ" ID="16" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="16" FEAT="ADV" ID="17" KSNAME="ПРЯМО1" LEMMA="ПРЯМО" LINK="соч-союзн">прямо</W>, 
+<W DOM="17" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="18" LEMMA="ГЛЯДЕТЬ" LINK="сочин">глядя</W> 
+<W DOM="18" FEAT="S ЕД ЖЕН ДАТ ОД" ID="19" LEMMA="ОНА" LINK="неакт-компл">ей</W> 
+<W DOM="18" FEAT="PR" ID="20" KSNAME="В1" LEMMA="В" LINK="1-компл">в</W> 
+<W DOM="20" FEAT="S ЕД СРЕД ВИН НЕОД" ID="21" KSNAME="ЛИЦО1" LEMMA="ЛИЦО" LINK="предл">лицо</W>.
+</S>
+<S CLASS="LF" ID="4">
+<W DOM="7" FEAT="ADV" ID="1" LEMMA="ВДРУГ" LINK="обст">Вдруг</W> 
+<W DOM="7" FEAT="PR" ID="2" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="4" FEAT="A ЕД СРЕД ВИН" ID="3" LEMMA="ПОСЛЕДНИЙ" LINK="опред">последнее</W> 
+<W DOM="2" FEAT="S ЕД СРЕД ВИН НЕОД" ID="4" LEMMA="ВРЕМЯ" LINK="предл">время</W> 
+<W DOM="6" FEAT="A ЕД МУЖ ИМ" ID="5" LEMMA="ДОКУМЕНТАЛЬНЫЙ" LINK="опред">документальный</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ НЕОД" ID="6" LEMMA="ТЕАТР" LINK="предик">театр</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="7" KSNAME="ЗАГОВАРИВАТЬ1" LEMMA="ЗАГОВАРИВАТЬ">заговорил</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="О2" LEMMA="О" LINK="2-компл">об</W> 
+<W DOM="8" FEAT="NUM ЕД СРЕД ПР" ID="9" KSNAME="ОДИН1" LEMMA="ОДИН" LINK="предл">одном</W> - 
+<W DOM="8" FEAT="PR" ID="10" KSNAME="О2" LEMMA="О" LINK="разъяснит">о</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН ПР НЕОД" ID="11" LEMMA="ПОТЕРЯ" LINK="предл">потере</W> 
+<W DOM="11" FEAT="S ЕД МУЖ РОД НЕОД" ID="12" LEMMA="ДОМ" LINK="1-компл">дома</W> 
+<W DOM="11" FEAT="CONJ" ID="13" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="13" FEAT="S ЕД ЖЕН ПР НЕОД" ID="14" LEMMA="ЖИЗНЬ" LINK="соч-союзн">жизни</W> 
+<W DOM="14" FEAT="PR" ID="15" KSNAME="НА2" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="15" FEAT="S ЕД ЖЕН ПР НЕОД" ID="16" LEMMA="ЧУЖБИНА" LINK="предл">чужбине</W>.
+<LF LFARG="4" LFFUNC="_LOC" LFVAL="2"/>
+<LF LFARG="16" LFFUNC="_LOC" LFVAL="15"/>
+</S>
+<S CLASS="LF" ID="5">
+<W DOM="_root" FEAT="CONJ" ID="1" KSNAME="ПРИЧЕМ1" LEMMA="ПРИЧЕМ">Причем</W>, 
+<W DOM="3" FEAT="A МН ИМ" ID="2" LEMMA="РАЗНОРОДНЫЙ" LINK="опред">разнородные</W> 
+<W DOM="5" FEAT="S МН ЖЕН ИМ НЕОД" ID="3" KSNAME="ИСТОРИЯ2" LEMMA="ИСТОРИЯ" LINK="предик">истории</W> 
+<W DOM="5" FEAT="ADV" ID="4" LEMMA="ЯВСТВЕННО" LINK="обст">явственно</W> 
+<W DOM="1" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР МН" ID="5" KSNAME="СВЯЗЫВАТЬ1" LEMMA="СВЯЗЫВАТЬ" LINK="соч-союзн">связаны</W> 
+<W DOM="8" FEAT="S ЕД МУЖ ИМ ОД" ID="6" LEMMA="ДРУГ" LINK="вспом">друг</W> 
+<W DOM="5" FEAT="PR" ID="7" KSNAME="С3" LEMMA="С" LINK="2-компл">с</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ТВОР ОД" ID="8" LEMMA="ДРУГ" LINK="предл">другом</W> 
+<W DOM="11" FEAT="PART" ID="9" KSNAME="ЕЩЕ1" LEMMA="ЕЩЕ" LINK="огранич">еще</W> 
+<W DOM="11" FEAT="PART" ID="10" KSNAME="И2" LEMMA="И" LINK="огранич">и</W> 
+<W DOM="5" FEAT="S ЕД СРЕД ТВОР НЕОД" ID="11" KSNAME="ТО1" LEMMA="ТО" LINK="3-компл">тем</W>, 
+<W DOM="11" FEAT="CONJ" ID="12" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="эксплет">что</W> 
+<W DOM="14" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="13" LEMMA="РЕЧЬ" LINK="предик">речь</W> 
+<W DOM="12" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="14" KSNAME="ИДТИ1" LEMMA="ИДТИ" LINK="подч-союзн">идет</W> 
+<W DOM="14" FEAT="PR" ID="15" KSNAME="О2" LEMMA="О" LINK="1-несобст-компл">о</W> 
+<W DOM="18" FEAT="A ЕД МУЖ ПР" ID="16" KSNAME="БЫВШИЙ" LEMMA="БЫВШИЙ" LINK="опред">бывшем</W> 
+<W DOM="18" FEAT="A ЕД МУЖ ПР" ID="17" LEMMA="СОВЕТСКИЙ" LINK="опред">советском</W> 
+<W DOM="15" FEAT="S ЕД МУЖ ПР НЕОД" ID="18" LEMMA="ВОСТОК" LINK="предл">Востоке</W> - 
+<W DOM="18" FEAT="S ЕД МУЖ ПР НЕОД" ID="19" LEMMA="КАЗАХСТАН" LINK="разъяснит">Казахстане</W>, 
+<W DOM="19" FEAT="S ЕД МУЖ ПР НЕОД" ID="20" LEMMA="ТАДЖИКИСТАН" LINK="сочин">Таджикистане</W>, 
+<W DOM="20" FEAT="S ЕД МУЖ ПР НЕОД" ID="21" LEMMA="УЗБЕКИСТАН" LINK="сочин">Узбекистане</W>.
+<LF LFARG="13" LFFUNC="_FUNC0" LFVAL="14"/>
+</S>
+<S CLASS="LF" ID="6">
+<W DOM="4" FEAT="PR" ID="1" KSNAME="В2" LEMMA="В" LINK="обст">В</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ПР НЕОД" ID="2" KSNAME="ФИКТ-СУЩ-М" LEMMA="ТЕАТР.DOC" LINK="предл">Театре.doc</W> 
+<W DOM="4" FEAT="PART" ID="3" LEMMA="ДАЖЕ" LINK="огранич">даже</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ МН" ID="4" KSNAME="УСТРАИВАТЬ1" LEMMA="УСТРАИВАТЬ">устроили</W> 
+<W DOM="6" FEAT="A ЕД МУЖ ВИН НЕОД" ID="5" LEMMA="СПЕЦИАЛЬНЫЙ" LINK="опред">специальный</W> 
+"<W DOM="4" FEAT="S ЕД МУЖ ВИН НЕОД" ID="6" LEMMA="ДЕНЬ" LINK="1-компл">День</W> 
+<W DOM="6" FEAT="S ЕД МУЖ РОД ОД" ID="7" KSNAME="МИГРАНТ1" LEMMA="МИГРАНТ" LINK="квазиагент">мигранта</W>", 
+<W DOM="4" FEAT="CONJ" ID="8" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="10" FEAT="ADV" ID="9" KSNAME="ПОДРЯД2" LEMMA="ПОДРЯД" LINK="обст">подряд</W> 
+<W DOM="8" FEAT="V СОВ ИЗЪЯВ ПРОШ МН" ID="10" LEMMA="ПОКАЗЫВАТЬ" LINK="соч-союзн">показали</W> 
+<W DOM="12" FEAT="ADV" ID="11" LEMMA="СРАЗУ" LINK="огранич">сразу</W> 
+<W DOM="13" FEAT="NUM ВИН НЕОД" ID="12" KSNAME="НЕСКОЛЬКО1" LEMMA="НЕСКОЛЬКО" LINK="количест">несколько</W> 
+<W DOM="10" FEAT="S МН СРЕД РОД НЕОД" ID="13" KSNAME="ПРЕДСТАВЛЕНИЕ4" LEMMA="ПРЕДСТАВЛЕНИЕ" LINK="1-компл">представлений</W>, 
+<W DOM="13" FEAT="V СОВ СТРАД ПРИЧ ПРОШ МН РОД" ID="14" KSNAME="СВЯЗЫВАТЬ1" LEMMA="СВЯЗЫВАТЬ" LINK="опред">связанных</W> 
+<W DOM="16" FEAT="A ЕД МУЖ ТВОР" ID="15" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">этим</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="16" LEMMA="СЮЖЕТ" LINK="3-компл">сюжетом</W>.
+<LF LFARG="2" LFFUNC="_LOC" LFVAL="1"/>
+</S>
+<S CLASS="LF" ID="7">
+<W DOM="2" FEAT="A ЕД СРЕД ВИН" ID="1" KSNAME="САМЫЙ" LEMMA="САМЫЙ" LINK="опред">Самое</W> 
+<W DOM="3" FEAT="A ЕД СРЕД ВИН" ID="2" LEMMA="БОЛЬШОЙ" LINK="опред">большое</W> 
+<W DOM="6" FEAT="S ЕД СРЕД ВИН НЕОД" ID="3" LEMMA="ВПЕЧАТЛЕНИЕ" LINK="1-компл">впечатление</W> 
+<W DOM="6" FEAT="PR" ID="4" KSNAME="НА1" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ВИН ОД" ID="5" LEMMA="Я" LINK="предл">меня</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ МН" ID="6" LEMMA="ПРОИЗВОДИТЬ">произвели</W> 
+<W DOM="6" FEAT="NUM МУЖ ИМ" ID="7" LEMMA="ДВА" LINK="предик">два</W>: 
+<W DOM="6" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="8" LEMMA="ПОСТАНОВКА" LINK="разъяснит">постановка</W> 
+<W DOM="8" FEAT="S ЕД МУЖ РОД ОД" ID="9" LEMMA="ВСЕВОЛОД" LINK="квазиагент">Всеволода</W> 
+<W DOM="9" FEAT="S ЕД МУЖ РОД ОД" ID="10" KSNAME="ЛИСОВСКИЙ" LEMMA="ЛИСОВСКИЙ" LINK="аппоз">Лисовского</W> 
+"<W DOM="12" FEAT="S ЕД МУЖ ИМ ОД" ID="11" LEMMA="АКЫН" LINK="композ">Акын</W>-
+<W DOM="8" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="12" KSNAME="ОПЕРА" LEMMA="ОПЕРА" LINK="ном-аппоз">опера</W>" 
+<W DOM="8" FEAT="CONJ" ID="13" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+"<W DOM="15" FEAT="A ЕД МУЖ ИМ" ID="14" LEMMA="СВИДЕТЕЛЬСКИЙ" LINK="опред">свидетельский</W> 
+<W DOM="13" FEAT="S ЕД МУЖ ИМ НЕОД" ID="15" LEMMA="СПЕКТАКЛЬ" LINK="соч-союзн">спектакль</W>" 
+(<W DOM="18" FEAT="ADV" ID="16" LEMMA="ТАК" LINK="2-компл">так</W> 
+<W DOM="18" FEAT="ADV" ID="17" KSNAME="ТУТ1" LEMMA="ТУТ" LINK="обст">тут</W> 
+<W DOM="15" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="18" LEMMA="НАЗЫВАТЬ" LINK="примыкат">называют</W> 
+<W DOM="20" FEAT="A ЕД МУЖ ТВОР" ID="19" LEMMA="СПЕЦИАЛЬНЫЙ" LINK="опред">специальным</W> 
+<W DOM="21" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="20" LEMMA="ОБРАЗ" LINK="обст">образом</W> 
+<W DOM="22" FEAT="V СОВ СТРАД ПРИЧ ПРОШ ЕД ЖЕН ВИН" ID="21" KSNAME="ПРОВОДИТЬ1" LEMMA="ПРОВОДИТЬ" LINK="опред">проведенную</W> 
+<W DOM="18" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="22" LEMMA="ВСТРЕЧА" LINK="1-компл">встречу</W>-
+<W DOM="22" FEAT="S ЕД СРЕД ВИН НЕОД" ID="23" LEMMA="ИНТЕРВЬЮ" LINK="аппоз">интервью</W>) 
+"<W DOM="15" FEAT="S ЕД СРЕД ИМ НЕОД" ID="24" LEMMA="ОСВОБОЖДЕНИЕ" LINK="ном-аппоз">Освобождение</W> 
+<W DOM="24" FEAT="S МН МУЖ РОД ОД" ID="25" KSNAME="МИГРАНТ1" LEMMA="МИГРАНТ" LINK="1-компл">мигрантов</W>-
+<W DOM="25" FEAT="S МН МУЖ РОД ОД" ID="26" LEMMA="РАБ" LINK="аппоз">рабов</W> 
+<W DOM="25" FEAT="PR" ID="27" LEMMA="ИЗ" LINK="атриб">из</W> 
+<W DOM="27" FEAT="S ЕД МУЖ РОД НЕОД" ID="28" KSNAME="МАГАЗИН1" LEMMA="МАГАЗИН" LINK="предл">магазина</W> 
+"<W DOM="28" FEAT="S МН МУЖ ИМ НЕОД" ID="29" LEMMA="ПРОДУКТ" LINK="аппоз">Продукты</W>"".
+<LF LFARG="22" LFFUNC="_OPER1" LFVAL="21"/>
+<LF LFARG="3" LFFUNC="_CAUSFUNC1" LFPREP="4" LFVAL="6"/>
+</S>
+<S ID="8">
+<W DOM="14" FEAT="PR" ID="1" KSNAME="О2" LEMMA="О" LINK="3-компл">Об</W> 
+<W DOM="4" FEAT="A ЕД СРЕД ПР" ID="2" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">этом</W> 
+<W DOM="2" FEAT="A ЕД СРЕД ПР" ID="3" KSNAME="САМЫЙ" LEMMA="САМЫЙ" LINK="опред">самом</W> 
+<W DOM="1" FEAT="S ЕД СРЕД ПР НЕОД" ID="4" LEMMA="ОСВОБОЖДЕНИЕ" LINK="предл">освобождении</W> 
+<W DOM="4" FEAT="S МН ЖЕН РОД ОД" ID="5" LEMMA="ЖЕНЩИНА" LINK="1-компл">женщин</W> 
+<W DOM="4" FEAT="PR" ID="6" LEMMA="ИЗ" LINK="2-компл">из</W> 
+<W DOM="8" FEAT="A ЕД СРЕД РОД" ID="7" LEMMA="МНОГОЛЕТНИЙ" LINK="опред">многолетнего</W> 
+<W DOM="6" FEAT="S ЕД СРЕД РОД НЕОД" ID="8" LEMMA="РАБСТВО" LINK="предл">рабства</W> 
+<W DOM="8" FEAT="PR" ID="9" KSNAME="У1" LEMMA="У" LINK="атриб">у</W> 
+<W DOM="12" FEAT="A МН РОД" ID="10" LEMMA="СВОЙ" LINK="опред">своих</W> 
+<W DOM="10" FEAT="PART" ID="11" LEMMA="ЖЕ" LINK="огранич">же</W> 
+<W DOM="9" FEAT="S МН МУЖ РОД ОД" ID="12" LEMMA="СООТЕЧЕСТВЕННИК" LINK="предл">соотечественников</W>, 
+<W DOM="14" FEAT="ADV" ID="13" KSNAME="МНОГО1" LEMMA="МНОГО" LINK="обст">много</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="14" KSNAME="ПИСАТЬ1" LEMMA="ПИСАТЬ">писали</W>, 
+<W DOM="14" FEAT="CONJ" ID="15" KSNAME="КАК1" LEMMA="КАК" LINK="сравнит">как</W> 
+<W DOM="15" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="16" KSNAME="ПИСАТЬ1" LEMMA="ПИСАТЬ" LINK="сравн-союзн" NODETYPE="FANTOM"/>
+<W DOM="18" FEAT="PART" ID="17" KSNAME="И2" LEMMA="И" LINK="огранич">и</W> 
+<W DOM="16" FEAT="PR" ID="18" KSNAME="О2" LEMMA="О" LINK="3-компл">о</W> 
+<W DOM="18" FEAT="S ЕД СРЕД ПР НЕОД" ID="19" KSNAME="ТО1" LEMMA="ТО" LINK="предл">том</W>, 
+<W DOM="19" FEAT="CONJ" ID="20" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="эксплет">что</W> 
+<W DOM="25" FEAT="ADV" ID="21" LEMMA="ТЕПЕРЬ" LINK="обст">теперь</W> 
+<W DOM="25" FEAT="S ЕД СРЕД ИМ НЕОД" ID="22" LEMMA="ДВИЖЕНИЕ" LINK="предик">движение</W> 
+<W DOM="24" FEAT="A ЕД ЖЕН РОД" ID="23" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">этой</W> 
+<W DOM="22" FEAT="S ЕД ЖЕН РОД НЕОД" ID="24" KSNAME="ИСТОРИЯ1" LEMMA="ИСТОРИЯ" LINK="квазиагент">истории</W> 
+<W DOM="20" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="25" LEMMA="УПИРАТЬСЯ" LINK="подч-союзн">упирается</W> 
+<W DOM="25" FEAT="PR" ID="26" KSNAME="В1" LEMMA="В" LINK="1-компл">в</W> 
+<W DOM="26" FEAT="S ЕД СРЕД ВИН НЕОД" ID="27" LEMMA="ПРОТИВОДЕЙСТВИЕ" LINK="предл">противодействие</W> 
+<W DOM="31" FEAT="V СОВ СТРАД ПРИЧ ПРОШ ЕД ЖЕН РОД" ID="28" LEMMA="ПОВЯЗЫВАТЬ" LINK="опред">повязанной</W> 
+<W DOM="28" FEAT="PR" ID="29" KSNAME="С3" LEMMA="С" LINK="2-компл">с</W> 
+<W DOM="29" FEAT="S МН МУЖ ТВОР ОД" ID="30" LEMMA="ПРЕСТУПНИК" LINK="предл">преступниками</W> 
+<W DOM="27" FEAT="S ЕД ЖЕН РОД НЕОД" ID="31" LEMMA="ПОЛИЦИЯ" LINK="квазиагент">полиции</W> 
+<W DOM="31" FEAT="CONJ" ID="32" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="35" FEAT="A ЕД ЖЕН РОД" ID="33" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">всей</W> 
+<W DOM="35" FEAT="A ЕД ЖЕН РОД" ID="34" LEMMA="СУДЕБНЫЙ" LINK="опред">судебной</W> 
+<W DOM="32" FEAT="S ЕД ЖЕН РОД НЕОД" ID="35" LEMMA="СИСТЕМА" LINK="соч-союзн">системы</W>, 
+<W DOM="35" FEAT="A ЕД ЖЕН РОД" ID="36" LEMMA="ГОТОВЫЙ" LINK="опред">готовой</W> 
+<W DOM="40" FEAT="PR" ID="37" KSNAME="В2" LEMMA="В" LINK="огранич">в</W> 
+<W DOM="39" FEAT="A ЕД МУЖ ПР" ID="38" LEMMA="ЛУЧШИЙ" LINK="опред">лучшем</W> 
+<W DOM="37" FEAT="S ЕД МУЖ ПР НЕОД" ID="39" LEMMA="СЛУЧАЙ" LINK="предл">случае</W> 
+<W DOM="36" FEAT="V СОВ ИНФ" ID="40" LEMMA="ЗАМИНАТЬ" LINK="1-компл">замять</W> 
+<W DOM="40" FEAT="S ЕД СРЕД ВИН НЕОД" ID="41" KSNAME="ДЕЛО1" LEMMA="ДЕЛО" LINK="1-компл">дело</W>.
+</S>
+<S ID="9">
+<W DOM="20" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="1" LEMMA="ЭНЕРГИЯ" LINK="предик">Энергия</W> 
+<W DOM="3" FEAT="A ЕД МУЖ РОД" ID="2" LEMMA="СВИДЕТЕЛЬСКИЙ" LINK="опред">свидетельского</W> 
+<W DOM="1" FEAT="S ЕД МУЖ РОД НЕОД" ID="3" LEMMA="СПЕКТАКЛЬ" LINK="квазиагент">спектакля</W> 
+<W DOM="3" FEAT="PR" ID="4" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ПР НЕОД" ID="5" LEMMA="ДОК" LINK="предл">Доке</W>, 
+<W DOM="10" FEAT="PR" ID="6" KSNAME="НА1" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="6" FEAT="S ЕД МУЖ ВИН НЕОД" ID="7" LEMMA="КОТОРЫЙ" LINK="предл">который</W>, 
+<W DOM="10" FEAT="PR" ID="8" LEMMA="К" LINK="вводн">к</W> 
+<W DOM="8" FEAT="S ЕД СРЕД ДАТ НЕОД" ID="9" LEMMA="СОЖАЛЕНИЕ" LINK="предл">сожалению</W>, 
+<W DOM="3" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="10" KSNAME="ПРИХОДИТЬ" LEMMA="ПРИХОДИТЬ" LINK="релят">пришло</W> 
+<W DOM="10" FEAT="ADV СРАВ" ID="11" KSNAME="МНОГО1" LEMMA="МНОГО" LINK="предик">больше</W> 
+<W DOM="11" FEAT="S МН МУЖ РОД ОД" ID="12" LEMMA="ЧЕЛОВЕК" LINK="1-компл">людей</W>, 
+<W DOM="12" FEAT="V СОВ СТРАД ПРИЧ ПРОШ МН РОД" ID="13" KSNAME="СВЯЗЫВАТЬ1" LEMMA="СВЯЗЫВАТЬ" LINK="опред">связанных</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="С3" LEMMA="С" LINK="2-компл">с</W> 
+<W DOM="16" FEAT="A ЕД ЖЕН ТВОР" ID="15" KSNAME="САМ" LEMMA="САМ" LINK="опред">самой</W> 
+<W DOM="14" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="16" KSNAME="ИСТОРИЯ1" LEMMA="ИСТОРИЯ" LINK="предл">историей</W>, 
+<W DOM="11" FEAT="CONJ" ID="17" KSNAME="ЧЕМ" LEMMA="ЧЕМ" LINK="сравнит">чем</W> 
+<W DOM="19" FEAT="ADV" ID="18" LEMMA="СОБСТВЕННО" LINK="огранич">собственно</W> 
+<W DOM="17" FEAT="S МН МУЖ РОД ОД" ID="19" LEMMA="ЗРИТЕЛЬ" LINK="сравн-союзн">зрителей</W>, - 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="20" KSNAME="БЫТЬ" LEMMA="БЫТЬ">была</W> 
+<W DOM="22" FEAT="PART" ID="21" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="20" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР ЕД ЖЕН" ID="22" LEMMA="ПРИВНОСИТЬ" LINK="пасс-анал">привнесена</W> 
+<W DOM="22" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="23" LEMMA="ТЕАТР" LINK="агент">театром</W>, 
+<W DOM="20" FEAT="CONJ" ID="24" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="24" FEAT="V НЕСОВ СТРАД ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="25" LEMMA="ИЗЛУЧАТЬ" LINK="соч-союзн">излучалась</W> 
+<W DOM="27" FEAT="A МН ТВОР" ID="26" KSNAME="САМ" LEMMA="САМ" LINK="опред">самими</W> 
+<W DOM="25" FEAT="S МН МУЖ ТВОР ОД" ID="27" LEMMA="УЧАСТНИК" LINK="агент">участниками</W> 
+<W DOM="27" FEAT="S ЕД СРЕД РОД НЕОД" ID="28" LEMMA="ОСВОБОЖДЕНИЕ" LINK="1-компл">освобождения</W>.
+</S>
+<S CLASS="LF" ID="10">
+<W DOM="2" FEAT="S ЕД СРЕД ИМ НЕОД" ID="1" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предик">Это</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="2" KSNAME="БЫТЬ" LEMMA="БЫТЬ">были</W> 
+<W DOM="6" FEAT="A МН ИМ" ID="3" LEMMA="ЖИВОЙ" LINK="опред">живые</W>, 
+<W DOM="3" FEAT="A МН ИМ" ID="4" LEMMA="ОПТИМИСТИЧЕСКИЙ" LINK="сочин">оптимистические</W> 
+<W DOM="6" FEAT="A МН ИМ" ID="5" KSNAME="МОЛОДОЙ1" LEMMA="МОЛОДОЙ" LINK="опред">молодые</W> 
+<W DOM="2" FEAT="S МН МУЖ ИМ ОД" ID="6" LEMMA="ЧЕЛОВЕК" LINK="присвяз">люди</W>, 
+<W DOM="8" FEAT="ADV" ID="7" LEMMA="ЯСНО" LINK="обст">ясно</W> 
+<W DOM="6" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН ИМ" ID="8" LEMMA="ПОНИМАТЬ" LINK="опред">понимающие</W> 
+<W DOM="8" FEAT="CONJ" ID="9" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="9" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН ИМ" ID="10" LEMMA="УМЕТЬ" LINK="соч-союзн">умеющие</W> 
+<W DOM="10" FEAT="V СОВ ИНФ" ID="11" LEMMA="ОБЪЯСНЯТЬ" LINK="1-компл">объяснить</W>, 
+<W DOM="16" FEAT="S ЕД СРЕД ВИН НЕОД" ID="12" KSNAME="ЧТО2" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="12" FEAT="CONJ" ID="13" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="13" FEAT="ADV" ID="14" LEMMA="ЗАЧЕМ" LINK="соч-союзн">зачем</W> 
+<W DOM="16" FEAT="S МН ИМ ОД" ID="15" LEMMA="ОНИ" LINK="предик">они</W> 
+<W DOM="11" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="16" LEMMA="ДЕЛАТЬ" LINK="1-компл">делают</W>, 
+<W DOM="10" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН ИМ" ID="17" KSNAME="ПРЕДСТАВЛЯТЬ2" LEMMA="ПРЕДСТАВЛЯТЬ" LINK="сочин">представляющие</W>, 
+<W DOM="20" FEAT="S ЕД СРЕД ИМ НЕОД" ID="18" KSNAME="ЧТО2" LEMMA="ЧТО" LINK="предик">что</W> 
+<W DOM="20" FEAT="S МН ДАТ ОД" ID="19" LEMMA="ОНИ" LINK="1-компл">им</W> 
+<W DOM="17" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="20" LEMMA="ПРЕДСТОЯТЬ" LINK="1-компл">предстоит</W>, 
+<W DOM="22" FEAT="PART" ID="21" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="17" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН ИМ" ID="22" KSNAME="СТРОИТЬ" LEMMA="СТРОИТЬ" LINK="сочин">строящие</W> 
+<W DOM="22" FEAT="S МН ЖЕН РОД НЕОД" ID="23" LEMMA="ИЛЛЮЗИЯ" LINK="1-компл">иллюзий</W>, 
+<W DOM="22" FEAT="CONJ" ID="24" LEMMA="НО" LINK="сочин">но</W> 
+<W DOM="24" FEAT="PART" ID="25" KSNAME="И2" LEMMA="И" LINK="огранич">и</W> 
+<W DOM="27" FEAT="PART" ID="26" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="24" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН ИМ" ID="27" LEMMA="ЖЕЛАТЬ" LINK="соч-союзн">желающие</W> 
+<W DOM="27" FEAT="V НЕСОВ ИНФ" ID="28" LEMMA="ОТСТУПАТЬ" LINK="1-компл">отступать</W>.
+<LF LFARG="8" LFFUNC="_MAGN" LFVAL="7"/>
+</S>
+<S ID="11">
+<W DOM="2" FEAT="S МН РОД ОД" ID="1" LEMMA="ОНИ" LINK="квазиагент">Их</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="2" LEMMA="УВЕРЕННОСТЬ" LINK="предик">уверенность</W> 
+<W DOM="2" FEAT="PR" ID="3" KSNAME="В2" LEMMA="В" LINK="1-компл">в</W> 
+<W DOM="5" FEAT="A ЕД ЖЕН ПР" ID="4" LEMMA="СВОЙ" LINK="опред">своей</W> 
+<W DOM="3" FEAT="S ЕД ЖЕН ПР НЕОД" ID="5" LEMMA="ПРАВОТА" LINK="предл">правоте</W> 
+<W DOM="2" FEAT="CONJ" ID="6" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="6" FEAT="S ЕД СРЕД ИМ НЕОД" ID="7" LEMMA="ОТСУТСТВИЕ" LINK="соч-союзн">отсутствие</W> 
+<W DOM="7" FEAT="S ЕД МУЖ РОД НЕОД" ID="8" LEMMA="СТРАХ" LINK="квазиагент">страха</W> - 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="9" LEMMA="ЗАРАЖАТЬ">заражали</W> 
+<W DOM="9" FEAT="CONJ" ID="10" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="10" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="11" KSNAME="ПРИЗЫВАТЬ2" LEMMA="ПРИЗЫВАТЬ" LINK="соч-союзн">призывали</W> 
+<W DOM="11" FEAT="V НЕСОВ ИНФ" ID="12" KSNAME="ДЕЙСТВОВАТЬ" LEMMA="ДЕЙСТВОВАТЬ" LINK="2-компл">действовать</W>.
+</S>
+<S ID="12">
+<W DOM="2" FEAT="S МН МУЖ ТВОР ОД" ID="1" LEMMA="ГЕРОЙ" LINK="присвяз">Героями</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="2" KSNAME="БЫТЬ" LEMMA="БЫТЬ">были</W> 
+<W DOM="4" FEAT="PART" ID="3" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="2" FEAT="S МН ЖЕН ИМ ОД" ID="4" KSNAME="ЖЕРТВА2" LEMMA="ЖЕРТВА" LINK="предик">жертвы</W> 
+(<W DOM="4" FEAT="CONJ" ID="5" LEMMA="ХОТЯ" LINK="примыкат">хотя</W> 
+<W DOM="10" FEAT="NUM ЕД ЖЕН ИМ" ID="6" KSNAME="ОДИН1" LEMMA="ОДИН" LINK="предик">одна</W> 
+<W DOM="6" FEAT="PR" ID="7" LEMMA="ИЗ" LINK="электив">из</W> 
+<W DOM="7" FEAT="S МН ЖЕН РОД ОД" ID="8" LEMMA="ЖЕНЩИНА" LINK="предл">женщин</W> 
+<W DOM="10" FEAT="PART" ID="9" LEMMA="ТОЖЕ" LINK="огранич">тоже</W> 
+<W DOM="5" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="10" LEMMA="ПРИСУТСТВОВАТЬ" LINK="подч-союзн">присутствовала</W>), 
+<W DOM="4" FEAT="CONJ" ID="11" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="11" FEAT="S МН МУЖ ИМ ОД" ID="12" LEMMA="ОСВОБОДИТЕЛЬ" LINK="соч-союзн">освободители</W>.
+</S>
+<S ID="13">
+<W DOM="5" FEAT="PR" ID="1" KSNAME="В2" LEMMA="В" LINK="обст">В</W> 
+"<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="2" LEMMA="АКЫН" LINK="композ">Акын</W>-
+<W DOM="1" FEAT="S ЕД ЖЕН ПР НЕОД" ID="3" KSNAME="ОПЕРА" LEMMA="ОПЕРА" LINK="предл">опере</W>" 
+<W DOM="5" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="4" LEMMA="СИТУАЦИЯ" LINK="предик">ситуация</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="5" KSNAME="БЫТЬ" LEMMA="БЫТЬ">была</W> 
+<W DOM="5" FEAT="A ЕД ЖЕН ИМ" ID="6" LEMMA="ИНОЙ" LINK="присвяз">иная</W>.
+</S>
+<S CLASS="LF" ID="14">
+<W DOM="3" FEAT="ADV" ID="1" KSNAME="ТУТ1" LEMMA="ТУТ" LINK="обст">Тут</W> 
+<W DOM="3" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="2" LEMMA="ЗАДАЧА" LINK="присвяз">задачей</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="3" KSNAME="БЫТЬ" LEMMA="БЫТЬ">было</W> 
+<W DOM="5" FEAT="PART" ID="4" LEMMA="ИМЕННО" LINK="огранич">именно</W> 
+<W DOM="3" FEAT="V СОВ ИНФ" ID="5" KSNAME="ДАВАТЬ1" LEMMA="ДАВАТЬ" LINK="предик">дать</W> 
+<W DOM="5" FEAT="S МН ДАТ ОД" ID="6" LEMMA="МЫ" LINK="2-компл">нам</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="7" LEMMA="ВОЗМОЖНОСТЬ" LINK="1-компл">возможность</W> 
+<W DOM="7" FEAT="V СОВ ИНФ" ID="8" LEMMA="СМОТРЕТЬ" LINK="1-компл">посмотреть</W> 
+<W DOM="8" FEAT="PR" ID="9" KSNAME="В1" LEMMA="В" LINK="1-компл">в</W> 
+<W DOM="9" FEAT="S МН МУЖ ВИН НЕОД" ID="10" LEMMA="ГЛАЗ" LINK="предл">глаза</W> 
+<W DOM="8" FEAT="S МН МУЖ ДАТ ОД" ID="11" KSNAME="МИГРАНТ1" LEMMA="МИГРАНТ" LINK="неакт-компл">мигрантам</W>, 
+<W DOM="8" FEAT="V СОВ ИНФ" ID="12" LEMMA="ВЫСЛУШИВАТЬ" LINK="сочин">выслушать</W> 
+<W DOM="12" FEAT="S МН МУЖ ВИН ОД" ID="13" LEMMA="ЧЕЛОВЕК" LINK="1-компл">людей</W>, 
+<W DOM="15" FEAT="S МН ИМ" ID="14" LEMMA="КОТОРЫЙ" LINK="предик">которые</W> 
+<W DOM="13" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="15" LEMMA="ЖИТЬ" LINK="релят">живут</W> 
+<W DOM="15" FEAT="ADV" ID="16" KSNAME="РЯДОМ" LEMMA="РЯДОМ" LINK="1-компл">рядом</W> 
+<W DOM="16" FEAT="PR" ID="17" KSNAME="С3" LEMMA="С" LINK="1-компл">с</W> 
+<W DOM="17" FEAT="S МН ТВОР ОД" ID="18" LEMMA="МЫ" LINK="предл">нами</W>, 
+<W DOM="15" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="19" KSNAME="ОСТАВАТЬСЯ1" LEMMA="ОСТАВАТЬСЯ" LINK="обст">оставаясь</W> 
+<W DOM="19" FEAT="A МН ТВОР" ID="20" LEMMA="НЕЗАМЕТНЫЙ" LINK="присвяз">незаметными</W>, 
+<W DOM="20" FEAT="CONJ" ID="21" KSNAME="КАК1" LEMMA="КАК" LINK="сравнит">как</W> 
+<W DOM="21" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="22" LEMMA="ЧАСТЬ" LINK="сравн-союзн">часть</W> 
+<W DOM="22" FEAT="S ЕД МУЖ РОД НЕОД" ID="23" LEMMA="ПЕЙЗАЖ" LINK="квазиагент">пейзажа</W>.
+<LF LFARG="7" LFFUNC="_CAUSFUNC1" LFVAL="5"/>
+</S>
+<S CLASS="LF" ID="15">
+<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="1" LEMMA="ВСЕВОЛОД" LINK="предик">Всеволод</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ИМ ОД" ID="2" KSNAME="ЛИСОВСКИЙ" LEMMA="ЛИСОВСКИЙ" LINK="аппоз">Лисовский</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="3" KSNAME="НАХОДИТЬ1" LEMMA="НАХОДИТЬ">нашел</W> 
+<W DOM="5" FEAT="NUM ВИН ОД" ID="4" KSNAME="ТРИ" LEMMA="ТРИ" LINK="количест">трех</W> 
+<W DOM="3" FEAT="S МН МУЖ РОД ОД" ID="5" LEMMA="АКТЕР" LINK="1-компл">актеров</W>-
+<W DOM="5" FEAT="S МН МУЖ РОД ОД" ID="6" LEMMA="ПАМИРЕЦ" LINK="аппоз">памирцев</W> 
+<W DOM="5" FEAT="PR" ID="7" LEMMA="ИЗ" LINK="атриб">из</W> 
+<W DOM="7" FEAT="S ЕД МУЖ РОД НЕОД" ID="8" LEMMA="ТАДЖИКИСТАН" LINK="предл">Таджикистана</W>, 
+<W DOM="5" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН РОД" ID="9" LEMMA="ЖИТЬ" LINK="опред">живущих</W> 
+<W DOM="9" FEAT="CONJ" ID="10" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="10" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН РОД" ID="11" KSNAME="ЗАРАБАТЫВАТЬ" LEMMA="ЗАРАБАТЫВАТЬ" LINK="соч-союзн">зарабатывающих</W> 
+<W DOM="11" FEAT="PR" ID="12" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="12" FEAT="S ЕД ЖЕН ПР НЕОД" ID="13" LEMMA="МОСКВА" LINK="предл">Москве</W>.
+<LF LFARG="13" LFFUNC="_LOC" LFVAL="12"/>
+</S>
+<S CLASS="LF" ID="16">
+<W DOM="2" FEAT="NUM МУЖ ИМ" ID="1" LEMMA="ДВА" LINK="количест">Два</W> 
+<W DOM="27" FEAT="S ЕД МУЖ РОД ОД" ID="2" LEMMA="МУЗЫКАНТ" LINK="предик">музыканта</W> 
+<W DOM="2" FEAT="CONJ" ID="3" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="3" FEAT="S ЕД ЖЕН ИМ ОД" ID="4" LEMMA="ПЕВИЦА" LINK="соч-союзн">певица</W>, 
+<W DOM="10" FEAT="ADV" ID="5" LEMMA="КОГДА-ТО" LINK="обст">когда-то</W> 
+<W DOM="10" FEAT="PR" ID="6" KSNAME="У1" LEMMA="У" LINK="обст">у</W> 
+<W DOM="6" FEAT="S ЕД МУЖ РОД ОД" ID="7" LEMMA="СЕБЯ" LINK="предл">себя</W> 
+<W DOM="6" FEAT="PR" ID="8" KSNAME="НА2" LEMMA="НА" LINK="уточн">на</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ПР НЕОД" ID="9" LEMMA="РОДИНА" LINK="предл">родине</W> 
+<W DOM="4" FEAT="V НЕСОВ ПРИЧ ПРОШ МН ИМ" ID="10" LEMMA="УЧИТЬСЯ" LINK="опред">учившиеся</W> 
+<W DOM="10" FEAT="PR" ID="11" KSNAME="В2" LEMMA="В" LINK="3-компл">в</W> 
+<W DOM="11" FEAT="S ЕД МУЖ ПР НЕОД" ID="12" LEMMA="ИНСТИТУТ" LINK="предл">институте</W> 
+<W DOM="12" FEAT="S ЕД ЖЕН РОД НЕОД" ID="13" LEMMA="КУЛЬТУРА" LINK="1-компл">культуры</W>, 
+<W DOM="10" FEAT="CONJ" ID="14" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="18" FEAT="ADV" ID="15" LEMMA="ТЕПЕРЬ" LINK="обст">теперь</W> 
+<W DOM="18" FEAT="PR" ID="16" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="16" FEAT="S ЕД ЖЕН ПР НЕОД" ID="17" LEMMA="МОСКВА" LINK="предл">Москве</W> 
+<W DOM="14" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН ИМ" ID="18" LEMMA="РАБОТАТЬ" LINK="соч-союзн">работающие</W> 
+<W DOM="18" FEAT="S ЕД МУЖ ТВОР ОД" ID="19" LEMMA="ПОМОЩНИК" LINK="2-компл">помощником</W> 
+<W DOM="19" FEAT="S ЕД МУЖ РОД ОД" ID="20" LEMMA="МАЛЯР" LINK="1-компл">маляра</W>, 
+<W DOM="19" FEAT="S ЕД МУЖ ТВОР ОД" ID="21" LEMMA="ПЛИТОЧНИК" LINK="сочин">плиточником</W> 
+<W DOM="21" FEAT="CONJ" ID="22" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="22" FEAT="S ЕД ЖЕН ТВОР ОД" ID="23" LEMMA="УБОРЩИЦА" LINK="соч-союзн">уборщицей</W> 
+<W DOM="23" FEAT="PR" ID="24" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="24" FEAT="A ЕД ЖЕН ПР" ID="25" LEMMA="НАЛОГОВЫЙ" LINK="предл">налоговой</W> - 
+<W DOM="27" FEAT="ADV" ID="26" LEMMA="БЕСХИТРОСТНО" LINK="обст">бесхитростно</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="27" LEMMA="РАССКАЗЫВАТЬ">рассказывают</W> 
+<W DOM="27" FEAT="PR" ID="28" KSNAME="О2" LEMMA="О" LINK="3-компл">о</W> 
+<W DOM="28" FEAT="S ЕД МУЖ ПР ОД" ID="29" LEMMA="СЕБЯ" LINK="предл">себе</W> 
+<W DOM="27" FEAT="CONJ" ID="30" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="35" FEAT="PR" ID="31" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="31" FEAT="S МН МУЖ ПР НЕОД" ID="32" LEMMA="ПЕРЕРЫВ" LINK="предл">перерывах</W> 
+<W DOM="32" FEAT="PR" ID="33" KSNAME="МЕЖДУ2" LEMMA="МЕЖДУ" LINK="квазиагент">между</W> 
+<W DOM="33" FEAT="S МН ЖЕН ТВОР НЕОД" ID="34" KSNAME="БАЙКА2" LEMMA="БАЙКА" LINK="предл">байками</W> 
+<W DOM="30" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="35" LEMMA="ПЕТЬ" LINK="соч-союзн">поют</W> 
+<W DOM="35" FEAT="S ЕД СРЕД ВИН НЕОД" ID="36" KSNAME="ЧТО-ТО1" LEMMA="ЧТО-ТО" LINK="1-компл">что-то</W> 
+<W DOM="35" FEAT="PR" ID="37" KSNAME="О2" LEMMA="О" LINK="3-компл">о</W> 
+<W DOM="39" FEAT="A ЕД ЖЕН ПР" ID="38" LEMMA="ЖЕСТОКОСЕРДНЫЙ" LINK="опред">жестокосердной</W> 
+<W DOM="37" FEAT="S ЕД ЖЕН ПР ОД" ID="39" KSNAME="ПЕРИ2" LEMMA="ПЕРИ" LINK="предл">пери</W> 
+<W DOM="39" FEAT="CONJ" ID="40" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="40" FEAT="S ЕД ЖЕН ПР НЕОД" ID="41" LEMMA="ЖИЗНЬ" LINK="соч-союзн">жизни</W> 
+<W DOM="41" FEAT="ADV" ID="42" LEMMA="ВДАЛИ" LINK="1-компл">вдали</W> 
+<W DOM="42" FEAT="PR" ID="43" LEMMA="ОТ" LINK="1-компл">от</W> 
+<W DOM="43" FEAT="S ЕД МУЖ РОД НЕОД" ID="44" LEMMA="ДОМ" LINK="предл">дома</W>, 
+<W DOM="35" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="45" LEMMA="АККОМПАНИРОВАТЬ" LINK="обст">аккомпанируя</W> 
+<W DOM="45" FEAT="PR" ID="46" KSNAME="НА2" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="48" FEAT="A МН ПР" ID="47" LEMMA="НАРОДНЫЙ" LINK="опред">народных</W> 
+<W DOM="46" FEAT="S МН МУЖ ПР НЕОД" ID="48" LEMMA="ИНСТРУМЕНТ" LINK="предл">инструментах</W>.
+<LF LFARG="9" LFFUNC="_LOC" LFVAL="8"/>
+<LF LFARG="12" LFFUNC="_LOC" LFVAL="11"/>
+<LF LFARG="17" LFFUNC="_LOC" LFVAL="16"/>
+<LF LFARG="32" LFFUNC="_LOC" LFVAL="31"/>
+</S>
+<S CLASS="LF" ID="17">
+<W DOM="4" FEAT="PR" ID="1" KSNAME="В2" LEMMA="В" LINK="1-компл">В</W> 
+<W DOM="3" FEAT="S МН РОД ОД" ID="2" LEMMA="ОНИ" LINK="квазиагент">их</W> 
+<W DOM="1" FEAT="S МН МУЖ ПР НЕОД" ID="3" LEMMA="РАССКАЗ" LINK="предл">рассказах</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="4" KSNAME="НЕТ2" LEMMA="НЕТ">нет</W> 
+<W DOM="4" FEAT="S МН ЖЕН РОД НЕОД" ID="5" LEMMA="ЖАЛОБА" LINK="предик">жалоб</W>, 
+<W DOM="8" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="6" KSNAME="КАЗАТЬСЯ" LEMMA="КАЗАТЬСЯ" LINK="вводн">кажется</W>, 
+<W DOM="8" FEAT="S МН МУЖ ИМ ОД" ID="7" LEMMA="ГЕРОЙ" LINK="предик">герои</W> 
+<W DOM="4" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="8" LEMMA="ЧУВСТВОВАТЬ" LINK="сент-соч">чувствуют</W> 
+<W DOM="8" FEAT="S МН ВИН ОД" ID="9" LEMMA="СЕБЯ" LINK="1-компл">себя</W> 
+<W DOM="11" FEAT="ADV" ID="10" LEMMA="ВПОЛНЕ" LINK="огранич">вполне</W> 
+<W DOM="8" FEAT="A МН ТВОР" ID="11" LEMMA="БЛАГОПОЛУЧНЫЙ" LINK="2-компл">благополучными</W> 
+(<W DOM="11" FEAT="CONJ" ID="12" LEMMA="ХОТЯ" LINK="примыкат">хотя</W> 
+<W DOM="14" FEAT="A МН ИМ" ID="13" LEMMA="МНОГИЕ" LINK="опред">многие</W> 
+<W DOM="20" FEAT="S МН ЖЕН ИМ НЕОД" ID="14" LEMMA="ДЕТАЛЬ" LINK="предик">детали</W> 
+<W DOM="16" FEAT="S МН РОД ОД" ID="15" LEMMA="ОНИ" LINK="1-компл">их</W> 
+<W DOM="14" FEAT="S МН ЖЕН РОД НЕОД" ID="16" LEMMA="БИОГРАФИЯ" LINK="квазиагент">биографий</W> 
+<W DOM="20" FEAT="PR" ID="17" KSNAME="НА1" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="19" FEAT="A ЕД МУЖ ВИН НЕОД" ID="18" LEMMA="НАШ" LINK="опред">наш</W> 
+<W DOM="17" FEAT="S ЕД МУЖ ВИН НЕОД" ID="19" LEMMA="ВЗГЛЯД" LINK="предл">взгляд</W> 
+<W DOM="12" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="20" KSNAME="ВЫГЛЯДЕТЬ" LEMMA="ВЫГЛЯДЕТЬ" LINK="подч-союзн">выглядят</W> 
+<W DOM="22" FEAT="ADV" ID="21" LEMMA="ВПОЛНЕ" LINK="огранич">вполне</W> 
+<W DOM="20" FEAT="ADV" ID="22" LEMMA="ЧУДОВИЩНО" LINK="1-компл">чудовищно</W>), 
+<W DOM="8" FEAT="CONJ" ID="23" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="25" FEAT="A ЕД МУЖ ТВОР" ID="24" KSNAME="САМЫЙ" LEMMA="САМЫЙ" LINK="опред">самым</W> 
+<W DOM="26" FEAT="A ЕД МУЖ ТВОР" ID="25" KSNAME="ГЛАВНЫЙ" LEMMA="ГЛАВНЫЙ" LINK="опред">главным</W> 
+<W DOM="28" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="26" LEMMA="РЕЗУЛЬТАТ" LINK="присвяз">результатом</W> 
+<W DOM="26" FEAT="S ЕД МУЖ РОД НЕОД" ID="27" LEMMA="СПЕКТАКЛЬ" LINK="квазиагент">спектакля</W> 
+<W DOM="23" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="28" KSNAME="СТАНОВИТЬСЯ1" LEMMA="СТАНОВИТЬСЯ" LINK="соч-союзн">становится</W> 
+<W DOM="31" FEAT="A ЕД МУЖ ИМ" ID="29" KSNAME="ТОТ2" LEMMA="ТОТ" LINK="опред">тот</W> 
+<W DOM="31" FEAT="A ЕД МУЖ ИМ" ID="30" LEMMA="ЛИЧНЫЙ" LINK="опред">личный</W> 
+<W DOM="28" FEAT="S ЕД МУЖ ИМ НЕОД" ID="31" LEMMA="КОНТАКТ" LINK="предик">контакт</W>, 
+<W DOM="33" FEAT="S ЕД МУЖ ИМ" ID="32" LEMMA="КОТОРЫЙ" LINK="предик">который</W> 
+<W DOM="31" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="33" LEMMA="НАЛАЖИВАТЬСЯ" LINK="релят">налаживается</W> 
+<W DOM="33" FEAT="PR" ID="34" KSNAME="МЕЖДУ2" LEMMA="МЕЖДУ" LINK="несобст-агент">между</W> 
+<W DOM="34" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="35" LEMMA="АУДИТОРИЯ" LINK="предл">аудиторией</W> 
+<W DOM="35" FEAT="CONJ" ID="36" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="36" FEAT="S МН МУЖ ТВОР ОД" ID="37" LEMMA="АКТЕР" LINK="соч-союзн">актерами</W>.
+<LF LFARG="31" LFFUNC="_INCEPFUNC0" LFVAL="33"/>
+</S>
+<S ID="18">
+<W DOM="2" FEAT="A МН ИМ" ID="1" LEMMA="ЖИВОЙ" LINK="опред">Живые</W> 
+<W DOM="8" FEAT="S МН ЖЕН ИМ НЕОД" ID="2" KSNAME="ИСТОРИЯ2" LEMMA="ИСТОРИЯ" LINK="предик">истории</W> 
+<W DOM="2" FEAT="S МН МУЖ РОД ОД" ID="3" LEMMA="ЧЕЛОВЕК" LINK="квазиагент">людей</W>, 
+<W DOM="3" FEAT="V СОВ ПРИЧ ПРОШ МН РОД" ID="4" KSNAME="СТАНОВИТЬСЯ1" LEMMA="СТАНОВИТЬСЯ" LINK="опред">ставших</W> 
+<W DOM="7" FEAT="A МН ТВОР" ID="5" LEMMA="НАШ" LINK="опред">нашими</W> 
+<W DOM="7" FEAT="A МН ТВОР" ID="6" LEMMA="ЛИЧНЫЙ" LINK="опред">личными</W> 
+<W DOM="4" FEAT="S МН МУЖ ТВОР ОД" ID="7" KSNAME="ЗНАКОМЫЙ3" LEMMA="ЗНАКОМЫЙ" LINK="присвяз">знакомыми</W>, 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="8" LEMMA="МЕНЯТЬ">меняют</W> 
+<W DOM="8" FEAT="S ЕД МУЖ ВИН НЕОД" ID="9" LEMMA="ВЗГЛЯД" LINK="1-компл">взгляд</W>, 
+<W DOM="12" FEAT="S ЕД МУЖ ТВОР" ID="10" LEMMA="КОТОРЫЙ" LINK="обст">которым</W> 
+<W DOM="12" FEAT="S МН ИМ ОД" ID="11" LEMMA="МЫ" LINK="предик">мы</W> 
+<W DOM="9" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 1-Л" ID="12" LEMMA="СМОТРЕТЬ" LINK="релят">смотрим</W> 
+<W DOM="12" FEAT="ADV" ID="13" KSNAME="ВОКРУГ2" LEMMA="ВОКРУГ" LINK="обст">вокруг</W>.
+</S>
+<S CLASS="LF" ID="19">
+<W DOM="2" FEAT="A МН ВИН НЕОД" ID="1" KSNAME="ТОТ2" LEMMA="ТОТ" LINK="опред">Те</W> 
+<W DOM="3" FEAT="NUM ВИН НЕОД" ID="2" KSNAME="ТРИ" LEMMA="ТРИ" LINK="количест">три</W> 
+<W DOM="9" FEAT="S ЕД МУЖ РОД НЕОД" ID="3" LEMMA="СПЕКТАКЛЬ" LINK="1-компл">спектакля</W>, 
+<W DOM="7" FEAT="PR" ID="4" KSNAME="О2" LEMMA="О" LINK="1-несобст-компл">о</W> 
+<W DOM="4" FEAT="S МН ПР" ID="5" LEMMA="КОТОРЫЙ" LINK="предл">которых</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="6" LEMMA="Я" LINK="предик">я</W> 
+<W DOM="3" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 1-Л" ID="7" KSNAME="ВЕСТИ2" LEMMA="ВЕСТИ" LINK="релят">веду</W> 
+<W DOM="7" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="8" LEMMA="РЕЧЬ" LINK="1-компл">речь</W>, 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="9" LEMMA="ОБЪЕДИНЯТЬ">объединяет</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="10" KSNAME="ТЕМА" LEMMA="ТЕМА" LINK="предик">тема</W> - 
+<W DOM="12" FEAT="PART" ID="11" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="13" FEAT="PART" ID="12" KSNAME="ПРОСТО2" LEMMA="ПРОСТО" LINK="огранич">просто</W> 
+<W DOM="10" FEAT="PR" ID="13" KSNAME="О2" LEMMA="О" LINK="разъяснит">о</W> 
+<W DOM="13" FEAT="S ЕД ЖЕН ПР НЕОД" ID="14" LEMMA="ЖИЗНЬ" LINK="предл">жизни</W> 
+<W DOM="14" FEAT="PR" ID="15" KSNAME="НА2" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="15" FEAT="S ЕД ЖЕН ПР НЕОД" ID="16" LEMMA="ЧУЖБИНА" LINK="предл">чужбине</W>, 
+<W DOM="13" FEAT="CONJ" ID="17" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="17" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД ЖЕН ИМ" ID="18" LEMMA="КАСАТЬСЯ" LINK="соч-союзн">касающаяся</W> 
+<W DOM="23" FEAT="PR" ID="19" KSNAME="В2" LEMMA="В" LINK="огранич">в</W> 
+<W DOM="21" FEAT="ADV" ID="20" LEMMA="БОЛЕЕ" LINK="огранич">более</W> 
+<W DOM="22" FEAT="A ЕД МУЖ ПР" ID="21" LEMMA="ШИРОКИЙ" LINK="опред">широком</W> 
+<W DOM="19" FEAT="S ЕД МУЖ ПР НЕОД" ID="22" LEMMA="СМЫСЛ" LINK="предл">смысле</W> 
+<W DOM="18" FEAT="S ЕД ЖЕН РОД НЕОД" ID="23" LEMMA="СВОБОДА" LINK="1-компл">свободы</W> 
+<W DOM="23" FEAT="CONJ" ID="24" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="24" FEAT="S ЕД ЖЕН РОД НЕОД" ID="25" LEMMA="НЕВОЛЯ" LINK="соч-союзн">неволи</W>.
+<LF LFARG="8" LFFUNC="_OPER1" LFVAL="7"/>
+<LF LFARG="16" LFFUNC="_LOC" LFVAL="15"/>
+</S>
+<S CLASS="LF" ID="20">
+<W DOM="_root" FEAT="CONJ" ID="1" KSNAME="И1" LEMMA="И">И</W> 
+<W DOM="9" FEAT="A СРАВ" ID="2" LEMMA="ВАЖНЫЙ" LINK="присвяз">важнее</W> 
+<W DOM="2" FEAT="S ЕД СРЕД РОД НЕОД" ID="3" KSNAME="ВСЕ1" LEMMA="ВСЕ" LINK="сравнит">всего</W> 
+<W DOM="3" FEAT="PR" ID="4" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="8" FEAT="A ЕД МУЖ ПР" ID="5" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">этом</W> 
+"<W DOM="8" FEAT="A ЕД МУЖ ПР" ID="6" LEMMA="МИГРАНТСКИЙ" LINK="опред">мигрантском</W>" 
+<W DOM="8" FEAT="A ЕД МУЖ ПР" ID="7" LEMMA="СЦЕНИЧЕСКИЙ" LINK="опред">сценическом</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ПР НЕОД" ID="8" LEMMA="СЮЖЕТ" LINK="предл">сюжете</W> 
+<W DOM="1" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="9" KSNAME="СТАНОВИТЬСЯ1" LEMMA="СТАНОВИТЬСЯ" LINK="соч-союзн">стала</W> 
+<W DOM="14" FEAT="V СОВ СТРАД ПРИЧ ПРОШ ЕД ЖЕН ИМ" ID="10" LEMMA="ПРИВОЗИТЬ" LINK="опред">привезенная</W> 
+<W DOM="10" FEAT="PR" ID="11" KSNAME="НА1" LEMMA="НА" LINK="3-компл">на</W> 
+<W DOM="11" FEAT="S ЕД МУЖ ВИН НЕОД" ID="12" LEMMA="ФЕСТИВАЛЬ" LINK="предл">фестиваль</W> 
+<W DOM="12" FEAT="NID" ID="13" KSNAME="ФИКТ-ЛЕКС" LEMMA="NET" LINK="аппоз">NET</W> 
+"<W DOM="9" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="14" KSNAME="ПРОБА" LEMMA="ПРОБА" LINK="предик">Проба</W> 
+<W DOM="14" FEAT="S ЕД МУЖ РОД НЕОД" ID="15" LEMMA="ГРУНТ" LINK="1-компл">грунта</W> 
+<W DOM="14" FEAT="PR" ID="16" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="16" FEAT="S ЕД МУЖ ПР НЕОД" ID="17" LEMMA="КАЗАХСТАН" LINK="предл">Казахстане</W>" 
+<W DOM="14" FEAT="S ЕД ЖЕН РОД НЕОД" ID="18" LEMMA="КОМПАНИЯ" LINK="атриб">компании</W> 
+"<W DOM="20" FEAT="S ЕД МУЖ ИМ НЕОД" ID="19" LEMMA="РИМИНИ" LINK="композ">Римини</W> 
+<W DOM="18" FEAT="S ЕД МУЖ ИМ НЕОД" ID="20" LEMMA="ПРОТОКОЛ" LINK="аппоз">Протокол</W>", 
+<W DOM="22" FEAT="ADV" ID="21" LEMMA="ВСЕГДА" LINK="обст">всегда</W> 
+<W DOM="18" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД ЖЕН РОД" ID="22" LEMMA="РАБОТАТЬ" LINK="опред">работающей</W> 
+<W DOM="22" FEAT="PR" ID="23" KSNAME="НА2" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="23" FEAT="S ЕД ЖЕН ПР НЕОД" ID="24" LEMMA="ГРАНИЦА" LINK="предл">границе</W> 
+<W DOM="26" FEAT="A ЕД МУЖ РОД" ID="25" LEMMA="ДОКУМЕНТАЛЬНЫЙ" LINK="опред">документального</W> 
+<W DOM="24" FEAT="S ЕД МУЖ РОД НЕОД" ID="26" LEMMA="ТЕАТР" LINK="квазиагент">театра</W> 
+<W DOM="26" FEAT="CONJ" ID="27" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="27" FEAT="S ЕД МУЖ РОД НЕОД" ID="28" LEMMA="ПЕРФОРМАНС" LINK="соч-союзн">перформанса</W>.
+<LF LFARG="17" LFFUNC="_LOC" LFVAL="16"/>
+<LF LFARG="24" LFFUNC="_LOC" LFVAL="23"/>
+</S>
+<S ID="21">
+<W DOM="7" FEAT="PR" ID="1" KSNAME="В2" LEMMA="В" LINK="вводн">В</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН ПР НЕОД" ID="2" LEMMA="СУЩНОСТЬ" LINK="предл">сущности</W>, 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="3" LEMMA="РЕЖИССЕР" LINK="предик">режиссер</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="4" LEMMA="ШТЕФАН" LINK="аппоз">Штефан</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ ОД" ID="5" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="КЭГИ" LINK="аппоз">Кэги</W> 
+<W DOM="7" FEAT="ADV" ID="6" KSNAME="ТУТ1" LEMMA="ТУТ" LINK="обст">тут</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="7" LEMMA="ОКАЗЫВАТЬСЯ">оказывается</W> 
+<W DOM="11" FEAT="PR" ID="8" KSNAME="В2" LEMMA="В" LINK="огранич">в</W> 
+<W DOM="10" FEAT="A ЕД ЖЕН ПР" ID="9" LEMMA="БОЛЬШИЙ" LINK="опред">большей</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ПР НЕОД" ID="10" LEMMA="СТЕПЕНЬ" LINK="предл">степени</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ТВОР ОД" ID="11" LEMMA="ИССЛЕДОВАТЕЛЬ" LINK="присвяз">исследователем</W>, 
+<W DOM="9" FEAT="CONJ" ID="12" KSNAME="ЧЕМ" LEMMA="ЧЕМ" LINK="сравнит">чем</W> 
+<W DOM="12" FEAT="S ЕД МУЖ ТВОР ОД" ID="13" LEMMA="ПОСТАНОВЩИК" LINK="сравн-союзн">постановщиком</W>: 
+<W DOM="15" FEAT="S ЕД МУЖ ВИН ОД" ID="14" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">его</W> 
+<W DOM="13" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="15" KSNAME="ЗАНИМАТЬ3" LEMMA="ЗАНИМАТЬ" LINK="разъяснит">занимала</W> 
+<W DOM="17" FEAT="A ЕД ЖЕН ИМ" ID="16" LEMMA="СТРАННЫЙ" LINK="опред">странная</W> 
+<W DOM="15" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="17" LEMMA="СВЯЗЬ" LINK="предик">связь</W> 
+<W DOM="17" FEAT="S МН МУЖ РОД ОД" ID="18" LEMMA="НЕМЕЦ" LINK="квазиагент">немцев</W> 
+<W DOM="17" FEAT="PR" ID="19" KSNAME="С3" LEMMA="С" LINK="1-компл">с</W> 
+<W DOM="21" FEAT="A ЕД МУЖ ТВОР" ID="20" LEMMA="ДАЛЕКИЙ" LINK="опред">далеким</W> 
+<W DOM="19" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="21" LEMMA="КАЗАХСТАН" LINK="предл">Казахстаном</W>, 
+<W DOM="23" FEAT="PART" ID="22" KSNAME="И2" LEMMA="И" LINK="огранич">и</W> 
+<W DOM="24" FEAT="S ЕД МУЖ ИМ ОД" ID="23" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="15" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="24" KSNAME="БРАТЬСЯ1" LEMMA="БРАТЬСЯ" LINK="сент-соч">взялся</W> 
+<W DOM="26" FEAT="S ЕД ЖЕН ВИН ОД" ID="25" LEMMA="ОНА" LINK="1-компл">ее</W> 
+<W DOM="24" FEAT="V НЕСОВ ИНФ" ID="26" LEMMA="ИЗУЧАТЬ" LINK="1-компл">изучать</W>, 
+<W DOM="24" FEAT="CONJ" ID="27" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="30" FEAT="S МН МУЖ ВИН НЕОД" ID="28" LEMMA="РЕЗУЛЬТАТ" LINK="1-компл">результаты</W> 
+<W DOM="28" FEAT="S МН МУЖ РОД НЕОД" ID="29" LEMMA="ПОИСК" LINK="квазиагент">поисков</W> 
+<W DOM="27" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="30" LEMMA="ДЕЛАТЬ" LINK="соч-союзн">сделал</W> 
+<W DOM="30" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="31" LEMMA="СПЕКТАКЛЬ" LINK="2-компл">спектаклем</W>.
+</S>
+<S CLASS="LF" ID="22">
+<W DOM="16" FEAT="PR" ID="1" LEMMA="ИЗ" LINK="2-компл">Из</W> 
+<W DOM="3" FEAT="ADV" ID="2" KSNAME="ПРИМЕРНО1" LEMMA="ПРИМЕРНО" LINK="огранич">примерно</W> 
+<W DOM="7" FEAT="NUM РОД" ID="3" LEMMA="ПЯТЬДЕСЯТ" LINK="количест">пятидесяти</W> 
+<W DOM="7" FEAT="V СОВ СТРАД ПРИЧ ПРОШ МН РОД" ID="4" KSNAME="НАХОДИТЬ1" LEMMA="НАХОДИТЬ" LINK="опред">найденных</W> 
+<W DOM="4" FEAT="PR" ID="5" KSNAME="В2" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН ПР НЕОД" ID="6" LEMMA="ГЕРМАНИЯ" LINK="предл">Германии</W> 
+<W DOM="1" FEAT="S МН МУЖ РОД ОД" ID="7" LEMMA="ЧЕЛОВЕК" LINK="предл">человек</W>, 
+<W DOM="11" FEAT="ADV" ID="8" LEMMA="ТАК" LINK="обст">так</W> 
+<W DOM="8" FEAT="CONJ" ID="9" KSNAME="ИЛИ1" LEMMA="ИЛИ" LINK="сочин">или</W> 
+<W DOM="9" FEAT="ADV" ID="10" KSNAME="ИНАЧЕ1" LEMMA="ИНАЧЕ" LINK="соч-союзн">иначе</W> 
+<W DOM="7" FEAT="V НЕСОВ ПРИЧ НЕПРОШ МН РОД" ID="11" LEMMA="ИМЕТЬ" LINK="опред">имеющих</W> 
+<W DOM="11" FEAT="S ЕД СРЕД ВИН НЕОД" ID="12" KSNAME="ОТНОШЕНИЕ1" LEMMA="ОТНОШЕНИЕ" LINK="1-компл">отношение</W> 
+<W DOM="11" FEAT="PR" ID="13" LEMMA="К" LINK="2-компл">к</W> 
+<W DOM="13" FEAT="S ЕД МУЖ ДАТ НЕОД" ID="14" LEMMA="КАЗАХСТАН" LINK="предл">Казахстану</W>, 
+<W DOM="16" FEAT="S ЕД МУЖ ИМ ОД" ID="15" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="16" LEMMA="ВЫБИРАТЬ">выбрал</W> 
+<W DOM="16" FEAT="NUM ВИН ОД" ID="17" LEMMA="ПЯТЕРО" LINK="1-компл">пятерых</W>, 
+<W DOM="16" FEAT="CONJ" ID="18" KSNAME="И1" LEMMA="И" LINK="сент-соч">и</W> 
+<W DOM="22" FEAT="A ЕД МУЖ ИМ" ID="19" LEMMA="КАЖДЫЙ" LINK="предик">каждый</W> 
+<W DOM="19" FEAT="PR" ID="20" LEMMA="ИЗ" LINK="электив">из</W> 
+<W DOM="20" FEAT="S МН РОД ОД" ID="21" LEMMA="ОНИ" LINK="предл">них</W> 
+<W DOM="18" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="22" LEMMA="РАССКАЗЫВАТЬ" LINK="соч-союзн">рассказал</W> 
+<W DOM="22" FEAT="S МН ДАТ ОД" ID="23" LEMMA="МЫ" LINK="2-компл">нам</W> 
+<W DOM="25" FEAT="A ЕД ЖЕН ВИН" ID="24" LEMMA="СВОЙ" LINK="опред">свою</W> 
+<W DOM="22" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="25" KSNAME="ИСТОРИЯ2" LEMMA="ИСТОРИЯ" LINK="1-компл">историю</W>, 
+<W DOM="27" FEAT="PART" ID="26" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="22" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="27" LEMMA="СКРЫВАТЬ" LINK="обст">скрывая</W> 
+<W DOM="29" FEAT="A ЕД СРЕД РОД" ID="28" KSNAME="НАСТОЯЩИЙ" LEMMA="НАСТОЯЩИЙ" LINK="опред">настоящего</W> 
+<W DOM="27" FEAT="S ЕД СРЕД РОД НЕОД" ID="29" LEMMA="ИМЯ" LINK="1-компл">имени</W>.
+<LF LFARG="12" LFFUNC="_OPER1" LFVAL="11"/>
+<LF LFARG="25" LFFUNC="_OPER1" LFVAL="22"/>
+<LF LFARG="6" LFFUNC="_LOC" LFVAL="5"/>
+</S>
+<S ID="23">
+<W DOM="13" FEAT="S ЕД МУЖ ИМ НЕОД" ID="1" LEMMA="ПРЕДМЕТ" LINK="предик">Предмет</W>, 
+<W DOM="6" FEAT="S ЕД МУЖ ИМ" ID="2" LEMMA="КОТОРЫЙ" LINK="предик">который</W> 
+<W DOM="6" FEAT="PR" ID="3" KSNAME="НА1" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="5" FEAT="A ЕД МУЖ ВИН НЕОД" ID="4" LEMMA="ПЕРВЫЙ" LINK="опред">первый</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ВИН НЕОД" ID="5" LEMMA="ВЗГЛЯД" LINK="предл">взгляд</W> 
+<W DOM="1" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="6" KSNAME="ВЫГЛЯДЕТЬ" LEMMA="ВЫГЛЯДЕТЬ" LINK="релят">выглядел</W> 
+<W DOM="8" FEAT="PART" ID="7" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="9" FEAT="ADV" ID="8" LEMMA="СЛИШКОМ" LINK="огранич">слишком</W> 
+<W DOM="6" FEAT="ADV" ID="9" LEMMA="ЗЛОБОДНЕВНО" LINK="1-компл">злободневно</W>, 
+<W DOM="13" FEAT="PR" ID="10" KSNAME="НА2" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="12" FEAT="A ЕД СРЕД ПР" ID="11" KSNAME="САМЫЙ" LEMMA="САМЫЙ" LINK="опред">самом</W> 
+<W DOM="10" FEAT="S ЕД СРЕД ПР НЕОД" ID="12" KSNAME="ДЕЛО1" LEMMA="ДЕЛО" LINK="предл">деле</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="13" KSNAME="ПОДВИГАТЬ3" LEMMA="ПОДВИГАТЬ">подвигал</W> 
+<W DOM="13" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="14" LEMMA="ПУБЛИКА" LINK="1-компл">публику</W> 
+<W DOM="13" FEAT="PR" ID="15" LEMMA="К" LINK="2-компл">к</W> 
+<W DOM="17" FEAT="A МН ДАТ" ID="16" LEMMA="БОЛЬШОЙ" LINK="опред">большим</W> 
+<W DOM="15" FEAT="S МН СРЕД ДАТ НЕОД" ID="17" LEMMA="ОБОБЩЕНИЕ" LINK="предл">обобщениям</W> 
+<W DOM="13" FEAT="CONJ" ID="18" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="18" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="19" KSNAME="ЗАСТАВЛЯТЬ1" LEMMA="ЗАСТАВЛЯТЬ" LINK="соч-союзн">заставлял</W> 
+<W DOM="19" FEAT="V НЕСОВ ИНФ" ID="20" LEMMA="ДУМАТЬ" LINK="2-компл">думать</W>.
+</S>
+<S ID="24">
+<W DOM="3" FEAT="S ЕД СРЕД ИМ НЕОД" ID="1" KSNAME="ВСЕ1" LEMMA="ВСЕ" LINK="предик">Все</W> 
+<W DOM="3" FEAT="ADV" ID="2" LEMMA="ОЧЕНЬ" LINK="огранич">очень</W> 
+<W DOM="_root" FEAT="A КР ЕД СРЕД" ID="3" KSNAME="ПРОСТОЙ1" LEMMA="ПРОСТОЙ">просто</W>: 
+<W DOM="3" FEAT="PART" ID="4" LEMMA="ВОТ" LINK="разъяснит">вот</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ ОД" ID="5" LEMMA="СТАРИК" LINK="предик">старик</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ ОД" ID="6" LEMMA="ГЕНРИХ" LINK="аппоз">Генрих</W> 
+<W DOM="6" FEAT="PR" ID="7" LEMMA="ИЗ" LINK="атриб">из</W> 
+<W DOM="7" FEAT="S ЕД МУЖ РОД НЕОД" ID="8" LEMMA="СЕМИПАЛАТИНСК" LINK="предл">Семипалатинска</W>.
+</S>
+<S CLASS="LF" ID="25">
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="1" KSNAME="ОН" LEMMA="ОН" LINK="предик">Он</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="НАЧИНАТЬ">начинает</W> 
+<W DOM="2" FEAT="V НЕСОВ ИНФ" ID="3" KSNAME="ГОВОРИТЬ2" LEMMA="ГОВОРИТЬ" LINK="1-компл">говорить</W> 
+<W DOM="3" FEAT="ADV" ID="4" LEMMA="ПО-НЕМЕЦКИ" LINK="3-компл">по-немецки</W> 
+<W DOM="3" FEAT="PR" ID="5" KSNAME="С3" LEMMA="С" LINK="обст">с</W> 
+<W DOM="8" FEAT="A ЕД МУЖ ТВОР" ID="6" KSNAME="СИЛЬНЫЙ1" LEMMA="СИЛЬНЫЙ" LINK="опред">сильным</W> 
+<W DOM="8" FEAT="A ЕД МУЖ ТВОР" ID="7" KSNAME="РУССКИЙ1" LEMMA="РУССКИЙ" LINK="опред">русским</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="8" LEMMA="АКЦЕНТ" LINK="предл">акцентом</W>, 
+<W DOM="2" FEAT="CONJ" ID="9" LEMMA="НО" LINK="сочин">но</W> 
+<W DOM="11" FEAT="ADV" ID="10" LEMMA="ПОТОМ" LINK="обст">потом</W> 
+<W DOM="9" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="11" KSNAME="ПЕРЕХОДИТЬ1" LEMMA="ПЕРЕХОДИТЬ" LINK="соч-союзн">переходит</W> 
+<W DOM="11" FEAT="PR" ID="12" KSNAME="НА1" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="12" FEAT="A ЕД МУЖ ВИН НЕОД" ID="13" KSNAME="РУССКИЙ1" LEMMA="РУССКИЙ" LINK="предл">русский</W>.
+<LF LFARG="8" LFFUNC="_OPER1" LFPREP="5" LFVAL="3"/>
+<LF LFARG="8" LFFUNC="_MAGN" LFVAL="6"/>
+</S>
+<S ID="26">
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="1" LEMMA="РАССКАЗЫВАТЬ">Рассказывает</W> 
+<W DOM="1" FEAT="PR" ID="2" KSNAME="О2" LEMMA="О" LINK="3-компл">о</W> 
+<W DOM="4" FEAT="A ЕД ЖЕН ПР" ID="3" LEMMA="СВОЙ" LINK="опред">своей</W> 
+<W DOM="2" FEAT="S ЕД ЖЕН ПР НЕОД" ID="4" LEMMA="ЖИЗНЬ" LINK="предл">жизни</W>: 
+<W DOM="4" FEAT="PR" ID="5" KSNAME="О2" LEMMA="О" LINK="разъяснит">о</W> 
+<W DOM="5" FEAT="S ЕД СРЕД ПР НЕОД" ID="6" KSNAME="ТО1" LEMMA="ТО" LINK="предл">том</W>, 
+<W DOM="6" FEAT="CONJ" ID="7" KSNAME="КАК1" LEMMA="КАК" LINK="эксплет">как</W> 
+<W DOM="13" FEAT="PR" ID="8" KSNAME="С1" LEMMA="С" LINK="1-компл">с</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН РОД НЕОД" ID="9" LEMMA="УКРАИНА" LINK="предл">Украины</W> 
+<W DOM="13" FEAT="PR" ID="10" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="11" LEMMA="ВОЙНА" LINK="предл">войну</W> 
+<W DOM="13" FEAT="A ЕД МУЖ ТВОР" ID="12" LEMMA="МАЛЕНЬКИЙ" LINK="суб-копр">маленьким</W> 
+<W DOM="7" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="13" KSNAME="ПОПАДАТЬ1" LEMMA="ПОПАДАТЬ" LINK="подч-союзн">попал</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="С3" LEMMA="С" LINK="обст">с</W> 
+<W DOM="14" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="15" LEMMA="СЕМЬЯ" LINK="предл">семьей</W> 
+<W DOM="13" FEAT="PR" ID="16" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="16" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="17" LEMMA="ГЕРМАНИЯ" LINK="предл">Германию</W>, 
+<W DOM="7" FEAT="CONJ" ID="18" KSNAME="КАК1" LEMMA="КАК" LINK="сочин">как</W> 
+<W DOM="18" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="19" LEMMA="ТЕРЯТЬ" LINK="подч-союзн">потерял</W> 
+<W DOM="19" FEAT="S ЕД МУЖ ВИН ОД" ID="20" LEMMA="БРАТ" LINK="1-компл">брата</W>, 
+<W DOM="18" FEAT="CONJ" ID="21" KSNAME="КАК1" LEMMA="КАК" LINK="сочин">как</W> 
+<W DOM="23" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="22" LEMMA="СЕМЬЯ" LINK="предик">семья</W> 
+<W DOM="21" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="23" LEMMA="ВЕРНУТЬСЯ" LINK="подч-союзн">вернулась</W> 
+<W DOM="23" FEAT="PR" ID="24" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="24" FEAT="S ЕД МУЖ ВИН НЕОД" ID="25" LEMMA="СОЮЗ" LINK="предл">Союз</W>, 
+<W DOM="24" FEAT="CONJ" ID="26" LEMMA="НО" LINK="сочин">но</W> 
+<W DOM="28" FEAT="ADV" ID="27" LEMMA="ТЕПЕРЬ" LINK="огранич">теперь</W> 
+<W DOM="26" FEAT="PR" ID="28" KSNAME="В1" LEMMA="В" LINK="соч-союзн">в</W> 
+<W DOM="28" FEAT="S ЕД МУЖ ВИН НЕОД" ID="29" LEMMA="АРХАНГЕЛЬСК" LINK="предл">Архангельск</W>, 
+<W DOM="23" FEAT="CONJ" ID="30" KSNAME="КАК1" LEMMA="КАК" LINK="сент-соч">как</W> 
+<W DOM="30" FEAT="V СОВ ИЗЪЯВ ПРОШ МН" ID="31" LEMMA="САЖАТЬ" LINK="подч-союзн">посадили</W> 
+<W DOM="31" FEAT="S ЕД МУЖ ВИН ОД" ID="32" KSNAME="ОТЕЦ1" LEMMA="ОТЕЦ" LINK="1-компл">отца</W> - 
+<W DOM="32" FEAT="S ЕД МУЖ ВИН ОД" ID="33" LEMMA="БАПТИСТ" LINK="аппоз">баптиста</W>, 
+<W DOM="31" FEAT="CONJ" ID="34" KSNAME="КАК1" LEMMA="КАК" LINK="сент-соч">как</W> 
+<W DOM="36" FEAT="S ЕД ЖЕН ДАТ ОД" ID="35" LEMMA="МАТЬ" LINK="1-компл">матери</W> 
+<W DOM="34" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="36" KSNAME="ПРИХОДИТЬСЯ1" LEMMA="ПРИХОДИТЬСЯ" LINK="подч-союзн">пришлось</W> 
+<W DOM="36" FEAT="V СОВ ИНФ" ID="37" KSNAME="ОТДАВАТЬ1" LEMMA="ОТДАВАТЬ" LINK="предик">отдать</W> 
+<W DOM="37" FEAT="S МН МУЖ ВИН ОД" ID="38" LEMMA="РЕБЕНОК" LINK="1-компл">детей</W> 
+<W DOM="37" FEAT="PR" ID="39" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="39" FEAT="S ЕД МУЖ ВИН НЕОД" ID="40" LEMMA="ДЕТДОМ" LINK="предл">детдом</W>, 
+<W DOM="37" FEAT="CONJ" ID="41" KSNAME="ПОСКОЛЬКУ1" LEMMA="ПОСКОЛЬКУ" LINK="обст">поскольку</W> 
+<W DOM="46" FEAT="S МН ВИН ОД" ID="42" LEMMA="ОНИ" LINK="1-компл">их</W> 
+<W DOM="41" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="43" KSNAME="БЫТЬ" LEMMA="БЫТЬ" LINK="подч-союзн">было</W> 
+<W DOM="43" FEAT="V" ID="44" KSNAME="НЕ4" LEMMA="НЕ" LINK="вспом">не</W>
+<W DOM="46" FEAT="S ЕД СРЕД ТВОР НЕОД" ID="45" KSNAME="ЧТО2" LEMMA="ЧТО" LINK="2-компл">чем</W> 
+<W DOM="43" FEAT="V НЕСОВ ИНФ" ID="46" KSNAME="КОРМИТЬ" LEMMA="КОРМИТЬ" LINK="предик">кормить</W>, 
+<W DOM="37" FEAT="CONJ" ID="47" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="56" FEAT="ADV" ID="48" LEMMA="ПОТОМ" LINK="обст">потом</W>, 
+<W DOM="56" FEAT="CONJ" ID="49" KSNAME="КОГДА2" LEMMA="КОГДА" LINK="обст">когда</W> 
+<W DOM="51" FEAT="S ЕД МУЖ ИМ ОД" ID="50" KSNAME="ОТЕЦ1" LEMMA="ОТЕЦ" LINK="предик">отец</W> 
+<W DOM="49" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="51" LEMMA="ВЕРНУТЬСЯ" LINK="подч-союзн">вернулся</W> 
+<W DOM="51" FEAT="PR" ID="52" LEMMA="ИЗ" LINK="1-компл">из</W> 
+<W DOM="52" FEAT="S ЕД ЖЕН РОД НЕОД" ID="53" LEMMA="ТЮРЬМА" LINK="предл">тюрьмы</W>, 
+<W DOM="55" FEAT="A ЕД ЖЕН ИМ" ID="54" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">вся</W> 
+<W DOM="56" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="55" LEMMA="СЕМЬЯ" LINK="предик">семья</W> 
+<W DOM="47" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="56" KSNAME="ПЕРЕЕЗЖАТЬ2" LEMMA="ПЕРЕЕЗЖАТЬ" LINK="соч-союзн">переехала</W> 
+<W DOM="56" FEAT="PR" ID="57" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="57" FEAT="S ЕД МУЖ ВИН НЕОД" ID="58" LEMMA="КАЗАХСТАН" LINK="предл">Казахстан</W> - 
+<W DOM="63" FEAT="PR" ID="59" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="59" FEAT="S ЕД ЖЕН ПР НЕОД" ID="60" LEMMA="РОССИЯ" LINK="предл">России</W> 
+<W DOM="62" FEAT="S МН ДАТ ОД" ID="61" LEMMA="ОНИ" LINK="дат-субъект">им</W> 
+<W DOM="63" FEAT="V НЕСОВ ИНФ" ID="62" LEMMA="ЖИТЬ" LINK="предик">жить</W> 
+<W DOM="58" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="63" KSNAME="БЫТЬ" LEMMA="БЫТЬ" LINK="разъяснит">было</W> 
+<W DOM="63" FEAT="V" ID="64" KSNAME="НЕ4" LEMMA="НЕ" LINK="вспом">не</W>
+<W DOM="62" FEAT="ADV" ID="65" LEMMA="ГДЕ" LINK="1-компл">где</W>.
+<LF LFARG="60" LFFUNC="_LOC" LFVAL="59"/>
+</S>
+<S CLASS="LF" ID="27">
+<W DOM="3" FEAT="A ЕД ЖЕН ВИН" ID="1" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">Всю</W> 
+<W DOM="3" FEAT="A ЕД ЖЕН ВИН" ID="2" KSNAME="ВЗРОСЛЫЙ1" LEMMA="ВЗРОСЛЫЙ" LINK="опред">взрослую</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="3" LEMMA="ЖИЗНЬ" LINK="длительн">жизнь</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ ОД" ID="4" LEMMA="ГЕНРИХ" LINK="предик">Генрих</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="5" LEMMA="РАБОТАТЬ">работал</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ТВОР ОД" ID="6" LEMMA="ВОДИТЕЛЬ" LINK="2-компл">водителем</W> 
+<W DOM="6" FEAT="S ЕД МУЖ РОД НЕОД" ID="7" LEMMA="БЕНЗОВОЗ" LINK="1-компл">бензовоза</W>, 
+<W DOM="5" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="8" LEMMA="КРУТИТЬ" LINK="сочин">крутил</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="9" LEMMA="БАРАНКА" LINK="1-компл">баранку</W> 
+<W DOM="8" FEAT="PR" ID="10" KSNAME="НА2" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="12" FEAT="A МН ПР" ID="11" LEMMA="ДАЛЬНИЙ" LINK="опред">дальних</W> 
+<W DOM="10" FEAT="S МН ЖЕН ПР НЕОД" ID="12" LEMMA="ТРАССА" LINK="предл">трассах</W>, 
+<W DOM="17" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="13" LEMMA="РАССКАЗЫВАТЬ" LINK="обст">рассказывая</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="О2" LEMMA="О" LINK="3-компл">об</W> 
+<W DOM="14" FEAT="S ЕД СРЕД ПР НЕОД" ID="15" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предл">этом</W>, 
+<W DOM="17" FEAT="S ЕД МУЖ ИМ ОД" ID="16" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="8" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="17" LEMMA="САДИТЬСЯ" LINK="сент-соч">садится</W> 
+<W DOM="17" FEAT="PR" ID="18" KSNAME="НА1" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="18" FEAT="S ЕД МУЖ ВИН НЕОД" ID="19" LEMMA="ВЕЛОТРЕНАЖЕР" LINK="предл">велотренажер</W>, 
+<W DOM="17" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="20" LEMMA="КРУТИТЬ" LINK="сочин">крутит</W> 
+<W DOM="20" FEAT="S ЕД МУЖ ВИН НЕОД" ID="21" LEMMA="РУЛЬ" LINK="1-компл">руль</W>, 
+<W DOM="20" FEAT="CONJ" ID="22" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="31" FEAT="PR" ID="23" KSNAME="ЗА2" LEMMA="ЗА" LINK="обст">за</W> 
+<W DOM="23" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="24" LEMMA="СПИНА" LINK="предл">спиной</W> 
+<W DOM="24" FEAT="PR" ID="25" KSNAME="У1" LEMMA="У" LINK="атриб">у</W> 
+<W DOM="25" FEAT="S ЕД МУЖ РОД ОД" ID="26" KSNAME="НЕГО1" LEMMA="ОН" LINK="предл">него</W> 
+<W DOM="31" FEAT="PR" ID="27" KSNAME="НА2" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="27" FEAT="S ЕД МУЖ ПР НЕОД" ID="28" LEMMA="ЭКРАН" LINK="предл">экране</W> 
+<W DOM="30" FEAT="A ЕД МУЖ ИМ" ID="29" LEMMA="ОГРОМНЫЙ" LINK="опред">огромный</W> 
+<W DOM="31" FEAT="S ЕД МУЖ ИМ НЕОД" ID="30" LEMMA="ТРАК" LINK="предик">трак</W> 
+<W DOM="22" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="31" LEMMA="ЕХАТЬ" LINK="соч-союзн">едет</W> 
+<W DOM="31" FEAT="PR" ID="32" KSNAME="ПО1" LEMMA="ПО" LINK="4-компл">по</W> 
+<W DOM="35" FEAT="A МН ДАТ" ID="33" KSNAME="РОДНОЙ" LEMMA="РОДНОЙ" LINK="опред">родным</W> 
+<W DOM="35" FEAT="V СОВ СТРАД ПРИЧ ПРОШ МН ДАТ" ID="34" LEMMA="РАЗДОЛБАТЬ" LINK="опред">раздолбанным</W> 
+<W DOM="32" FEAT="S МН ЖЕН ДАТ НЕОД" ID="35" LEMMA="ДОРОГА" LINK="предл">дорогам</W> 
+<W DOM="35" FEAT="PR" ID="36" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="36" FEAT="S ЕД МУЖ ПР НЕОД" ID="37" LEMMA="РАЙОН" LINK="предл">районе</W> 
+<W DOM="37" FEAT="S ЕД МУЖ РОД НЕОД" ID="38" LEMMA="СЕМИПАЛАТИНСК" LINK="квазиагент">Семипалатинска</W>, 
+<W DOM="31" FEAT="CONJ" ID="39" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="41" FEAT="S ЕД МУЖ ИМ ОД" ID="40" LEMMA="ГЕНРИХ" LINK="предик">Генрих</W> 
+<W DOM="39" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="41" LEMMA="ПЕТЬ" LINK="соч-союзн">поет</W>, 
+<W DOM="41" FEAT="CONJ" ID="42" KSNAME="КАК1" LEMMA="КАК" LINK="сравнит">как</W> 
+<W DOM="44" FEAT="S ЕД МУЖ ИМ ОД" ID="43" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="42" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="44" LEMMA="ПЕТЬ" LINK="сравн-союзн">пел</W> 
+<W DOM="44" FEAT="ADV" ID="45" LEMMA="КОГДА-ТО" LINK="обст">когда-то</W> 
+<W DOM="44" FEAT="PR" ID="46" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="46" FEAT="S ЕД МУЖ ПР НЕОД" ID="47" LEMMA="ПУТЬ" LINK="предл">пути</W>, 
+<W DOM="44" FEAT="CONJ" ID="48" LEMMA="ЧТОБЫ" LINK="обст">чтобы</W> 
+<W DOM="50" FEAT="PART" ID="49" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="48" FEAT="V СОВ ИНФ" ID="50" KSNAME="ЗАСЫПАТЬ1" LEMMA="ЗАСЫПАТЬ" LINK="инф-союзн">заснуть</W>, 
+"<W DOM="52" FEAT="INTJ" ID="51" LEMMA="ЭХ" LINK="вводн">Эх</W>, 
+<W DOM="44" FEAT="S МН ЖЕН ИМ НЕОД" ID="52" LEMMA="ДОРОГА" LINK="разъяснит">дороги</W>…".
+<LF LFARG="12" LFFUNC="_LOC" LFVAL="10"/>
+<LF LFARG="37" LFFUNC="_LOC" LFVAL="36"/>
+</S>
+<S CLASS="LF" ID="28">
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="1" KSNAME="ОН" LEMMA="ОН" LINK="предик">Он</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" KSNAME="ГОВОРИТЬ1" LEMMA="ГОВОРИТЬ">говорит</W>, 
+<W DOM="2" FEAT="CONJ" ID="3" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="5" FEAT="PART" ID="4" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="3" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="5" KSNAME="ЗНАТЬ1" LEMMA="ЗНАТЬ" LINK="подч-союзн">знает</W>, 
+<W DOM="9" FEAT="S ЕД СРЕД ИМ НЕОД" ID="6" KSNAME="ЧТО2" LEMMA="ЧТО" LINK="опред">что</W> 
+<W DOM="6" FEAT="PART" ID="7" KSNAME="ЭТО2" LEMMA="ЭТО" LINK="огранич">это</W> 
+<W DOM="6" FEAT="PR" ID="8" KSNAME="ЗА1" LEMMA="ЗА" LINK="вспом">за</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="9" LEMMA="МАШИНА" LINK="предик">машина</W> 
+<W DOM="5" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="10" LEMMA="ЕХАТЬ" LINK="1-компл">едет</W> 
+<W DOM="10" FEAT="PR" ID="11" KSNAME="ЗА2" LEMMA="ЗА" LINK="обст">за</W> 
+<W DOM="11" FEAT="S ЕД МУЖ ТВОР ОД" ID="12" KSNAME="НЕГО1" LEMMA="ОН" LINK="предл">ним</W>, 
+<W DOM="18" FEAT="PR" ID="13" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="15" FEAT="S ЕД МУЖ РОД ОД" ID="14" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">его</W> 
+<W DOM="13" FEAT="S ЕД СРЕД ВИН НЕОД" ID="15" LEMMA="ВРЕМЯ" LINK="предл">время</W> 
+<W DOM="18" FEAT="A МН РОД" ID="16" LEMMA="ТАКОЙ" LINK="предик">таких</W> 
+<W DOM="18" FEAT="PART" ID="17" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="5" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="18" KSNAME="БЫТЬ" LEMMA="БЫТЬ" LINK="сент-соч">было</W>, 
+<W DOM="18" FEAT="CONJ" ID="19" LEMMA="НО" LINK="сент-соч">но</W> 
+<W DOM="22" FEAT="PR" ID="20" KSNAME="ПО1" LEMMA="ПО" LINK="обст">по</W> 
+<W DOM="20" FEAT="S ЕД ЖЕН ДАТ НЕОД" ID="21" LEMMA="КОНСТРУКЦИЯ" LINK="предл">конструкции</W> 
+<W DOM="19" FEAT="A КР ЕД СРЕД" ID="22" LEMMA="ЯСНЫЙ" LINK="соч-союзн">ясно</W>, 
+<W DOM="22" FEAT="CONJ" ID="23" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="предик">что</W> 
+<W DOM="25" FEAT="PART" ID="24" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="26" FEAT="S ЕД МУЖ ВИН НЕОД" ID="25" LEMMA="БЕНЗИН" LINK="1-компл">бензин</W> 
+<W DOM="23" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="26" KSNAME="ВЕЗТИ1" LEMMA="ВЕЗТИ" LINK="подч-союзн">везет</W>.
+<LF LFARG="15" LFFUNC="_LOC" LFVAL="13"/>
+</S>
+<S ID="29">
+<W DOM="7" FEAT="PR" ID="1" KSNAME="В2" LEMMA="В" LINK="обст">В</W> 
+<W DOM="3" FEAT="A МН ПР" ID="2" KSNAME="ФИКТ-ПРИЛ" LEMMA="90-Й" LINK="опред">90-х</W> 
+<W DOM="1" FEAT="S МН МУЖ ПР НЕОД" ID="3" LEMMA="ГОД" LINK="предл">годах</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="4" LEMMA="ГЕНРИХ" LINK="предик">Генрих</W>, 
+<W DOM="4" FEAT="CONJ" ID="5" KSNAME="КАК1" LEMMA="КАК" LINK="сравнит">как</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ ОД" ID="6" LEMMA="НЕМЕЦ" LINK="сравн-союзн">немец</W>, 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="7" LEMMA="УЕЗЖАТЬ">уехал</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="С3" LEMMA="С" LINK="обст">с</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="9" LEMMA="СЕМЬЯ" LINK="предл">семьей</W> 
+<W DOM="7" FEAT="PR" ID="10" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="11" LEMMA="ГЕРМАНИЯ" LINK="предл">Германию</W>.
+</S>
+<S ID="30">
+<W DOM="3" FEAT="ADV" ID="1" LEMMA="ТЕПЕРЬ" LINK="обст">Теперь</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="2" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="3" LEMMA="РАБОТАТЬ">работает</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ТВОР ОД" ID="4" KSNAME="ДВОРНИК1" LEMMA="ДВОРНИК" LINK="2-компл">дворником</W>, 
+<W DOM="6" FEAT="S ЕД ЖЕН ИМ ОД" ID="5" LEMMA="ЖЕНА" LINK="предик">жена</W> - 
+<W DOM="3" FEAT="S ЕД ЖЕН ИМ ОД" ID="6" LEMMA="УБОРЩИЦА" LINK="сент-соч">уборщица</W>, 
+<W DOM="10" FEAT="PR" ID="7" KSNAME="У1" LEMMA="У" LINK="обст">у</W> 
+<W DOM="7" FEAT="S МН РОД ОД" ID="8" LEMMA="ОНИ" LINK="предл">них</W> 
+<W DOM="10" FEAT="S ЕД СРЕД ИМ НЕОД" ID="9" KSNAME="ВСЕ1" LEMMA="ВСЕ" LINK="предик">все</W> 
+<W DOM="6" FEAT="A КР ЕД СРЕД" ID="10" LEMMA="ХОРОШИЙ" LINK="сент-соч">хорошо</W>.
+</S>
+<S CLASS="LF" ID="31">
+<W DOM="_root" FEAT="PART" ID="1" LEMMA="ВОТ">Вот</W> 
+<W DOM="3" FEAT="A ЕД ЖЕН ИМ" ID="2" LEMMA="МОЛОЖАВЫЙ" LINK="опред">моложавая</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН ИМ ОД" ID="3" KSNAME="ЕЛЕНА" LEMMA="ЕЛЕНА" LINK="предик">Елена</W> 
+<W DOM="3" FEAT="PR" ID="4" LEMMA="ИЗ" LINK="атриб">из</W> 
+<W DOM="4" FEAT="S ЕД МУЖ РОД НЕОД" ID="5" LEMMA="ДЖЕЗКАЗГАН" LINK="предл">Джезказгана</W>, 
+<W DOM="7" FEAT="S ЕД ЖЕН ИМ ОД" ID="6" LEMMA="ОНА" LINK="предик">она</W> 
+<W DOM="3" FEAT="S ЕД ЖЕН ИМ ОД" ID="7" LEMMA="НЕМКА" LINK="сочин">немка</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="ПО1" LEMMA="ПО" LINK="атриб">по</W> 
+<W DOM="10" FEAT="A ЕД ЖЕН ДАТ" ID="9" LEMMA="ОТЦОВСКИЙ" LINK="опред">отцовской</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ДАТ НЕОД" ID="10" LEMMA="ЛИНИЯ" LINK="предл">линии</W>, 
+<W DOM="7" FEAT="CONJ" ID="11" LEMMA="НО" LINK="сент-соч">но</W> 
+<W DOM="16" FEAT="PR" ID="12" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="12" FEAT="S ЕД МУЖ ПР НЕОД" ID="13" LEMMA="ДОМ" LINK="предл">доме</W> 
+<W DOM="16" FEAT="ADV" ID="14" LEMMA="ПО-НЕМЕЦКИ" LINK="3-компл">по-немецки</W> 
+<W DOM="16" FEAT="PART" ID="15" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="11" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="16" KSNAME="ГОВОРИТЬ2" LEMMA="ГОВОРИТЬ" LINK="соч-союзн">говорили</W>, 
+<W DOM="16" FEAT="PR" ID="17" KSNAME="У1" LEMMA="У" LINK="сент-соч">у</W> 
+<W DOM="17" FEAT="S ЕД ЖЕН РОД ОД" ID="18" LEMMA="ОНА" LINK="предл">нее</W> 
+<W DOM="21" FEAT="A ЕД МУЖ ИМ" ID="19" LEMMA="ЗВОНКИЙ" LINK="опред">звонкий</W> 
+<W DOM="21" FEAT="A ЕД МУЖ ИМ" ID="20" LEMMA="ПИОНЕРСКИЙ" LINK="опред">пионерский</W> 
+<W DOM="17" FEAT="S ЕД МУЖ ИМ НЕОД" ID="21" LEMMA="ХАРАКТЕР" LINK="предик">характер</W>, 
+<W DOM="23" FEAT="S ЕД ЖЕН ИМ ОД" ID="22" LEMMA="ОНА" LINK="предик">она</W> 
+<W DOM="17" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="23" LEMMA="РАССКАЗЫВАТЬ" LINK="сент-соч">рассказывает</W>, 
+<W DOM="30" FEAT="A МН ИМ" ID="24" LEMMA="КАКОЙ" LINK="опред">какие</W> 
+<W DOM="29" FEAT="PR" ID="25" KSNAME="У1" LEMMA="У" LINK="обст">у</W> 
+<W DOM="25" FEAT="S МН РОД ОД" ID="26" LEMMA="ОНИ" LINK="предл">них</W> 
+<W DOM="29" FEAT="PR" ID="27" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="27" FEAT="S ЕД МУЖ ПР НЕОД" ID="28" LEMMA="ГОРОД" LINK="предл">городе</W> 
+<W DOM="23" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="29" KSNAME="БЫТЬ" LEMMA="БЫТЬ" LINK="1-компл">были</W> 
+<W DOM="29" FEAT="S МН МУЖ ИМ НЕОД" ID="30" KSNAME="ПРОСПЕКТ1" LEMMA="ПРОСПЕКТ" LINK="предик">проспекты</W>, 
+<W DOM="33" FEAT="ADV" ID="31" KSNAME="КАК2" LEMMA="КАК" LINK="обст">как</W> 
+<W DOM="33" FEAT="S ЕД ЖЕН ИМ ОД" ID="32" LEMMA="ОНА" LINK="предик">она</W> 
+<W DOM="29" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="33" KSNAME="БЫТЬ" LEMMA="БЫТЬ" LINK="сент-соч">была</W> 
+<W DOM="33" FEAT="S ЕД МУЖ ТВОР ОД" ID="34" LEMMA="КОМАНДИР" LINK="присвяз">командиром</W> 
+<W DOM="34" FEAT="S ЕД МУЖ РОД НЕОД" ID="35" LEMMA="ОТРЯД" LINK="1-компл">отряда</W> 
+<W DOM="33" FEAT="CONJ" ID="36" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="36" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="37" LEMMA="МЕЧТАТЬ" LINK="соч-союзн">мечтала</W> 
+<W DOM="37" FEAT="V НЕСОВ ИНФ" ID="38" KSNAME="БЫТЬ" LEMMA="БЫТЬ" LINK="1-компл">быть</W> 
+<W DOM="38" FEAT="S ЕД МУЖ ТВОР ОД" ID="39" LEMMA="КОСМОНАВТ" LINK="присвяз">космонавтом</W>.
+<LF LFARG="13" LFFUNC="_LOC" LFVAL="12"/>
+<LF LFARG="28" LFFUNC="_LOC" LFVAL="27"/>
+</S>
+<S ID="32">
+<W DOM="_root" FEAT="PR" ID="1" KSNAME="НА2" LEMMA="НА">На</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ПР НЕОД" ID="2" LEMMA="ЭКРАН" LINK="предл">экране</W> - 
+<W DOM="5" FEAT="A МН ИМ" ID="3" LEMMA="СТАРЫЙ" LINK="опред">старые</W> 
+<W DOM="5" FEAT="A МН ИМ" ID="4" LEMMA="ЛЮБИТЕЛЬСКИЙ" LINK="опред">любительские</W> 
+<W DOM="1" FEAT="S МН МУЖ ИМ НЕОД" ID="5" LEMMA="КАДРЫ" LINK="предик">кадры</W>, 
+<W DOM="7" FEAT="A ЕД МУЖ ИМ" ID="6" LEMMA="СОВЕТСКИЙ" LINK="опред">советский</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ НЕОД" ID="7" LEMMA="ГОРОД" LINK="сочин">город</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="8" FEAT="S ЕД МУЖ ПР НЕОД" ID="9" KSNAME="ДУХ1" LEMMA="ДУХ" LINK="предл">духе</W> 
+<W DOM="9" FEAT="A МН РОД" ID="10" LEMMA="ШЕСТИДЕСЯТЫЙ" LINK="атриб">шестидесятых</W> 
+<W DOM="7" FEAT="CONJ" ID="11" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="13" FEAT="A ЕД ЖЕН ИМ" ID="12" LEMMA="МАЛЕНЬКИЙ" LINK="опред">маленькая</W> 
+<W DOM="11" FEAT="S ЕД ЖЕН ИМ ОД" ID="13" LEMMA="ДЕВОЧКА" LINK="соч-союзн">девочка</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="ВПЕРЕДИ1" LEMMA="ВПЕРЕДИ" LINK="атриб">впереди</W> 
+<W DOM="16" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД МУЖ РОД" ID="15" LEMMA="МАРШИРОВАТЬ" LINK="опред">марширующего</W> 
+<W DOM="14" FEAT="S ЕД МУЖ РОД НЕОД" ID="16" LEMMA="ОТРЯД" LINK="предл">отряда</W> 
+<W DOM="16" FEAT="S МН МУЖ РОД ОД" ID="17" LEMMA="ПИОНЕР" LINK="1-компл">пионеров</W>.
+</S>
+<S ID="33">
+<W DOM="11" FEAT="PR" ID="1" KSNAME="С1" LEMMA="С" LINK="обст">С</W> 
+<W DOM="1" FEAT="S ЕД МУЖ РОД НЕОД" ID="2" LEMMA="ЭКРАН" LINK="предл">экрана</W> 
+<W DOM="11" FEAT="PR" ID="3" LEMMA="ИЗ" LINK="обст">из</W> 
+<W DOM="5" FEAT="A ЕД МУЖ РОД" ID="4" LEMMA="СЕГОДНЯШНИЙ" LINK="опред">сегодняшнего</W> 
+<W DOM="3" FEAT="S ЕД МУЖ РОД НЕОД" ID="5" LEMMA="ДЖЕЗКАЗГАН" LINK="предл">Джезказгана</W> 
+<W DOM="11" FEAT="PR" ID="6" KSNAME="С3" LEMMA="С" LINK="обст">с</W> 
+<W DOM="10" FEAT="A ЕД МУЖ ТВОР" ID="7" LEMMA="ТАКОЙ" LINK="опред">таким</W> 
+<W DOM="7" FEAT="PART" ID="8" LEMMA="ЖЕ" LINK="огранич">же</W> 
+<W DOM="10" FEAT="A ЕД МУЖ ТВОР" ID="9" LEMMA="ПИОНЕРСКИЙ" LINK="опред">пионерским</W> 
+<W DOM="6" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="10" LEMMA="ЗАДОР" LINK="предл">задором</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="11" KSNAME="ГОВОРИТЬ2" LEMMA="ГОВОРИТЬ">говорит</W> 
+<W DOM="11" FEAT="PR" ID="12" KSNAME="С3" LEMMA="С" LINK="1-компл">с</W> 
+<W DOM="12" FEAT="S ЕД ЖЕН ТВОР ОД" ID="13" KSNAME="ЕЛЕНА" LEMMA="ЕЛЕНА" LINK="предл">Еленой</W> 
+<W DOM="16" FEAT="V СОВ ПРИЧ ПРОШ ЕД ЖЕН ИМ" ID="14" LEMMA="СТАРЕТЬ" LINK="опред">постаревшая</W> 
+<W DOM="16" FEAT="A ЕД ЖЕН ИМ" ID="15" KSNAME="БЫВШИЙ" LEMMA="БЫВШИЙ" LINK="опред">бывшая</W> 
+<W DOM="11" FEAT="S ЕД ЖЕН ИМ ОД" ID="16" LEMMA="ДИРЕКТОРША" LINK="предик">директорша</W> 
+<W DOM="18" FEAT="A ЕД МУЖ РОД" ID="17" LEMMA="ШКОЛЬНЫЙ" LINK="опред">школьного</W> 
+<W DOM="16" FEAT="S ЕД МУЖ РОД НЕОД" ID="18" LEMMA="МУЗЕЙ" LINK="1-компл">музея</W> 
+<W DOM="18" FEAT="S ЕД ЖЕН РОД НЕОД" ID="19" LEMMA="КОСМОНАВТИКА" LINK="1-компл">космонавтики</W>, 
+<W DOM="11" FEAT="CONJ" ID="20" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="20" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="21" LEMMA="ДАРИТЬ" LINK="соч-союзн">дарит</W> 
+<W DOM="21" FEAT="PR" ID="22" KSNAME="НА1" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="22" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="23" LEMMA="ПАМЯТЬ" LINK="предл">память</W> 
+<W DOM="21" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="24" KSNAME="ПАРА1" LEMMA="ПАРА" LINK="1-компл">пару</W> 
+<W DOM="26" FEAT="A МН РОД" ID="25" KSNAME="ЛЮБИМЫЙ1" LEMMA="ЛЮБИМЫЙ" LINK="опред">любимых</W> 
+<W DOM="24" FEAT="S МН МУЖ РОД НЕОД" ID="26" LEMMA="ЭКСПОНАТ" LINK="квазиагент">экспонатов</W>.
+</S>
+<S ID="34">
+<W DOM="2" FEAT="ADV" ID="1" LEMMA="ТАК" LINK="обст">Так</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="2" LEMMA="ПЕРЕДАВАТЬ">передают</W> 
+<W DOM="4" FEAT="A МН ВИН НЕОД" ID="3" LEMMA="СВОЙ" LINK="опред">свои</W> 
+<W DOM="2" FEAT="S МН МУЖ ВИН НЕОД" ID="4" KSNAME="ДАР1" LEMMA="ДАР" LINK="1-компл">дары</W> 
+<W DOM="2" FEAT="PR" ID="5" KSNAME="С3" LEMMA="С" LINK="обст">с</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="6" LEMMA="ПРИВЕТ" LINK="предл">приветом</W> 
+<W DOM="6" FEAT="ADV" ID="7" LEMMA="ИЗДАЛЕКА" LINK="3-компл">издалека</W> 
+<W DOM="9" FEAT="A ЕД МУЖ ДАТ" ID="8" LEMMA="КАКОЙ-НИБУДЬ" LINK="опред">какому-нибудь</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ДАТ ОД" ID="9" KSNAME="ВЕДУЩИЙ1" LEMMA="ВЕДУЩИЙ" LINK="2-компл">ведущему</W> 
+<W DOM="11" FEAT="A ЕД ЖЕН РОД" ID="10" LEMMA="РАЗВЛЕКАТЕЛЬНЫЙ" LINK="опред">развлекательной</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН РОД НЕОД" ID="11" LEMMA="ПРОГРАММА" LINK="1-компл">программы</W>; 
+<W DOM="2" FEAT="PART" ID="12" LEMMA="ВОТ" LINK="сент-соч">вот</W> 
+<W DOM="12" FEAT="S МН ИМ ОД" ID="13" LEMMA="ОНИ" LINK="предик">они</W>, 
+<W DOM="15" FEAT="S МН ВИН ОД" ID="14" LEMMA="ОНИ" LINK="1-компл">их</W> 
+<W DOM="12" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="15" KSNAME="ВЫНОСИТЬ1" LEMMA="ВЫНОСИТЬ" LINK="сент-соч">выносят</W> 
+<W DOM="15" FEAT="PR" ID="16" KSNAME="НА1" LEMMA="НА" LINK="3-компл">на</W> 
+<W DOM="16" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="17" LEMMA="СЦЕНА" LINK="предл">сцену</W>: 
+<W DOM="17" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="18" LEMMA="ЧЕКАНКА" LINK="разъяснит">чеканка</W> 
+<W DOM="18" FEAT="PR" ID="19" KSNAME="НА1" LEMMA="НА" LINK="атриб">на</W> 
+<W DOM="21" FEAT="A ЕД ЖЕН ВИН" ID="20" LEMMA="КОСМИЧЕСКИЙ" LINK="опред">космическую</W> 
+<W DOM="19" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="21" KSNAME="ТЕМА" LEMMA="ТЕМА" LINK="предл">тему</W> 
+<W DOM="18" FEAT="CONJ" ID="22" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="22" FEAT="S ЕД МУЖ ИМ НЕОД" ID="23" LEMMA="ПОРТРЕТ" LINK="соч-союзн">портрет</W> 
+<W DOM="23" FEAT="S ЕД МУЖ РОД ОД" ID="24" KSNAME="ГАГАРИН1" LEMMA="ГАГАРИН" LINK="1-компл">Гагарина</W>.
+</S>
+<S CLASS="LF" ID="35">
+<W DOM="_root" FEAT="CONJ" ID="1" KSNAME="А1" LEMMA="А">А</W> 
+<W DOM="6" FEAT="PART" ID="2" KSNAME="ЕЩЕ1" LEMMA="ЕЩЕ" LINK="огранич">еще</W> 
+<W DOM="6" FEAT="PR" ID="3" KSNAME="НА2" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ПР НЕОД" ID="4" LEMMA="ЭКРАН" LINK="предл">экране</W> 
+<W DOM="6" FEAT="S МН ИМ ОД" ID="5" LEMMA="МЫ" LINK="предик">мы</W> 
+<W DOM="1" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 1-Л" ID="6" LEMMA="ВИДЕТЬ" LINK="соч-союзн">видим</W> 
+<W DOM="6" FEAT="S ЕД МУЖ ВИН ОД" ID="7" LEMMA="БРАТ" LINK="1-компл">брата</W> 
+<W DOM="7" FEAT="S ЕД ЖЕН РОД ОД" ID="8" KSNAME="ЕЛЕНА" LEMMA="ЕЛЕНА" LINK="1-компл">Елены</W>, 
+<W DOM="7" FEAT="V СОВ ПРИЧ ПРОШ ЕД МУЖ ВИН ОД" ID="9" KSNAME="ОСТАВАТЬСЯ1" LEMMA="ОСТАВАТЬСЯ" LINK="опред">оставшегося</W> 
+<W DOM="9" FEAT="PR" ID="10" KSNAME="В2" LEMMA="В" LINK="присвяз">в</W> 
+<W DOM="10" FEAT="S ЕД МУЖ ПР НЕОД" ID="11" LEMMA="КАЗАХСТАН" LINK="предл">Казахстане</W> - 
+<W DOM="13" FEAT="S ЕД МУЖ ИМ ОД" ID="12" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="6" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="13" LEMMA="СМОТРЕТЬ" LINK="разъяснит">смотрит</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="В1" LEMMA="В" LINK="1-компл">в</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ВИН НЕОД" ID="15" LEMMA="ЗАЛ" LINK="предл">зал</W>, 
+<W DOM="13" FEAT="CONJ" ID="16" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="18" FEAT="ADV" ID="17" LEMMA="ПОТОМ" LINK="обст">потом</W> 
+<W DOM="16" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="18" KSNAME="ИДТИ1" LEMMA="ИДТИ" LINK="соч-союзн">идет</W> 
+<W DOM="18" FEAT="PR" ID="19" KSNAME="ПО1" LEMMA="ПО" LINK="3-компл">по</W> 
+<W DOM="19" FEAT="S ЕД МУЖ ДАТ НЕОД" ID="20" LEMMA="СНЕГ" LINK="предл">снегу</W> 
+<W DOM="18" FEAT="PR" ID="21" KSNAME="НА1" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="21" FEAT="S ЕД СРЕД ВИН НЕОД" ID="22" LEMMA="КЛАДБИЩЕ" LINK="предл">кладбище</W>, 
+<W DOM="24" FEAT="ADV" ID="23" LEMMA="ГДЕ" LINK="2-компл">где</W> 
+<W DOM="22" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР МН" ID="24" LEMMA="ХОРОНИТЬ" LINK="релят">похоронены</W> 
+<W DOM="24" FEAT="S МН МУЖ ИМ ОД" ID="25" LEMMA="РОДИТЕЛЬ" LINK="предик">родители</W>.
+<LF LFARG="11" LFFUNC="_LOC" LFVAL="10"/>
+</S>
+<S ID="36">
+<W DOM="3" FEAT="V НЕСОВ ИНФ" ID="1" LEMMA="УЕЗЖАТЬ" LINK="1-компл">Уезжать</W> 
+<W DOM="3" FEAT="PART" ID="2" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="3" LEMMA="ХОТЕТЬ">хочет</W> - 
+<W DOM="5" FEAT="ADV" ID="4" LEMMA="КУДА" LINK="2-компл">куда</W> 
+<W DOM="3" FEAT="V НЕСОВ ИНФ" ID="5" LEMMA="ЕХАТЬ" LINK="разъяснит">ехать</W> 
+<W DOM="5" FEAT="PR" ID="6" LEMMA="ОТ" LINK="1-компл">от</W> 
+<W DOM="8" FEAT="A МН РОД" ID="7" LEMMA="СВОЙ" LINK="опред">своих</W> 
+<W DOM="6" FEAT="S МН ЖЕН РОД НЕОД" ID="8" LEMMA="МОГИЛА" LINK="предл">могил</W>?
+</S>
+<S CLASS="LF" ID="37">
+<W DOM="2" FEAT="S ЕД ЖЕН ИМ ОД" ID="1" KSNAME="ЕЛЕНА" LEMMA="ЕЛЕНА" LINK="предик">Елена</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="РАССКАЗЫВАТЬ">рассказывает</W>, 
+<W DOM="2" FEAT="CONJ" ID="3" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="3" FEAT="PR" ID="4" KSNAME="У1" LEMMA="У" LINK="подч-союзн">у</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН РОД ОД" ID="5" LEMMA="ОНА" LINK="предл">нее</W> 
+<W DOM="7" FEAT="ADV" ID="6" LEMMA="ОЧЕНЬ" LINK="огранич">очень</W> 
+<W DOM="8" FEAT="A ЕД ЖЕН ИМ" ID="7" LEMMA="ИНТЕРЕСНЫЙ" LINK="опред">интересная</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="8" KSNAME="РАБОТА2" LEMMA="РАБОТА" LINK="предик">работа</W> 
+<W DOM="8" FEAT="PR" ID="9" KSNAME="В3" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="9" FEAT="S ЕД МУЖ МЕСТН НЕОД" ID="10" LEMMA="АЭРОПОРТ" LINK="предл">аэропорту</W>, 
+<W DOM="12" FEAT="S ЕД ЖЕН ИМ ОД" ID="11" LEMMA="ОНА" LINK="предик">она</W> 
+<W DOM="4" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="12" KSNAME="ОТПРАВЛЯТЬ1" LEMMA="ОТПРАВЛЯТЬ" LINK="сент-соч">отправляет</W> 
+<W DOM="16" FEAT="A МН ВИН НЕОД" ID="13" LEMMA="РОССИЙСКИЙ" LINK="опред">российские</W> 
+<W DOM="13" FEAT="CONJ" ID="14" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="14" FEAT="A МН ВИН НЕОД" ID="15" LEMMA="КАЗАХСКИЙ" LINK="соч-союзн">казахские</W> 
+<W DOM="12" FEAT="S МН МУЖ ВИН НЕОД" ID="16" LEMMA="РЕЙС" LINK="1-компл">рейсы</W>.
+<LF LFARG="8" LFFUNC="_BON" LFVAL="7"/>
+<LF LFARG="10" LFFUNC="_LOC" LFVAL="9"/>
+</S>
+<S ID="38">
+<W DOM="_root" FEAT="CONJ" ID="1" KSNAME="А1" LEMMA="А">А</W> 
+<W DOM="3" FEAT="ADV" ID="2" LEMMA="ПОТОМ" LINK="обст">потом</W> 
+<W DOM="1" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="3" LEMMA="ПРИЗНАВАТЬСЯ" LINK="соч-союзн">признается</W>, 
+<W DOM="3" FEAT="CONJ" ID="4" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="6" FEAT="ADV" ID="5" LEMMA="НЕДАВНО" LINK="обст">недавно</W> 
+<W DOM="4" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР ЕД ЖЕН" ID="6" LEMMA="УВОЛЬНЯТЬ" LINK="подч-союзн">уволена</W>.
+</S>
+<S ID="39">
+<W DOM="4" FEAT="S МН ЖЕН ИМ НЕОД" ID="1" LEMMA="ЦЕНА" LINK="предик">Цены</W> 
+<W DOM="1" FEAT="PR" ID="2" KSNAME="НА1" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ВИН НЕОД" ID="3" LEMMA="БЕНЗИН" LINK="предл">бензин</W> 
+<W DOM="_root" FEAT="A МН ИМ" ID="4" LEMMA="ТАКОЙ">такие</W>, 
+<W DOM="4" FEAT="CONJ" ID="5" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="7" FEAT="A МН ИМ" ID="6" LEMMA="КАЗАХСКИЙ" LINK="опред">казахские</W> 
+<W DOM="9" FEAT="S МН ЖЕН ИМ НЕОД" ID="7" LEMMA="АВИАКОМПАНИЯ" LINK="предик">авиакомпании</W> 
+<W DOM="9" FEAT="ADV" ID="8" LEMMA="ВЕЧНО" LINK="обст">вечно</W> 
+<W DOM="5" FEAT="PR" ID="9" KSNAME="В2" LEMMA="В" LINK="подч-союзн">в</W> 
+<W DOM="9" FEAT="S МН МУЖ ПР НЕОД" ID="10" KSNAME="ДОЛГ1" LEMMA="ДОЛГ" LINK="предл">долгах</W>, 
+<W DOM="13" FEAT="S МН МУЖ ВИН НЕОД" ID="11" LEMMA="РЕЙС" LINK="1-компл">рейсы</W> 
+<W DOM="9" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="12" KSNAME="ПРИХОДИТЬСЯ1" LEMMA="ПРИХОДИТЬСЯ" LINK="сент-соч">приходится</W> 
+<W DOM="12" FEAT="V НЕСОВ ИНФ" ID="13" LEMMA="ОТМЕНЯТЬ" LINK="предик">отменять</W>.
+</S>
+<S ID="40">
+<W DOM="2" FEAT="ADV" ID="1" LEMMA="СНОВА" LINK="обст">Снова</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="ПОЯВЛЯТЬСЯ" NODETYPE="FANTOM"/>
+<W DOM="2" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="3" LEMMA="НЕФТЬ" LINK="предик">нефть</W>.
+</S>
+<S ID="41">
+<W DOM="7" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="1" KSNAME="ГОВОРИТЬ1" LEMMA="ГОВОРИТЬ" LINK="обст">Говоря</W> 
+<W DOM="1" FEAT="PR" ID="2" KSNAME="О2" LEMMA="О" LINK="3-компл">о</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ПР НЕОД" ID="3" LEMMA="КАЗАХСТАН" LINK="предл">Казахстане</W>, 
+<W DOM="7" FEAT="PR" ID="4" LEMMA="ОТ" LINK="1-компл">от</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН РОД НЕОД" ID="5" LEMMA="НЕФТЬ" LINK="предл">нефти</W> 
+<W DOM="7" FEAT="PART" ID="6" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ НЕПРОШ ЕД 2-Л" ID="7" KSNAME="УХОДИТЬ1" LEMMA="УХОДИТЬ">уйдешь</W>, 
+<W DOM="9" FEAT="S ЕД МУЖ ИМ ОД" ID="8" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="КЭГИ" LINK="предик">Кэги</W> 
+<W DOM="7" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="9" LEMMA="ХОТЕТЬ" LINK="сент-соч">хочет</W>, 
+<W DOM="9" FEAT="CONJ" ID="10" LEMMA="ЧТОБЫ" LINK="1-компл">чтобы</W> 
+<W DOM="12" FEAT="A ЕД СРЕД ИМ" ID="11" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">это</W> 
+<W DOM="13" FEAT="S ЕД СРЕД ИМ НЕОД" ID="12" LEMMA="ОЩУЩЕНИЕ" LINK="предик">ощущение</W> 
+<W DOM="10" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="13" KSNAME="СТАНОВИТЬСЯ1" LEMMA="СТАНОВИТЬСЯ" LINK="подч-союзн">стало</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="НА2" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="14" FEAT="S ЕД ЖЕН ПР НЕОД" ID="15" LEMMA="СЦЕНА" LINK="предл">сцене</W> 
+<W DOM="13" FEAT="A ЕД СРЕД ТВОР" ID="16" LEMMA="МАТЕРИАЛЬНЫЙ" LINK="присвяз">материальным</W>, 
+<W DOM="9" FEAT="PR" ID="17" KSNAME="НА2" LEMMA="НА" LINK="сент-соч">на</W> 
+<W DOM="17" FEAT="S ЕД МУЖ ПР НЕОД" ID="18" LEMMA="ЭКРАН" LINK="предл">экране</W> - 
+<W DOM="20" FEAT="A МН ИМ" ID="19" LEMMA="НЕФТЯНОЙ" LINK="опред">нефтяные</W> 
+<W DOM="17" FEAT="S МН МУЖ ИМ НЕОД" ID="20" LEMMA="ФАКЕЛ" LINK="предик">факелы</W>, 
+<W DOM="17" FEAT="CONJ" ID="21" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="23" FEAT="S МН МУЖ ИМ НЕОД" ID="22" LEMMA="ПОДМОСТКИ" LINK="предик">подмостки</W> 
+<W DOM="21" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР МН" ID="23" LEMMA="ПОКРЫВАТЬ" LINK="соч-союзн">покрыты</W> 
+<W DOM="26" FEAT="A МН ТВОР" ID="24" LEMMA="СТРАННЫЙ" LINK="опред">странными</W> 
+<W DOM="26" FEAT="A МН ТВОР" ID="25" LEMMA="РЕЗИНОВЫЙ" LINK="опред">резиновыми</W> 
+<W DOM="23" FEAT="S МН МУЖ ТВОР НЕОД" ID="26" LEMMA="КОВРИК" LINK="2-компл">ковриками</W>, 
+<W DOM="26" FEAT="V СОВ СТРАД ПРИЧ ПРОШ МН ТВОР" ID="27" LEMMA="ДЕЛАТЬ" LINK="опред">сделанными</W> 
+<W DOM="27" FEAT="PR" ID="28" LEMMA="ИЗ" LINK="3-компл">из</W> 
+<W DOM="28" FEAT="S МН МУЖ РОД НЕОД" ID="29" LEMMA="ПРОДУКТ" LINK="предл">продуктов</W> 
+<W DOM="29" FEAT="S ЕД ЖЕН РОД НЕОД" ID="30" LEMMA="НЕФТЕПЕРЕРАБОТКА" LINK="квазиагент">нефтепереработки</W>.
+</S>
+<S ID="42">
+<W DOM="4" FEAT="CONJ" ID="1" LEMMA="ЕСЛИ" LINK="обст">Если</W> 
+<W DOM="3" FEAT="S МН ВИН ОД" ID="2" LEMMA="ОНИ" LINK="1-компл">их</W> 
+<W DOM="1" FEAT="V СОВ ИНФ" ID="3" LEMMA="ОТКИДЫВАТЬ" LINK="инф-союзн">откинуть</W>, 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="4" KSNAME="ОТКРЫВАТЬСЯ" LEMMA="ОТКРЫВАТЬСЯ">открывается</W> 
+<W DOM="13" FEAT="CONJ" ID="5" KSNAME="ТО2" LEMMA="ТО" LINK="соотнос">то</W> 
+<W DOM="7" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД ЖЕН ИМ" ID="6" LEMMA="ЧАВКАТЬ" LINK="опред">чавкающая</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="7" LEMMA="ГРЯЗЬ" LINK="предик">грязь</W>, 
+<W DOM="11" FEAT="PR" ID="8" KSNAME="ПО1" LEMMA="ПО" LINK="обст">по</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ДАТ" ID="9" LEMMA="КОТОРЫЙ" LINK="предл">которой</W> 
+<W DOM="11" FEAT="S ЕД МУЖ ИМ ОД" ID="10" LEMMA="ГЕРОЙ" LINK="предик">герой</W> 
+<W DOM="7" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="11" LEMMA="ХЛЮПАТЬ" LINK="релят">хлюпает</W> 
+<W DOM="11" FEAT="S МН МУЖ ТВОР НЕОД" ID="12" LEMMA="САПОГ" LINK="1-компл">сапогами</W>, 
+<W DOM="7" FEAT="CONJ" ID="13" KSNAME="ТО2" LEMMA="ТО" LINK="сочин">то</W> 
+<W DOM="13" FEAT="S ЕД МУЖ ИМ НЕОД" ID="14" LEMMA="СНЕГ" LINK="соч-союзн">снег</W>, 
+<W DOM="14" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД МУЖ ИМ" ID="15" LEMMA="СКРИПЕТЬ" LINK="опред">скрипящий</W> 
+<W DOM="15" FEAT="PR" ID="16" KSNAME="ПОД2" LEMMA="ПОД" LINK="обст">под</W> 
+<W DOM="16" FEAT="S МН МУЖ ТВОР НЕОД" ID="17" LEMMA="КАБЛУК" LINK="предл">каблуками</W>, 
+<W DOM="14" FEAT="CONJ" ID="18" KSNAME="ТО2" LEMMA="ТО" LINK="сочин">то</W> 
+<W DOM="18" FEAT="S ЕД МУЖ ИМ НЕОД" ID="19" LEMMA="ГРАВИЙ" LINK="соч-союзн">гравий</W>, 
+<W DOM="22" FEAT="PR" ID="20" KSNAME="ПО1" LEMMA="ПО" LINK="3-компл">по</W> 
+<W DOM="20" FEAT="S ЕД МУЖ ДАТ" ID="21" LEMMA="КОТОРЫЙ" LINK="предл">которому</W> 
+<W DOM="19" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="22" LEMMA="МАРШИРОВАТЬ" LINK="релят">маршируют</W> 
+<W DOM="24" FEAT="A МН ИМ" ID="23" KSNAME="ДЕТСКИЙ" LEMMA="ДЕТСКИЙ" LINK="опред">детские</W> 
+<W DOM="22" FEAT="S МН ЖЕН ИМ НЕОД" ID="24" LEMMA="САНДАЛИЯ" LINK="предик">сандалии</W>.
+</S>
+<S ID="43">
+<W DOM="5" FEAT="ADV" ID="1" KSNAME="ПОХОЖЕ" LEMMA="ПОХОЖЕ" LINK="вводн">Похоже</W>, 
+<W DOM="3" FEAT="A ЕД СРЕД ИМ" ID="2" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">все</W> 
+<W DOM="5" FEAT="S ЕД СРЕД ИМ НЕОД" ID="3" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предик">это</W> 
+<W DOM="5" FEAT="PART" ID="4" LEMMA="ТОЖЕ" LINK="огранич">тоже</W> 
+<W DOM="_root" FEAT="PR" ID="5" LEMMA="ИЗ">из</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН РОД НЕОД" ID="6" LEMMA="НЕФТЬ" LINK="предл">нефти</W>.
+</S>
+<S CLASS="LF" ID="44">
+<W DOM="5" FEAT="S ЕД МУЖ ИМ НЕОД" ID="1" LEMMA="КАЗАХСТАН" LINK="пролепт">Казахстан</W> 
+<W DOM="1" FEAT="S МН МУЖ ТВОР НЕОД" ID="2" LEMMA="ГЛАЗ" LINK="атриб">глазами</W> 
+<W DOM="4" FEAT="A ЕД МУЖ РОД" ID="3" KSNAME="ПРИЕЗЖИЙ1" LEMMA="ПРИЕЗЖИЙ" LINK="опред">приезжего</W> 
+<W DOM="2" FEAT="S ЕД МУЖ РОД ОД" ID="4" LEMMA="НЕМЕЦ" LINK="квазиагент">немца</W> - 
+<W DOM="6" FEAT="S ЕД СРЕД ИМ НЕОД" ID="5" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предик">это</W> 
+<W DOM="_root" FEAT="S ЕД МУЖ ИМ НЕОД" ID="6" LEMMA="РАССКАЗ">рассказ</W> 
+<W DOM="6" FEAT="S ЕД МУЖ РОД ОД" ID="7" KSNAME="ГЕРД1" LEMMA="ГЕРД" LINK="квазиагент">Герда</W>, 
+<W DOM="9" FEAT="A ЕД МУЖ РОД" ID="8" LEMMA="СЕДОЙ" LINK="опред">седого</W> 
+<W DOM="7" FEAT="S ЕД МУЖ РОД ОД" ID="9" LEMMA="КРАСАВЕЦ" LINK="об-аппоз">красавца</W>-
+<W DOM="9" FEAT="S ЕД МУЖ РОД ОД" ID="10" LEMMA="ПЛЕЙБОЙ" LINK="аппоз">плейбоя</W>, 
+<W DOM="9" FEAT="S ЕД МУЖ РОД ОД" ID="11" LEMMA="ИНЖЕНЕР" LINK="аппоз">инженера</W> 
+<W DOM="11" FEAT="PR" ID="12" LEMMA="ИЗ" LINK="атриб">из</W> 
+<W DOM="14" FEAT="A ЕД ЖЕН РОД" ID="13" LEMMA="ВОСТОЧНЫЙ" LINK="опред">восточной</W> 
+<W DOM="12" FEAT="S ЕД ЖЕН РОД НЕОД" ID="14" LEMMA="ГЕРМАНИЯ" LINK="предл">Германии</W>, 
+<W DOM="18" FEAT="PR" ID="15" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="15" FEAT="A МН ПР" ID="16" KSNAME="ФИКТ-ПРИЛ" LEMMA="80-Й" LINK="предл">80-х</W> 
+<W DOM="18" FEAT="S ЕД МУЖ ИМ ОД" ID="17" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="6" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="18" KSNAME="ЗАНИМАТЬСЯ1" LEMMA="ЗАНИМАТЬСЯ" LINK="сент-соч">занимался</W> 
+<W DOM="18" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="19" LEMMA="РАЗРАБОТКА" LINK="1-компл">разработкой</W> 
+<W DOM="21" FEAT="A МН РОД" ID="20" LEMMA="НОВЫЙ" LINK="опред">новых</W> 
+<W DOM="19" FEAT="S МН СРЕД РОД НЕОД" ID="21" LEMMA="МЕСТОРОЖДЕНИЕ" LINK="1-компл">месторождений</W> 
+<W DOM="18" FEAT="PR" ID="22" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="22" FEAT="S ЕД МУЖ ПР НЕОД" ID="23" LEMMA="КАЗАХСТАН" LINK="предл">Казахстане</W>.
+<LF LFARG="19" LFFUNC="_OPER1" LFVAL="18"/>
+<LF LFARG="23" LFFUNC="_LOC" LFVAL="22"/>
+</S>
+<S CLASS="LF" ID="45">
+<W DOM="11" FEAT="PR" ID="1" KSNAME="С3" LEMMA="С" LINK="обст">С</W> 
+<W DOM="3" FEAT="A МН ТВОР" ID="2" LEMMA="ТАКОЙ" LINK="опред">такими</W> 
+<W DOM="4" FEAT="A МН ТВОР" ID="3" LEMMA="КВАДРАТНЫЙ" LINK="опред">квадратными</W> 
+<W DOM="1" FEAT="S МН МУЖ ТВОР НЕОД" ID="4" LEMMA="ПОДБОРОДОК" LINK="предл">подбородками</W>, 
+<W DOM="2" FEAT="CONJ" ID="5" KSNAME="КАК1" LEMMA="КАК" LINK="сравнит">как</W> 
+<W DOM="5" FEAT="PR" ID="6" KSNAME="У1" LEMMA="У" LINK="сравн-союзн">у</W> 
+<W DOM="6" FEAT="S ЕД МУЖ РОД ОД" ID="7" KSNAME="ГЕРД1" LEMMA="ГЕРД" LINK="предл">Герда</W>, 
+<W DOM="11" FEAT="PR" ID="8" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="10" FEAT="A ЕД СРЕД ПР" ID="9" LEMMA="СОВЕТСКИЙ" LINK="опред">советском</W> 
+<W DOM="8" FEAT="S ЕД СРЕД ПР НЕОД" ID="10" KSNAME="КИНО2" LEMMA="КИНО" LINK="предл">кино</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="11" LEMMA="ИГРАТЬ">играли</W> 
+<W DOM="13" FEAT="A МН ВИН ОД" ID="12" LEMMA="ЛОЩЕНЫЙ" LINK="опред">лощеных</W> 
+<W DOM="11" FEAT="S МН МУЖ ВИН ОД" ID="13" LEMMA="ЭСЭСОВЕЦ" LINK="1-компл">эсэсовцев</W>, 
+<W DOM="15" FEAT="PART" ID="14" KSNAME="И2" LEMMA="И" LINK="огранич">и</W> 
+<W DOM="11" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="15" KSNAME="ПРАВДА1" LEMMA="ПРАВДА" LINK="сент-соч">правда</W>: 
+<W DOM="17" FEAT="S ЕД МУЖ ИМ ОД" ID="16" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="15" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="17" LEMMA="РАССКАЗЫВАТЬ" LINK="разъяснит">рассказывает</W>, 
+<W DOM="17" FEAT="CONJ" ID="18" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="20" FEAT="S ЕД МУЖ РОД ОД" ID="19" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">его</W> 
+<W DOM="23" FEAT="S ЕД МУЖ ВИН ОД" ID="20" LEMMA="ПРАДЕД" LINK="1-компл">прадеда</W> - 
+<W DOM="22" FEAT="A ЕД МУЖ РОД" ID="21" LEMMA="ЭСЭСОВСКИЙ" LINK="опред">эсэсовского</W> 
+<W DOM="20" FEAT="S ЕД МУЖ РОД ОД" ID="22" LEMMA="ГЕНЕРАЛ" LINK="об-аппоз">генерала</W> - 
+<W DOM="18" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="23" KSNAME="СУДИТЬ1" LEMMA="СУДИТЬ" LINK="подч-союзн">судили</W> 
+<W DOM="23" FEAT="PR" ID="24" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="24" FEAT="S ЕД МУЖ ПР НЕОД" ID="25" LEMMA="НЮРНБЕРГ" LINK="предл">Нюрнберге</W>, 
+<W DOM="28" FEAT="S ЕД МУЖ ИМ ОД" ID="26" LEMMA="ДЕД" LINK="предик">дед</W> 
+<W DOM="28" FEAT="PART" ID="27" LEMMA="ТОЖЕ" LINK="огранич">тоже</W> 
+<W DOM="23" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="28" LEMMA="ВОЕВАТЬ" LINK="сент-соч">воевал</W> 
+<W DOM="28" FEAT="PR" ID="29" KSNAME="НА2" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="31" FEAT="A ЕД МУЖ ПР" ID="30" LEMMA="ВОСТОЧНЫЙ" LINK="опред">восточном</W> 
+<W DOM="29" FEAT="S ЕД МУЖ ПР НЕОД" ID="31" KSNAME="ФРОНТ1" LEMMA="ФРОНТ" LINK="предл">фронте</W>.
+<LF LFARG="4" LFFUNC="_MAGN" LFVAL="3"/>
+<LF LFARG="31" LFFUNC="_LOC" LFVAL="29"/>
+</S>
+<S ID="46">
+<W DOM="4" FEAT="ADV" ID="1" KSNAME="ПРАВДА2" LEMMA="ПРАВДА" LINK="вводн">Правда</W>, 
+<W DOM="3" FEAT="ADV" ID="2" LEMMA="СОВСЕМ" LINK="огранич">совсем</W> 
+<W DOM="4" FEAT="ADV" ID="3" LEMMA="НЕДАВНО" LINK="обст">недавно</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="4" LEMMA="ВЫЯСНЯТЬСЯ">выяснилось</W>, 
+<W DOM="4" FEAT="CONJ" ID="5" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="предик">что</W> 
+<W DOM="8" FEAT="A МН ИМ" ID="6" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">все</W> 
+<W DOM="8" FEAT="A МН ИМ" ID="7" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">эти</W> 
+<W DOM="12" FEAT="S МН МУЖ ИМ ОД" ID="8" KSNAME="ВОЕННЫЙ2" LEMMA="ВОЕННЫЙ" LINK="предик">военные</W> 
+<W DOM="12" FEAT="ADV" ID="9" LEMMA="БИОЛОГИЧЕСКИ" LINK="атриб">биологически</W> 
+<W DOM="12" FEAT="S ЕД МУЖ ДАТ ОД" ID="10" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">ему</W> 
+<W DOM="12" FEAT="PART" ID="11" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="5" FEAT="S МН МУЖ ИМ ОД" ID="12" LEMMA="РОДСТВЕННИК" LINK="подч-союзн">родственники</W> - 
+<W DOM="17" FEAT="CONJ" ID="13" KSNAME="ПОКА1" LEMMA="ПОКА" LINK="обст">пока</W> 
+<W DOM="15" FEAT="S ЕД МУЖ ИМ ОД" ID="14" LEMMA="ДЕД" LINK="предик">дед</W> 
+<W DOM="13" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="15" LEMMA="ВОЕВАТЬ" LINK="подч-союзн">воевал</W>, 
+<W DOM="17" FEAT="S ЕД ЖЕН ИМ ОД" ID="16" KSNAME="БАБКА1" LEMMA="БАБКА" LINK="предик">бабка</W> 
+<W DOM="12" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="17" LEMMA="СОГРЕШАТЬ" LINK="разъяснит">согрешила</W> 
+<W DOM="17" FEAT="PR" ID="18" KSNAME="С3" LEMMA="С" LINK="обст">с</W> 
+<W DOM="20" FEAT="A ЕД МУЖ ТВОР" ID="19" LEMMA="КАКОЙ-ТО" LINK="опред">каким-то</W> 
+<W DOM="18" FEAT="S ЕД МУЖ ТВОР ОД" ID="20" LEMMA="ЕВРЕЙ" LINK="предл">евреем</W>.
+</S>
+<S CLASS="LF" ID="47">
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="1" KSNAME="ГЕРД1" LEMMA="ГЕРД" LINK="предик">Герд</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="ВСТАВАТЬ">встает</W> 
+<W DOM="2" FEAT="PR" ID="3" KSNAME="НА1" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ВИН НЕОД" ID="4" LEMMA="ТРЕНАЖЕР" LINK="предл">тренажер</W>-"
+<W DOM="4" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="5" KSNAME="ХОДИЛКА" LEMMA="ХОДИЛКА" LINK="аппоз">ходилку</W>" - 
+<W DOM="2" FEAT="CONJ" ID="6" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="6" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="7" KSNAME="ИДТИ1" LEMMA="ИДТИ" LINK="соч-союзн">идет</W>, 
+<W DOM="7" FEAT="CONJ" ID="8" KSNAME="КАК1" LEMMA="КАК" LINK="сравнит">как</W> 
+<W DOM="8" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="9" KSNAME="ИДТИ1" LEMMA="ИДТИ" LINK="сравн-союзн">шли</W> 
+<W DOM="12" FEAT="S ЕД МУЖ РОД ОД" ID="10" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">его</W> 
+<W DOM="12" FEAT="A МН ИМ" ID="11" LEMMA="НЕРОДНОЙ" LINK="опред">неродные</W> 
+<W DOM="9" FEAT="S МН МУЖ ИМ ОД" ID="12" LEMMA="ПРЕДОК" LINK="предик">предки</W> 
+<W DOM="9" FEAT="PR" ID="13" KSNAME="С1" LEMMA="С" LINK="1-компл">с</W> 
+<W DOM="13" FEAT="S ЕД МУЖ РОД НЕОД" ID="14" LEMMA="ЗАПАД" LINK="предл">запада</W> 
+<W DOM="9" FEAT="PR" ID="15" KSNAME="НА1" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="15" FEAT="S ЕД МУЖ ВИН НЕОД" ID="16" LEMMA="ВОСТОК" LINK="предл">восток</W>, 
+<W DOM="7" FEAT="CONJ" ID="17" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="19" FEAT="ADV" ID="18" LEMMA="ПОТОМ" LINK="обст">потом</W> 
+<W DOM="17" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="19" LEMMA="ДВИНУТЬСЯ" LINK="соч-союзн">двинулся</W> 
+<W DOM="21" FEAT="PART" ID="20" KSNAME="И2" LEMMA="И" LINK="огранич">и</W> 
+<W DOM="19" FEAT="S ЕД МУЖ ИМ ОД" ID="21" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W>.
+<LF LFARG="16" LFFUNC="_LOC-AD" LFVAL="15"/>
+</S>
+<S CLASS="LF" ID="48">
+<W DOM="4" FEAT="PR" ID="1" KSNAME="НА2" LEMMA="НА" LINK="обст">На</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ПР НЕОД" ID="2" LEMMA="ЭКРАН" LINK="предл">экране</W> 
+<W DOM="4" FEAT="S МН ДАТ ОД" ID="3" LEMMA="МЫ" LINK="2-компл">нам</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="4" LEMMA="ПОКАЗЫВАТЬ">показывают</W>, 
+<W DOM="4" FEAT="CONJ" ID="5" KSNAME="КАК1" LEMMA="КАК" LINK="1-компл">как</W> 
+<W DOM="5" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="6" KSNAME="ИДТИ1" LEMMA="ИДТИ" LINK="подч-союзн">идет</W> 
+<W DOM="6" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="7" LEMMA="РАЗРАБОТКА" LINK="предик">разработка</W> 
+<W DOM="9" FEAT="A МН РОД" ID="8" LEMMA="НОВЫЙ" LINK="опред">новых</W> 
+<W DOM="7" FEAT="S МН СРЕД РОД НЕОД" ID="9" LEMMA="МЕСТОРОЖДЕНИЕ" LINK="1-компл">месторождений</W> 
+<W DOM="7" FEAT="PR" ID="10" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="10" FEAT="S ЕД МУЖ ПР НЕОД" ID="11" LEMMA="КАЗАХСТАН" LINK="предл">Казахстане</W>, 
+<W DOM="19" FEAT="S ЕД МУЖ ИМ ОД" ID="12" KSNAME="ГЕРД1" LEMMA="ГЕРД" LINK="предик">Герд</W>, 
+<W DOM="12" FEAT="A ЕД МУЖ ИМ" ID="13" LEMMA="ПОХОЖИЙ" LINK="опред">похожий</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="НА1" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="16" FEAT="A ЕД МУЖ ВИН ОД" ID="15" LEMMA="РОМАНТИЧЕСКИЙ" LINK="опред">романтического</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ВИН ОД" ID="16" LEMMA="ИССЛЕДОВАТЕЛЬ" LINK="предл">исследователя</W> 
+<W DOM="18" FEAT="A МН РОД" ID="17" LEMMA="ДАЛЬНИЙ" LINK="опред">дальних</W> 
+<W DOM="16" FEAT="S МН ЖЕН РОД НЕОД" ID="18" KSNAME="ЗЕМЛЯ1" LEMMA="ЗЕМЛЯ" LINK="1-компл">земель</W>, 
+<W DOM="4" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="19" LEMMA="ОБЪЯСНЯТЬ" LINK="сент-соч">объясняет</W>, 
+<W DOM="22" FEAT="ADV" ID="20" LEMMA="ЗАЧЕМ" LINK="обст">зачем</W> 
+<W DOM="22" FEAT="ADV" ID="21" LEMMA="ТАМ" LINK="обст">там</W> 
+<W DOM="19" FEAT="A КР МН" ID="22" LEMMA="НУЖНЫЙ" LINK="1-компл">нужны</W> 
+<W DOM="24" FEAT="A МН ИМ" ID="23" LEMMA="ТАКОЙ" LINK="опред">такие</W> 
+<W DOM="22" FEAT="S МН МУЖ ИМ ОД" ID="24" LEMMA="СПЕЦИАЛИСТ" LINK="предик">специалисты</W>, 
+<W DOM="23" FEAT="CONJ" ID="25" KSNAME="КАК1" LEMMA="КАК" LINK="сравнит">как</W> 
+<W DOM="25" FEAT="S ЕД МУЖ ИМ ОД" ID="26" KSNAME="ОН" LEMMA="ОН" LINK="сравн-союзн">он</W> - 
+<W DOM="29" FEAT="CONJ" ID="27" KSNAME="НИ1" LEMMA="НИ" LINK="соотнос">ни</W> 
+<W DOM="34" FEAT="S МН МУЖ ИМ ОД" ID="28" KSNAME="РУССКИЙ2" LEMMA="РУССКИЙ" LINK="предик">русские</W>, 
+<W DOM="28" FEAT="CONJ" ID="29" KSNAME="НИ1" LEMMA="НИ" LINK="сочин">ни</W> 
+<W DOM="29" FEAT="S МН МУЖ ИМ ОД" ID="30" LEMMA="КАЗАХ" LINK="соч-союзн">казахи</W> 
+<W DOM="32" FEAT="A ЕД ЖЕН ТВОР" ID="31" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">этой</W> 
+<W DOM="34" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="32" KSNAME="ТЕХНИКА" LEMMA="ТЕХНИКА" LINK="1-компл">техникой</W> 
+<W DOM="34" FEAT="PART" ID="33" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="26" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="34" LEMMA="ВЛАДЕТЬ" LINK="разъяснит">владеют</W>.
+<LF LFARG="11" LFFUNC="_LOC" LFVAL="10"/>
+</S>
+<S CLASS="LF" ID="49">
+<W DOM="11" FEAT="PR" ID="1" KSNAME="НА2" LEMMA="НА" LINK="обст">На</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ПР НЕОД" ID="2" LEMMA="ЭКРАН" LINK="предл">экране</W>, 
+<W DOM="11" FEAT="V СОВ ДЕЕПР ПРОШ" ID="3" KSNAME="ОБОРАЧИВАТЬСЯ2" LEMMA="ОБОРАЧИВАТЬСЯ" LINK="обст">обернувшись</W> 
+<W DOM="3" FEAT="PR" ID="4" KSNAME="С1" LEMMA="С" LINK="обст">с</W> 
+<W DOM="6" FEAT="A ЕД СРЕД РОД" ID="5" LEMMA="ПЕРЕДНИЙ" LINK="опред">переднего</W> 
+<W DOM="4" FEAT="S ЕД СРЕД РОД НЕОД" ID="6" KSNAME="СИДЕНЬЕ" LEMMA="СИДЕНЬЕ" LINK="предл">сиденья</W> 
+<W DOM="6" FEAT="S ЕД ЖЕН РОД НЕОД" ID="7" LEMMA="МАШИНА" LINK="квазиагент">машины</W>, 
+<W DOM="9" FEAT="A ЕД ЖЕН ВИН" ID="8" LEMMA="СЕГОДНЯШНИЙ" LINK="опред">сегодняшнюю</W> 
+<W DOM="11" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="9" LEMMA="ЖИЗНЬ" LINK="1-компл">жизнь</W> 
+<W DOM="9" FEAT="S МН МУЖ РОД ОД" ID="10" LEMMA="НЕФТЯНИК" LINK="квазиагент">нефтяников</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="11" LEMMA="ОБСУЖДАТЬ">обсуждает</W> 
+<W DOM="11" FEAT="PR" ID="12" KSNAME="С3" LEMMA="С" LINK="2-компл">с</W> 
+<W DOM="12" FEAT="S ЕД МУЖ ТВОР ОД" ID="13" KSNAME="ГЕРД1" LEMMA="ГЕРД" LINK="предл">Гердом</W>, 
+<W DOM="13" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД МУЖ ТВОР" ID="14" LEMMA="СТОЯТЬ" LINK="опред">стоящим</W> 
+<W DOM="14" FEAT="PR" ID="15" KSNAME="НА2" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="15" FEAT="S ЕД ЖЕН ПР НЕОД" ID="16" LEMMA="СЦЕНА" LINK="предл">сцене</W>, 
+<W DOM="18" FEAT="S ЕД МУЖ РОД ОД" ID="17" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">его</W> 
+<W DOM="11" FEAT="S ЕД МУЖ ИМ ОД" ID="18" KSNAME="КОЛЛЕГА1" LEMMA="КОЛЛЕГА" LINK="предик">коллега</W>, 
+<W DOM="20" FEAT="PART" ID="19" LEMMA="ТОЖЕ" LINK="огранич">тоже</W> 
+<W DOM="18" FEAT="S ЕД МУЖ ИМ ОД" ID="20" LEMMA="НЕМЕЦ" LINK="сочин">немец</W>, 
+<W DOM="22" FEAT="ADV" ID="21" LEMMA="СЕЙЧАС" LINK="обст">сейчас</W> 
+<W DOM="20" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД МУЖ ИМ" ID="22" LEMMA="РАБОТАТЬ" LINK="опред">работающий</W> 
+<W DOM="22" FEAT="PR" ID="23" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="23" FEAT="S ЕД МУЖ ПР НЕОД" ID="24" LEMMA="КАЗАХСТАН" LINK="предл">Казахстане</W>.
+<LF LFARG="24" LFFUNC="_LOC" LFVAL="23"/>
+</S>
+<S CLASS="LF" ID="50">
+<W DOM="4" FEAT="ADV" ID="1" LEMMA="КОНЕЧНО" LINK="вводн">Конечно</W>, 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ НЕОД" ID="2" LEMMA="РАЗГОВОР" LINK="предик">разговор</W> 
+<W DOM="2" FEAT="A ЕД МУЖ ИМ" ID="3" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">этот</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="4" KSNAME="БЫТЬ" LEMMA="БЫТЬ">был</W> 
+<W DOM="4" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР ЕД МУЖ" ID="5" LEMMA="ЗАПИСЫВАТЬ" LINK="пасс-анал">записан</W> 
+<W DOM="5" FEAT="ADV СРАВ" ID="6" KSNAME="РАНО" LEMMA="РАНО" LINK="обст">раньше</W>, 
+<W DOM="9" FEAT="S ЕД МУЖ ИМ ОД" ID="7" LEMMA="НИКТО" LINK="предик">никто</W> 
+<W DOM="9" FEAT="PART" ID="8" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="4" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="9" LEMMA="СКРЫВАТЬ" LINK="сент-соч">скрывает</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН РОД НЕОД" ID="10" LEMMA="УСЛОВНОСТЬ" LINK="1-компл">условности</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН РОД НЕОД" ID="11" LEMMA="СИТУАЦИЯ" LINK="квазиагент">ситуации</W>, 
+<W DOM="11" FEAT="CONJ" ID="12" KSNAME="КОГДА2" LEMMA="КОГДА" LINK="1-компл">когда</W> 
+<W DOM="16" FEAT="S ЕД МУЖ ИМ ОД" ID="13" LEMMA="ГЕРОЙ" LINK="предик">герой</W>, 
+<W DOM="16" FEAT="V СОВ ДЕЕПР ПРОШ" ID="14" LEMMA="ПОДАВАТЬ" LINK="обст">подав</W> 
+<W DOM="14" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="15" LEMMA="РЕПЛИКА" LINK="1-компл">реплику</W>, 
+<W DOM="12" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="16" KSNAME="ДАВАТЬ1" LEMMA="ДАВАТЬ" LINK="подч-союзн">дает</W> 
+<W DOM="16" FEAT="S ЕД МУЖ ВИН НЕОД" ID="17" LEMMA="ЗНАК" LINK="1-компл">знак</W> 
+<W DOM="17" FEAT="S ЕД МУЖ ДАТ ОД" ID="18" KSNAME="ТЕХНИК" LEMMA="ТЕХНИК" LINK="неакт-компл">технику</W>, 
+<W DOM="17" FEAT="V СОВ ИНФ" ID="19" KSNAME="ВКЛЮЧАТЬ1" LEMMA="ВКЛЮЧАТЬ" LINK="1-компл">включить</W> 
+<W DOM="19" FEAT="S ЕД МУЖ ВИН НЕОД" ID="20" LEMMA="ОТВЕТ" LINK="1-компл">ответ</W>, 
+<W DOM="9" FEAT="CONJ" ID="21" LEMMA="НО" LINK="сент-соч">но</W> 
+<W DOM="25" FEAT="PR" ID="22" KSNAME="НА1" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="22" FEAT="S ЕД СРЕД ВИН НЕОД" ID="23" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предл">это</W> 
+<W DOM="25" FEAT="PART" ID="24" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="21" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 2-Л" ID="25" KSNAME="ОБРАЩАТЬ2" LEMMA="ОБРАЩАТЬ" LINK="соч-союзн">обращаешь</W> 
+<W DOM="25" FEAT="S ЕД СРЕД РОД НЕОД" ID="26" LEMMA="ВНИМАНИЕ" LINK="1-компл">внимания</W>.
+<LF LFARG="15" LFFUNC="_OPER1" LFVAL="14"/>
+<LF LFARG="26" LFFUNC="_OPER1" LFVAL="25"/>
+<LF LFARG="26" LFFUNC="_CAUSFUNC0" LFVAL="25"/>
+<LF LFARG="17" LFFUNC="_OPER1" LFVAL="16"/>
+</S>
+<S ID="51">
+<W DOM="2" FEAT="ADV" ID="1" LEMMA="СТРАШНОВАТО" LINK="1-компл">Страшновато</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="ЗВУЧАТЬ">звучит</W> 
+<W DOM="4" FEAT="A ЕД МУЖ ИМ" ID="3" KSNAME="САМ" LEMMA="САМ" LINK="опред">сам</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ИМ НЕОД" ID="4" LEMMA="РАССКАЗ" LINK="предик">рассказ</W> 
+<W DOM="4" FEAT="PR" ID="5" KSNAME="О2" LEMMA="О" LINK="1-компл">о</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН ПР НЕОД" ID="6" LEMMA="ЖИЗНЬ" LINK="предл">жизни</W> 
+<W DOM="6" FEAT="S ЕД МУЖ РОД НЕОД" ID="7" LEMMA="КАЗАХСТАН" LINK="квазиагент">Казахстана</W>, 
+<W DOM="5" FEAT="PR" ID="8" KSNAME="О2" LEMMA="О" LINK="сочин">о</W> 
+<W DOM="8" FEAT="S ЕД СРЕД ПР НЕОД" ID="9" KSNAME="ТО1" LEMMA="ТО" LINK="предл">том</W>, 
+<W DOM="9" FEAT="CONJ" ID="10" KSNAME="КАК1" LEMMA="КАК" LINK="эксплет">как</W> 
+<W DOM="16" FEAT="ADV" ID="11" LEMMA="ЗДЕСЬ" LINK="обст">здесь</W> 
+<W DOM="16" FEAT="S ЕД СРЕД ИМ НЕОД" ID="12" KSNAME="ВСЕ1" LEMMA="ВСЕ" LINK="предик">все</W>, 
+<W DOM="12" FEAT="V СОВ СТРАД ПРИЧ ПРОШ ЕД СРЕД ИМ" ID="13" KSNAME="СВЯЗЫВАТЬ1" LEMMA="СВЯЗЫВАТЬ" LINK="опред">связанное</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="С3" LEMMA="С" LINK="2-компл">с</W> 
+<W DOM="14" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="15" LEMMA="НЕФТЬ" LINK="предл">нефтью</W>, 
+<W DOM="10" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="16" KSNAME="СТАНОВИТЬСЯ1" LEMMA="СТАНОВИТЬСЯ" LINK="подч-союзн">становится</W> 
+<W DOM="16" FEAT="A ЕД СРЕД ТВОР" ID="17" KSNAME="ЗОЛОТОЙ1" LEMMA="ЗОЛОТОЙ" LINK="присвяз">золотым</W>, 
+<W DOM="16" FEAT="CONJ" ID="18" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="18" FEAT="ADV" ID="19" KSNAME="ВОКРУГ2" LEMMA="ВОКРУГ" LINK="соч-союзн">вокруг</W> - 
+<W DOM="19" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="20" LEMMA="НИЩЕТА" LINK="предик">нищета</W>.
+</S>
+<S ID="52">
+<W DOM="_root" FEAT="CONJ" ID="1" KSNAME="ЧТО1" LEMMA="ЧТО">Что</W> 
+<W DOM="3" FEAT="A ЕД МУЖ ИМ" ID="2" LEMMA="ОБРАЗОВАННЫЙ" LINK="опред">образованный</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="3" LEMMA="ВРАЧ" LINK="предик">врач</W>, 
+<W DOM="3" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД МУЖ ИМ" ID="4" LEMMA="ЛЮБИТЬ" LINK="опред">любящий</W> 
+<W DOM="6" FEAT="A ЕД ЖЕН ВИН" ID="5" LEMMA="СВОЙ" LINK="опред">свою</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="6" LEMMA="ПРОФЕССИЯ" LINK="1-компл">профессию</W>, 
+<W DOM="1" FEAT="A КР ЕД МУЖ" ID="7" LEMMA="ГОТОВЫЙ" LINK="подч-союзн">готов</W> 
+<W DOM="7" FEAT="V НЕСОВ ИНФ" ID="8" KSNAME="ИДТИ1" LEMMA="ИДТИ" LINK="1-компл">идти</W> 
+<W DOM="8" FEAT="PR" ID="9" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="11" FEAT="A ЕД ЖЕН ВИН" ID="10" LEMMA="НЕФТЯНОЙ" LINK="опред">нефтяную</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="11" LEMMA="КОМПАНИЯ" LINK="предл">компанию</W> 
+<W DOM="8" FEAT="S ЕД МУЖ ТВОР ОД" ID="12" LEMMA="КТО" LINK="обст">кем</W> 
+<W DOM="12" FEAT="ADV" ID="13" LEMMA="УГОДНО" LINK="вспом">угодно</W>, 
+<W DOM="8" FEAT="CONJ" ID="14" LEMMA="ЛИШЬ БЫ" LINK="обст">лишь бы</W> 
+<W DOM="14" FEAT="V СОВ ИНФ" ID="15" KSNAME="ЗАРАБАТЫВАТЬ" LEMMA="ЗАРАБАТЫВАТЬ" LINK="инф-союзн">заработать</W>, 
+<W DOM="1" FEAT="CONJ" ID="16" KSNAME="КАК1" LEMMA="КАК" LINK="сент-соч">как</W> 
+<W DOM="24" FEAT="PR" ID="17" LEMMA="К" LINK="2-компл">к</W> 
+<W DOM="17" FEAT="S МН МУЖ ДАТ ОД" ID="18" LEMMA="НЕФТЯНИК" LINK="предл">нефтяникам</W>, 
+<W DOM="18" FEAT="CONJ" ID="19" KSNAME="БУДТО1" LEMMA="БУДТО" LINK="сравнит">будто</W> 
+<W DOM="19" FEAT="S МН МУЖ ДАТ ОД" ID="20" LEMMA="СОЛДАТ" LINK="сравн-союзн">солдатам</W>, 
+<W DOM="20" FEAT="V СОВ ПРИЧ ПРОШ МН ДАТ" ID="21" LEMMA="ИСТОСКОВАТЬСЯ" LINK="опред">истосковавшимся</W> 
+<W DOM="21" FEAT="PR" ID="22" LEMMA="БЕЗ" LINK="1-компл">без</W> 
+<W DOM="22" FEAT="S МН ЖЕН РОД ОД" ID="23" LEMMA="ЖЕНЩИНА" LINK="предл">женщин</W>, 
+<W DOM="16" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="24" LEMMA="ПРИЕЗЖАТЬ" LINK="сравн-союзн">приезжают</W> 
+<W DOM="24" FEAT="S МН ЖЕН ИМ ОД" ID="25" LEMMA="ДЕВУШКА" LINK="предик">девушки</W>, 
+<W DOM="27" FEAT="ADV" ID="26" LEMMA="ОСОБЕННО" LINK="огранич">особенно</W> 
+<W DOM="25" FEAT="PR" ID="27" LEMMA="ИЗ" LINK="разъяснит">из</W> 
+<W DOM="29" FEAT="A ЕД МУЖ РОД" ID="28" LEMMA="БЕДНЫЙ" LINK="опред">бедного</W> 
+<W DOM="27" FEAT="S ЕД МУЖ РОД НЕОД" ID="29" LEMMA="ТАДЖИКИСТАН" LINK="предл">Таджикистана</W>, 
+<W DOM="24" FEAT="CONJ" ID="30" KSNAME="ПОСКОЛЬКУ1" LEMMA="ПОСКОЛЬКУ" LINK="обст">поскольку</W> 
+<W DOM="30" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="31" LEMMA="СЛЫШАТЬ" LINK="подч-союзн">слышали</W>, 
+<W DOM="31" FEAT="CONJ" ID="32" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="34" FEAT="ADV" ID="33" KSNAME="ТУТ1" LEMMA="ТУТ" LINK="обст">тут</W> 
+<W DOM="32" FEAT="ADV" ID="34" LEMMA="МОЖНО" LINK="подч-союзн">можно</W> 
+<W DOM="38" FEAT="PR" ID="35" KSNAME="ЗА1" LEMMA="ЗА" LINK="обст">за</W> 
+<W DOM="37" FEAT="A МН ВИН НЕОД" ID="36" LEMMA="СВОЙ" LINK="опред">свои</W> 
+<W DOM="35" FEAT="S МН ЖЕН ВИН НЕОД" ID="37" LEMMA="УСЛУГА" LINK="предл">услуги</W> 
+<W DOM="34" FEAT="V СОВ ИНФ" ID="38" LEMMA="ПОЛУЧАТЬ" LINK="предик">получить</W> 
+<W DOM="40" FEAT="NUM" ID="39" KSNAME="ЧИСЛ-БОЛЬШ" LEMMA="100" LINK="количест">100</W> 
+<W DOM="38" FEAT="S МН МУЖ РОД НЕОД" ID="40" LEMMA="ДОЛЛАР" LINK="1-компл">долларов</W>.
+</S>
+<S ID="53">
+<W DOM="4" FEAT="PR" ID="1" KSNAME="НА1" LEMMA="НА" LINK="обст">На</W> 
+<W DOM="1" FEAT="S ЕД СРЕД ВИН НЕОД" ID="2" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предл">это</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ ОД" ID="3" KSNAME="ГЕРД1" LEMMA="ГЕРД" LINK="предик">Герд</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="4" LEMMA="ВСПОМИНАТЬ">вспоминает</W>, 
+<W DOM="4" FEAT="CONJ" ID="5" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="12" FEAT="PR" ID="6" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="6" FEAT="A МН ВИН НЕОД" ID="7" KSNAME="ФИКТ-ПРИЛ" LEMMA="80-Е" LINK="предл">80-е</W> 
+<W DOM="11" FEAT="A МН ИМ" ID="8" KSNAME="РУССКИЙ1" LEMMA="РУССКИЙ" LINK="опред">русские</W> 
+<W DOM="8" FEAT="CONJ" ID="9" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="9" FEAT="A МН ИМ" ID="10" LEMMA="КАЗАХСКИЙ" LINK="соч-союзн">казахские</W> 
+<W DOM="12" FEAT="S МН МУЖ ИМ ОД" ID="11" KSNAME="МУЖ1" LEMMA="МУЖ" LINK="предик">мужья</W> 
+<W DOM="5" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="12" KSNAME="ПРИВОДИТЬ1" LEMMA="ПРИВОДИТЬ" LINK="подч-союзн">приводили</W> 
+<W DOM="12" FEAT="PR" ID="13" LEMMA="К" LINK="3-компл">к</W> 
+<W DOM="13" FEAT="S МН ДАТ ОД" ID="14" LEMMA="ОНИ" LINK="предл">ним</W> 
+<W DOM="16" FEAT="A МН ВИН ОД" ID="15" LEMMA="СВОЙ" LINK="опред">своих</W> 
+<W DOM="12" FEAT="S МН ЖЕН ВИН ОД" ID="16" LEMMA="ЖЕНА" LINK="1-компл">жен</W> 
+<W DOM="12" FEAT="CONJ" ID="17" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="17" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="18" LEMMA="ПРЕДЛАГАТЬ" LINK="соч-союзн">предлагали</W> 
+<W DOM="18" FEAT="S МН ВИН ОД" ID="19" LEMMA="ОНИ" LINK="1-компл">их</W> 
+<W DOM="21" FEAT="ADV" ID="20" LEMMA="БУКВАЛЬНО" LINK="огранич">буквально</W> 
+<W DOM="18" FEAT="PR" ID="21" KSNAME="ЗА1" LEMMA="ЗА" LINK="обст">за</W> 
+<W DOM="21" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="22" LEMMA="МЕЛОЧЬ" LINK="предл">мелочь</W> - 
+<W DOM="22" FEAT="S ЕД СРЕД ВИН НЕОД" ID="23" LEMMA="МЫЛО" LINK="разъяснит">мыло</W>, 
+<W DOM="23" FEAT="S ЕД МУЖ ВИН НЕОД" ID="24" LEMMA="КОФЕ" LINK="сочин">кофе</W>, 
+<W DOM="18" FEAT="CONJ" ID="25" KSNAME="И1" LEMMA="И" LINK="сент-соч">и</W> 
+<W DOM="27" FEAT="S ЕД МУЖ ИМ ОД" ID="26" LEMMA="КТО-ТО" LINK="предик">кто-то</W> 
+<W DOM="25" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="27" LEMMA="ПОЛЬЗОВАТЬСЯ" LINK="соч-союзн">пользовался</W>.
+</S>
+<S ID="54">
+<W DOM="18" FEAT="V НЕСОВ ИНФ" ID="1" LEMMA="ВОЗВРАЩАТЬСЯ" LINK="1-компл">Возвращаться</W> 
+<W DOM="1" FEAT="PR" ID="2" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ВИН НЕОД" ID="3" LEMMA="КАЗАХСТАН" LINK="предл">Казахстан</W> 
+<W DOM="5" FEAT="PART" ID="4" LEMMA="ДАЖЕ" LINK="огранич">даже</W> 
+<W DOM="1" FEAT="PR" ID="5" KSNAME="ЗА1" LEMMA="ЗА" LINK="обст">за</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="6" LEMMA="ЗАРПЛАТА" LINK="предл">зарплату</W>, 
+<W DOM="9" FEAT="S ЕД ЖЕН ИМ" ID="7" LEMMA="КОТОРЫЙ" LINK="предик">которая</W> 
+<W DOM="9" FEAT="ADV" ID="8" KSNAME="ТУТ1" LEMMA="ТУТ" LINK="обст">тут</W> 
+<W DOM="6" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="9" LEMMA="НАЧИНАТЬСЯ" LINK="релят">начинается</W> 
+<W DOM="9" FEAT="PR" ID="10" LEMMA="ОТ" LINK="1-компл">от</W> 
+<W DOM="12" FEAT="NUM" ID="11" KSNAME="ЧИСЛ-БОЛЬШ" LEMMA="10" LINK="количест">10</W> 
+<W DOM="10" FEAT="S МН ЖЕН РОД НЕОД" ID="12" LEMMA="ТЫСЯЧА" LINK="предл">тысяч</W> 
+<W DOM="12" FEAT="S МН МУЖ РОД НЕОД" ID="13" LEMMA="ДОЛЛАР" LINK="квазиагент">долларов</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="В1" LEMMA="В" LINK="распред">в</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ВИН НЕОД" ID="15" KSNAME="МЕСЯЦ1" LEMMA="МЕСЯЦ" LINK="предл">месяц</W>, 
+<W DOM="18" FEAT="S ЕД МУЖ ИМ ОД" ID="16" KSNAME="ОН" LEMMA="ОН" LINK="предик">он</W> 
+<W DOM="18" FEAT="PART" ID="17" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="18" LEMMA="ХОТЕТЬ">хочет</W>.
+</S>
+<S ID="55">
+<W DOM="_root" FEAT="PR" ID="1" LEMMA="ИЗ">Из</W> 
+<W DOM="1" FEAT="S ЕД МУЖ РОД НЕОД" ID="2" LEMMA="ТАДЖИКИСТАН" LINK="предл">Таджикистана</W> 
+<W DOM="1" FEAT="ADV" ID="3" KSNAME="ТУТ1" LEMMA="ТУТ" LINK="обст">тут</W> 
+<W DOM="5" FEAT="PART" ID="4" KSNAME="ЕЩЕ1" LEMMA="ЕЩЕ" LINK="огранич">еще</W> 
+<W DOM="6" FEAT="NUM ЕД ЖЕН ИМ" ID="5" KSNAME="ОДИН1" LEMMA="ОДИН" LINK="количест">одна</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН ИМ ОД" ID="6" KSNAME="ЕЛЕНА" LEMMA="ЕЛЕНА" LINK="предик">Елена</W>, 
+<W DOM="8" FEAT="ADV" ID="7" LEMMA="СОВСЕМ" LINK="огранич">совсем</W> 
+<W DOM="10" FEAT="A ЕД ЖЕН ИМ" ID="8" KSNAME="МОЛОДОЙ1" LEMMA="МОЛОДОЙ" LINK="опред">молодая</W> 
+<W DOM="10" FEAT="A ЕД ЖЕН ИМ" ID="9" LEMMA="КРАСИВЫЙ" LINK="опред">красивая</W> 
+<W DOM="6" FEAT="S ЕД ЖЕН ИМ ОД" ID="10" LEMMA="ЖЕНЩИНА" LINK="об-аппоз">женщина</W>.
+</S>
+<S ID="56">
+<W DOM="6" FEAT="S ЕД ЖЕН ИМ ОД" ID="1" LEMMA="ОНА" LINK="предик">Она</W> 
+<W DOM="6" FEAT="ADV СРАВ" ID="2" LEMMA="ХОРОШО" LINK="обст">лучше</W> 
+<W DOM="4" FEAT="A МН РОД" ID="3" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">всех</W> 
+"<W DOM="2" FEAT="S МН МУЖ РОД ОД" ID="4" KSNAME="РУССКИЙ2" LEMMA="РУССКИЙ" LINK="сравнит">русских</W>" 
+<W DOM="6" FEAT="ADV" ID="5" LEMMA="ЗДЕСЬ" LINK="обст">здесь</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="6" KSNAME="ГОВОРИТЬ2" LEMMA="ГОВОРИТЬ">говорит</W> 
+<W DOM="6" FEAT="ADV" ID="7" LEMMA="ПО-НЕМЕЦКИ" LINK="3-компл">по-немецки</W>, 
+<W DOM="9" FEAT="ADV" ID="8" LEMMA="ВИДНО" LINK="вводн">видно</W>, 
+<W DOM="6" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="9" LEMMA="УЕЗЖАТЬ" LINK="сочин">уехала</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН ТВОР ОД" ID="10" LEMMA="ДЕВОЧКА" LINK="суб-копр">девочкой</W>.
+</S>
+<S CLASS="LF" ID="57">
+<W DOM="2" FEAT="S ЕД ЖЕН ИМ ОД" ID="1" LEMMA="ОНА" LINK="предик">Она</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="2" LEMMA="РАСТИ">росла</W> 
+<W DOM="2" FEAT="PR" ID="3" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ПР НЕОД" ID="4" LEMMA="ТАДЖИКИСТАН" LINK="предл">Таджикистане</W>, 
+<W DOM="7" FEAT="ADV" ID="5" LEMMA="ОТКУДА" LINK="обст">откуда</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ НЕОД" ID="6" LEMMA="КАЗАХСТАН" LINK="предик">Казахстан</W> 
+<W DOM="4" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="7" KSNAME="КАЗАТЬСЯ" LEMMA="КАЗАТЬСЯ" LINK="релят">казался</W> 
+<W DOM="9" FEAT="A ЕД МУЖ ТВОР" ID="8" KSNAME="ЗОЛОТОЙ1" LEMMA="ЗОЛОТОЙ" LINK="опред">золотым</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="9" KSNAME="КРАЙ2" LEMMA="КРАЙ" LINK="1-компл">краем</W>, 
+<W DOM="2" FEAT="CONJ" ID="10" KSNAME="И1" LEMMA="И" LINK="сент-соч">и</W> 
+<W DOM="20" FEAT="S ЕД МУЖ ИМ ОД" ID="11" LEMMA="ДЯДЯ" LINK="предик">дядя</W> 
+<W DOM="13" FEAT="PART" ID="12" KSNAME="ТОЛЬКО1" LEMMA="ТОЛЬКО" LINK="огранич">только</W> 
+<W DOM="20" FEAT="PR" ID="13" KSNAME="ПОСЛЕ1" LEMMA="ПОСЛЕ" LINK="обст">после</W> 
+<W DOM="15" FEAT="A МН РОД" ID="14" LEMMA="МНОГИЕ" LINK="опред">многих</W> 
+<W DOM="13" FEAT="S МН МУЖ РОД НЕОД" ID="15" KSNAME="ЛЕТ1" LEMMA="ГОД" LINK="предл">лет</W> 
+<W DOM="15" FEAT="S МН СРЕД РОД НЕОД" ID="16" LEMMA="МЫТАРСТВО" LINK="квазиагент">мытарств</W> 
+<W DOM="20" FEAT="PR" ID="17" LEMMA="ВО ВРЕМЯ" LINK="обст">во время</W> 
+<W DOM="19" FEAT="A ЕД ЖЕН РОД" ID="18" LEMMA="ГРАЖДАНСКИЙ" LINK="опред">гражданской</W> 
+<W DOM="17" FEAT="S ЕД ЖЕН РОД НЕОД" ID="19" LEMMA="ВОЙНА" LINK="предл">войны</W> 
+<W DOM="10" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="20" LEMMA="УМЕТЬ" LINK="соч-союзн">сумел</W> 
+<W DOM="20" FEAT="V СОВ ИНФ" ID="21" LEMMA="ВЫВОЗИТЬ" LINK="1-компл">вывезти</W> 
+<W DOM="21" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="22" LEMMA="СЕМЬЯ" LINK="1-компл">семью</W> 
+<W DOM="21" FEAT="PR" ID="23" KSNAME="В1" LEMMA="В" LINK="3-компл">в</W> 
+<W DOM="23" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="24" LEMMA="ГЕРМАНИЯ" LINK="предл">Германию</W> 
+<W DOM="21" FEAT="PR" ID="25" LEMMA="К" LINK="неакт-компл">к</W> 
+<W DOM="25" FEAT="S ЕД МУЖ ДАТ ОД" ID="26" LEMMA="ДЕД" LINK="предл">деду</W>.
+<LF LFARG="4" LFFUNC="_LOC" LFVAL="3"/>
+</S>
+<S CLASS="LF" ID="58">
+<W DOM="2" FEAT="A МН ИМ" ID="1" LEMMA="ТАДЖИКСКИЙ" LINK="опред">Таджикские</W> 
+<W DOM="3" FEAT="S МН МУЖ ИМ ОД" ID="2" LEMMA="РОДСТВЕННИК" LINK="предик">родственники</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="3" LEMMA="УДИВЛЯТЬСЯ">удивляются</W>, 
+<W DOM="3" FEAT="CONJ" ID="4" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="11" FEAT="PR" ID="5" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="7" FEAT="NUM" ID="6" KSNAME="ЧИСЛ-БОЛЬШ" LEMMA="27" LINK="количест">27</W> 
+<W DOM="5" FEAT="S МН МУЖ РОД НЕОД" ID="7" KSNAME="ЛЕТ1" LEMMA="ГОД" LINK="предл">лет</W> 
+<W DOM="11" FEAT="S ЕД ЖЕН ИМ ОД" ID="8" KSNAME="ЕЛЕНА" LEMMA="ЕЛЕНА" LINK="предик">Елена</W> 
+<W DOM="11" FEAT="PART" ID="9" KSNAME="ЕЩЕ2" LEMMA="ЕЩЕ" LINK="огранич">еще</W> 
+<W DOM="11" FEAT="PART" ID="10" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="4" FEAT="ADV" ID="11" LEMMA="ЗАМУЖЕМ" LINK="подч-союзн">замужем</W>, 
+<W DOM="3" FEAT="CONJ" ID="12" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="19" FEAT="A ЕД ЖЕН ИМ" ID="13" KSNAME="САМ" LEMMA="САМ" LINK="суб-копр">сама</W> 
+<W DOM="19" FEAT="S ЕД ЖЕН ИМ ОД" ID="14" LEMMA="ОНА" LINK="предик">она</W>, 
+<W DOM="19" FEAT="V СОВ ДЕЕПР ПРОШ" ID="15" LEMMA="ПОРАБОТАТЬ" LINK="обст">поработав</W> 
+<W DOM="15" FEAT="PR" ID="16" KSNAME="В2" LEMMA="В" LINK="3-компл">в</W> 
+<W DOM="16" FEAT="S ЕД МУЖ ПР НЕОД" ID="17" KSNAME="БАНК" LEMMA="БАНК" LINK="предл">банке</W>, 
+<W DOM="19" FEAT="ADV" ID="18" LEMMA="ТЕПЕРЬ" LINK="обст">теперь</W> 
+<W DOM="12" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="19" LEMMA="ТАНЦЕВАТЬ" LINK="соч-союзн">танцует</W> 
+<W DOM="19" FEAT="PR" ID="20" KSNAME="ЗА1" LEMMA="ЗА" LINK="обст">за</W> 
+<W DOM="20" FEAT="S МН ЖЕН ВИН НЕОД" ID="21" LEMMA="ДЕНЬГИ" LINK="предл">деньги</W> 
+<W DOM="19" FEAT="PR" ID="22" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="22" FEAT="S ЕД МУЖ ПР НЕОД" ID="23" KSNAME="БАР1" LEMMA="БАР" LINK="предл">баре</W>.
+<LF LFARG="17" LFFUNC="_LOC" LFVAL="16"/>
+</S>
+<S ID="59">
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="1" KSNAME="СПРАШИВАТЬ1" LEMMA="СПРАШИВАТЬ">Спрашивает</W>: 
+"<W DOM="1" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 2-Л" ID="2" LEMMA="ХОТЕТЬ" LINK="2-компл">Хотите</W>, 
+<W DOM="2" FEAT="V СОВ ИЗЪЯВ НЕПРОШ ЕД 1-Л" ID="3" LEMMA="ПОКАЗЫВАТЬ" LINK="1-компл">покажу</W>, 
+<W DOM="3" FEAT="ADV" ID="4" KSNAME="КАК2" LEMMA="КАК" LINK="1-компл">как</W>?"
+</S>
+<S ID="60">
+<W DOM="_root" FEAT="CONJ" ID="1" KSNAME="И1" LEMMA="И">И</W> 
+<W DOM="1" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="ТАНЦЕВАТЬ" LINK="соч-союзн">танцует</W>.
+</S>
+<S ID="61">
+<W DOM="4" FEAT="ADV" ID="1" LEMMA="СБОКУ" LINK="1-компл">Сбоку</W> 
+<W DOM="1" FEAT="PR" ID="2" LEMMA="ОТ" LINK="1-компл">от</W> 
+<W DOM="2" FEAT="S ЕД ЖЕН РОД НЕОД" ID="3" LEMMA="СЦЕНА" LINK="предл">сцены</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="4" LEMMA="ВИСЕТЬ">висит</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="5" KSNAME="КАРТА" LEMMA="КАРТА" LINK="предик">карта</W> 
+<W DOM="5" FEAT="S ЕД МУЖ РОД НЕОД" ID="6" KSNAME="МИР1" LEMMA="МИР" LINK="1-компл">мира</W>, 
+<W DOM="4" FEAT="CONJ" ID="7" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="НА2" LEMMA="НА" LINK="соч-союзн">на</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ПР ОД" ID="9" LEMMA="ОНА" LINK="предл">ней</W> - 
+<W DOM="8" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="10" LEMMA="ГЕРМАНИЯ" LINK="предик">Германия</W>, 
+<W DOM="10" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="11" LEMMA="УКРАИНА" LINK="сочин">Украина</W>, 
+<W DOM="11" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="12" LEMMA="РОССИЯ" LINK="сочин">Россия</W>, 
+<W DOM="12" FEAT="S ЕД МУЖ ИМ НЕОД" ID="13" LEMMA="ТАДЖИКИСТАН" LINK="сочин">Таджикистан</W>, 
+<W DOM="13" FEAT="S ЕД МУЖ ИМ НЕОД" ID="14" LEMMA="КАЗАХСТАН" LINK="сочин">Казахстан</W>, 
+<W DOM="8" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="15" KSNAME="ЗАГОРАТЬСЯ1" LEMMA="ЗАГОРАТЬСЯ" LINK="сент-соч">загораются</W> 
+<W DOM="15" FEAT="S МН ЖЕН ИМ НЕОД" ID="16" KSNAME="ТОЧКА1" LEMMA="ТОЧКА" LINK="предик">точки</W>-
+<W DOM="16" FEAT="S МН МУЖ ИМ НЕОД" ID="17" LEMMA="ГОРОД" LINK="аппоз">города</W>, 
+<W DOM="15" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="18" LEMMA="ПОКАЗЫВАТЬ" LINK="обст">показывая</W>, 
+<W DOM="18" FEAT="CONJ" ID="19" KSNAME="КАК1" LEMMA="КАК" LINK="1-компл">как</W> 
+<W DOM="19" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="20" KSNAME="БРОСАТЬ1" LEMMA="БРОСАТЬ" LINK="подч-союзн">бросает</W> 
+<W DOM="20" FEAT="S МН МУЖ ВИН ОД" ID="21" LEMMA="ЧЕЛОВЕК" LINK="1-компл">людей</W> 
+<W DOM="20" FEAT="PR" ID="22" LEMMA="ИЗ" LINK="2-компл">из</W> 
+<W DOM="24" FEAT="A ЕД МУЖ РОД" ID="23" KSNAME="ОДИН2" LEMMA="ОДИН" LINK="опред">одного</W> 
+<W DOM="22" FEAT="S ЕД МУЖ РОД НЕОД" ID="24" LEMMA="КОНЕЦ" LINK="предл">конца</W> 
+<W DOM="24" FEAT="S ЕД МУЖ РОД НЕОД" ID="25" KSNAME="МИР1" LEMMA="МИР" LINK="квазиагент">мира</W> 
+<W DOM="20" FEAT="PR" ID="26" KSNAME="В1" LEMMA="В" LINK="3-компл">в</W> 
+<W DOM="26" FEAT="A ЕД МУЖ ВИН НЕОД" ID="27" LEMMA="ДРУГОЙ" LINK="предл">другой</W>.
+</S>
+<S CLASS="LF" ID="62">
+<W DOM="2" FEAT="PART" ID="1" KSNAME="ЕЩЕ1" LEMMA="ЕЩЕ" LINK="огранич">Еще</W> 
+<W DOM="6" FEAT="PR" ID="2" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="4" FEAT="A ЕД МУЖ ПР" ID="3" KSNAME="ФИКТ-ПРИЛ" LEMMA="19-Й" LINK="опред">19-м</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ПР НЕОД" ID="4" KSNAME="ВЕК" LEMMA="ВЕК" LINK="предл">веке</W> 
+<W DOM="6" FEAT="S МН МУЖ ИМ ОД" ID="5" LEMMA="НЕМЕЦ" LINK="предик">немцы</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="6" LEMMA="ПОСЕЛЯТЬСЯ">поселялись</W> 
+<W DOM="6" FEAT="PR" ID="7" KSNAME="В2" LEMMA="В" LINK="1-компл">в</W> 
+<W DOM="9" FEAT="A МН ПР" ID="8" KSNAME="ЭТОТ" LEMMA="ЭТОТ" LINK="опред">этих</W> 
+<W DOM="7" FEAT="S МН МУЖ ПР НЕОД" ID="9" KSNAME="КРАЙ2" LEMMA="КРАЙ" LINK="предл">краях</W>, 
+<W DOM="6" FEAT="CONJ" ID="10" LEMMA="НО" LINK="сент-соч">но</W> 
+<W DOM="13" FEAT="S ЕД МУЖ ВИН ОД" ID="11" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="КЭГИ" LINK="1-компл">Кэги</W> 
+<W DOM="13" FEAT="ADV" ID="12" LEMMA="БОЛЬШЕ" LINK="обст">больше</W> 
+<W DOM="10" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="13" LEMMA="ИНТЕРЕСОВАТЬ" LINK="соч-союзн">интересует</W> 
+<W DOM="13" FEAT="S ЕД МУЖ ИМ НЕОД" ID="14" KSNAME="ВЕК" LEMMA="ВЕК" LINK="предик">век</W> 
+<W DOM="14" FEAT="A ЕД МУЖ ИМ" ID="15" LEMMA="ДВАДЦАТЫЙ" LINK="опред">двадцатый</W> - 
+<W DOM="17" FEAT="A ЕД ЖЕН ИМ" ID="16" LEMMA="СТАЛИНСКИЙ" LINK="опред">сталинская</W> 
+<W DOM="15" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="17" LEMMA="ДЕПОРТАЦИЯ" LINK="разъяснит">депортация</W> 
+<W DOM="17" FEAT="PR" ID="18" LEMMA="ВО ВРЕМЯ" LINK="атриб">во время</W> 
+<W DOM="18" FEAT="S ЕД ЖЕН РОД НЕОД" ID="19" LEMMA="ВОЙНА" LINK="предл">войны</W>, 
+<W DOM="22" FEAT="A МН ИМ" ID="20" LEMMA="СОВЕТСКИЙ" LINK="опред">советские</W> 
+<W DOM="22" FEAT="A МН ИМ" ID="21" LEMMA="КОМСОМОЛЬСКИЙ" LINK="опред">комсомольские</W> 
+<W DOM="17" FEAT="S МН ЖЕН ИМ НЕОД" ID="22" LEMMA="СТРОЙКА" LINK="сочин">стройки</W>, 
+<W DOM="24" FEAT="A ЕД ЖЕН ИМ" ID="23" LEMMA="ПОСТСОВЕТСКИЙ" LINK="опред">постсоветская</W> 
+<W DOM="22" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="24" KSNAME="РАБОТА1" LEMMA="РАБОТА" LINK="сочин">работа</W> 
+<W DOM="24" FEAT="S МН МУЖ РОД ОД" ID="25" LEMMA="ИНОСТРАНЕЦ" LINK="квазиагент">иностранцев</W>-
+<W DOM="25" FEAT="S МН МУЖ РОД ОД" ID="26" LEMMA="КОНТРАКТНИК" LINK="аппоз">контрактников</W> 
+<W DOM="24" FEAT="PR" ID="27" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="27" FEAT="S ЕД ЖЕН ПР НЕОД" ID="28" LEMMA="СТРАНА" LINK="предл">стране</W>, 
+<W DOM="28" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД ЖЕН ПР" ID="29" LEMMA="СТОЯТЬ" LINK="опред">стоящей</W> 
+<W DOM="29" FEAT="PR" ID="30" KSNAME="НА2" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="30" FEAT="S ЕД ЖЕН ПР НЕОД" ID="31" LEMMA="НЕФТЬ" LINK="предл">нефти</W>, 
+<W DOM="29" FEAT="CONJ" ID="32" KSNAME="КАК1" LEMMA="КАК" LINK="сравнит">как</W> 
+<W DOM="34" FEAT="A МН ИМ" ID="33" LEMMA="АРАБСКИЙ" LINK="опред">Арабские</W> 
+<W DOM="32" FEAT="S МН МУЖ ИМ НЕОД" ID="34" LEMMA="ЭМИРАТ" LINK="сравн-союзн">Эмираты</W>.
+<LF LFARG="4" LFFUNC="_LOC" LFVAL="2"/>
+<LF LFARG="28" LFFUNC="_LOC" LFVAL="27"/>
+<LF LFARG="9" LFFUNC="_LOC" LFVAL="7"/>
+</S>
+<S ID="63">
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="1" KSNAME="ВЫНОСИТЬ1" LEMMA="ВЫНОСИТЬ">Выносят</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="2" LEMMA="КАНИСТРА" LINK="1-компл">канистру</W> 
+<W DOM="2" FEAT="S ЕД МУЖ РОД НЕОД" ID="3" LEMMA="БЕНЗИН" LINK="квазиагент">бензина</W> - 
+<W DOM="9" FEAT="ADV" ID="4" LEMMA="СКОЛЬКО" LINK="1-компл">сколько</W> 
+<W DOM="4" FEAT="S МН МУЖ РОД НЕОД" ID="5" LEMMA="КИЛОМЕТР" LINK="1-компл">километров</W> 
+<W DOM="8" FEAT="PR" ID="6" KSNAME="НА2" LEMMA="НА" LINK="обст">на</W> 
+<W DOM="6" FEAT="S ЕД СРЕД ПР НЕОД" ID="7" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предл">этом</W> 
+<W DOM="1" FEAT="ADV" ID="8" LEMMA="МОЖНО" LINK="разъяснит">можно</W> 
+<W DOM="8" FEAT="V СОВ ИНФ" ID="9" KSNAME="ПРОЕЗЖАТЬ1" LEMMA="ПРОЕЗЖАТЬ" LINK="предик">проехать</W>?
+</S>
+<S CLASS="LF" ID="64">
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="1" LEMMA="ПРОВЕРЯТЬ">Проверяют</W>, 
+<W DOM="4" FEAT="ADV" ID="2" LEMMA="СКОЛЬКО" LINK="1-компл">сколько</W> 
+<W DOM="2" FEAT="S ЕД ЖЕН РОД НЕОД" ID="3" LEMMA="ЭНЕРГИЯ" LINK="1-компл">энергии</W> 
+<W DOM="1" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="4" LEMMA="ТРАТИТЬ" LINK="1-компл">потратил</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ ОД" ID="5" KSNAME="ГЕРД1" LEMMA="ГЕРД" LINK="предик">Герд</W>, 
+<W DOM="7" FEAT="ADV" ID="6" LEMMA="НЕПРЕРЫВНО" LINK="обст">непрерывно</W> 
+<W DOM="4" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="7" LEMMA="ШАГАТЬ" LINK="обст">шагая</W>, 
+<W DOM="4" FEAT="CONJ" ID="8" KSNAME="И1" LEMMA="И" LINK="сент-соч">и</W> 
+<W DOM="8" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="9" LEMMA="ТРАТИТЬ" LINK="соч-союзн" NODETYPE="FANTOM"/>
+<W DOM="9" FEAT="S ЕД МУЖ ИМ ОД" ID="10" LEMMA="ГЕНРИХ" LINK="предик">Генрих</W>, 
+<W DOM="9" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="11" LEMMA="КРУТИТЬ" LINK="обст">крутя</W> 
+<W DOM="11" FEAT="S МН ЖЕН ВИН НЕОД" ID="12" LEMMA="ПЕДАЛЬ" LINK="1-компл">педали</W>.
+<LF LFARG="3" LFFUNC="_REAL1" LFVAL="4"/>
+</S>
+<S ID="65">
+<W DOM="2" FEAT="ADV" ID="1" LEMMA="СОВСЕМ" LINK="огранич">Совсем</W> 
+<W DOM="_root" FEAT="ADV" ID="2" LEMMA="МАЛО">мало</W>, 
+<W DOM="2" FEAT="ADV" ID="3" LEMMA="СРАВНИМО" LINK="сочин">сравнимо</W> 
+<W DOM="3" FEAT="PR" ID="4" KSNAME="С3" LEMMA="С" LINK="1-компл">с</W> 
+<W DOM="4" FEAT="S ЕД СРЕД ТВОР НЕОД" ID="5" LEMMA="ГОРЮЧЕЕ" LINK="предл">горючим</W> 
+<W DOM="5" FEAT="PR" ID="6" KSNAME="НА2" LEMMA="НА" LINK="атриб">на</W> 
+<W DOM="6" FEAT="S ЕД СРЕД ПР НЕОД" ID="7" KSNAME="ДНО1" LEMMA="ДНО" LINK="предл">дне</W> 
+<W DOM="7" FEAT="S ЕД МУЖ РОД НЕОД" ID="8" LEMMA="СТАКАНЧИК" LINK="квазиагент">стаканчика</W> - 
+<W DOM="10" FEAT="S ЕД МУЖ ВИН ОД" ID="9" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">его</W> 
+<W DOM="8" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="10" KSNAME="ВЫНОСИТЬ1" LEMMA="ВЫНОСИТЬ" LINK="разъяснит">выносит</W> 
+<W DOM="12" FEAT="A ЕД ЖЕН ИМ" ID="11" KSNAME="МОЛОДОЙ1" LEMMA="МОЛОДОЙ" LINK="опред">молодая</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН ИМ ОД" ID="12" KSNAME="ЕЛЕНА" LEMMA="ЕЛЕНА" LINK="предик">Елена</W>, 
+<W DOM="10" FEAT="CONJ" ID="13" LEMMA="ЧТОБЫ" LINK="обст">чтобы</W> 
+<W DOM="13" FEAT="V СОВ ИНФ" ID="14" LEMMA="ПОКАЗЫВАТЬ" LINK="инф-союзн">показать</W>, 
+<W DOM="16" FEAT="A ЕД МУЖ ВИН НЕОД" ID="15" LEMMA="КАКОЙ" LINK="опред">какой</W> 
+<W DOM="21" FEAT="S ЕД МУЖ ВИН НЕОД" ID="16" LEMMA="НОМЕР" LINK="1-компл">номер</W> 
+<W DOM="16" FEAT="PR" ID="17" KSNAME="С3" LEMMA="С" LINK="атриб">с</W> 
+<W DOM="17" FEAT="S ЕД СРЕД ТВОР НЕОД" ID="18" LEMMA="ВЫДЫХАНИЕ" LINK="предл">выдыханием</W> 
+<W DOM="18" FEAT="S ЕД МУЖ РОД НЕОД" ID="19" LEMMA="ОГОНЬ" LINK="1-компл">огня</W> 
+<W DOM="21" FEAT="S ЕД ЖЕН ИМ ОД" ID="20" LEMMA="ОНА" LINK="предик">она</W> 
+<W DOM="14" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="21" LEMMA="ПОКАЗЫВАТЬ" LINK="1-компл">показывает</W> 
+<W DOM="21" FEAT="PR" ID="22" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="22" FEAT="S МН МУЖ ПР НЕОД" ID="23" KSNAME="БАР1" LEMMA="БАР" LINK="предл">барах</W>.
+</S>
+<S ID="66">
+<W DOM="3" FEAT="S ЕД СРЕД ИМ НЕОД" ID="1" KSNAME="ВСЕ1" LEMMA="ВСЕ" LINK="предик">Все</W> 
+<W DOM="3" FEAT="ADV" ID="2" LEMMA="ОЧЕНЬ" LINK="огранич">очень</W> 
+<W DOM="_root" FEAT="A КР ЕД СРЕД" ID="3" LEMMA="НАГЛЯДНЫЙ">наглядно</W>.
+</S>
+<S CLASS="LF" ID="67">
+<W DOM="5" FEAT="PR" ID="1" KSNAME="ПОСЛЕ1" LEMMA="ПОСЛЕ" LINK="обст">После</W> 
+<W DOM="1" FEAT="S ЕД МУЖ РОД НЕОД" ID="2" LEMMA="СПЕКТАКЛЬ" LINK="предл">спектакля</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ ОД" ID="3" LEMMA="ШТЕФАН" LINK="предик">Штефан</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="4" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="КЭГИ" LINK="аппоз">Кэги</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="5" LEMMA="РАССКАЗЫВАТЬ">рассказывает</W>, 
+<W DOM="5" FEAT="CONJ" ID="6" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="8" FEAT="A ЕД МУЖ ТВОР" ID="7" LEMMA="СВОЙ" LINK="опред">своим</W> 
+<W DOM="9" FEAT="S ЕД МУЖ ТВОР ОД" ID="8" LEMMA="УЧИТЕЛЬ" LINK="2-компл">учителем</W> 
+<W DOM="6" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="9" KSNAME="СЧИТАТЬ2" LEMMA="СЧИТАТЬ" LINK="подч-союзн">считает</W> 
+<W DOM="9" FEAT="S ЕД МУЖ ВИН ОД" ID="10" LEMMA="УЧИТЕЛЬ" LINK="1-компл">учителя</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН РОД НЕОД" ID="11" KSNAME="ФИЗИКА" LEMMA="ФИЗИКА" LINK="2-компл">физики</W> 
+<W DOM="10" FEAT="PR" ID="12" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="12" FEAT="S ЕД ЖЕН ПР НЕОД" ID="13" LEMMA="ШКОЛА" LINK="предл">школе</W>, 
+<W DOM="15" FEAT="S ЕД МУЖ ИМ" ID="14" LEMMA="КОТОРЫЙ" LINK="предик">который</W> 
+<W DOM="10" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="15" LEMMA="УМЕТЬ" LINK="релят">умел</W> 
+<W DOM="15" FEAT="V СОВ ИНФ" ID="16" LEMMA="ОБЪЯСНЯТЬ" LINK="1-компл">объяснить</W> 
+<W DOM="16" FEAT="S ЕД СРЕД ВИН НЕОД" ID="17" KSNAME="ТО1" LEMMA="ТО" LINK="1-компл">то</W>, 
+<W DOM="21" FEAT="S ЕД СРЕД ВИН НЕОД" ID="18" KSNAME="ЧТО2" LEMMA="ЧТО" LINK="1-компл">что</W>, 
+<W DOM="22" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="19" KSNAME="КАЗАТЬСЯ" LEMMA="КАЗАТЬСЯ" LINK="вводн">казалось</W> 
+<W DOM="19" FEAT="PART" ID="20" LEMMA="БЫ" LINK="аналит">бы</W>, 
+<W DOM="22" FEAT="V СОВ ИНФ" ID="21" LEMMA="ПОНИМАТЬ" LINK="предик">понять</W> 
+<W DOM="17" FEAT="A КР ЕД СРЕД" ID="22" LEMMA="НЕВОЗМОЖНЫЙ" LINK="релят">невозможно</W>.
+<LF LFARG="13" LFFUNC="_LOC" LFVAL="12"/>
+</S>
+<S ID="68">
+<W DOM="2" FEAT="PART" ID="1" LEMMA="ВОТ" LINK="огранич">Вот</W> 
+<W DOM="7" FEAT="ADV" ID="2" LEMMA="ТАК" LINK="обст">так</W>, 
+"<W DOM="2" FEAT="PR" ID="3" KSNAME="НА2" LEMMA="НА" LINK="сочин">на</W> 
+<W DOM="3" FEAT="S МН МУЖ ПР НЕОД" ID="4" LEMMA="ПАЛЕЦ" LINK="предл">пальцах</W>", 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="5" LEMMA="ШТЕФАН" LINK="предик">Штефан</W> 
+<W DOM="7" FEAT="ADV" ID="6" LEMMA="ТЕПЕРЬ" LINK="обст">теперь</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="7" LEMMA="РАССКАЗЫВАТЬ">рассказывает</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="ПРО1" LEMMA="ПРО" LINK="3-компл">про</W> 
+<W DOM="8" FEAT="S МН МУЖ ВИН ОД" ID="9" LEMMA="ЧЕЛОВЕК" LINK="предл">людей</W>, 
+<W DOM="13" FEAT="S МН ВИН ОД" ID="10" LEMMA="КОТОРЫЙ" LINK="1-компл">которых</W> 
+<W DOM="12" FEAT="A ЕД ЖЕН ИМ" ID="11" LEMMA="ЧЕЙ-ТО" LINK="опред">чья-то</W> 
+<W DOM="13" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="12" LEMMA="ВОЛЯ" LINK="предик">воля</W> 
+<W DOM="9" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="13" LEMMA="ШВЫРЯТЬ" LINK="релят">швыряет</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="ПО1" LEMMA="ПО" LINK="обст">по</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ДАТ НЕОД" ID="15" KSNAME="МИР1" LEMMA="МИР" LINK="предл">миру</W>, 
+<W DOM="13" FEAT="V НЕСОВ ДЕЕПР НЕПРОШ" ID="16" LEMMA="ЛИШАТЬ" LINK="обст">лишая</W> 
+<W DOM="16" FEAT="S ЕД МУЖ РОД НЕОД" ID="17" LEMMA="ДОМ" LINK="2-компл">дома</W> 
+<W DOM="17" FEAT="CONJ" ID="18" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="18" FEAT="S МН МУЖ РОД НЕОД" ID="19" LEMMA="КОРЕНЬ" LINK="соч-союзн">корней</W>.
+</S>
+<S ID="69">
+<W DOM="2" FEAT="A ЕД МУЖ ИМ" ID="1" LEMMA="ПЯТЫЙ" LINK="опред">Пятый</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ ОД" ID="2" LEMMA="ГЕРОЙ" LINK="предик">герой</W> 
+<W DOM="2" FEAT="S ЕД МУЖ РОД НЕОД" ID="3" LEMMA="СПЕКТАКЛЬ" LINK="1-компл">спектакля</W> - 
+<W DOM="5" FEAT="A ЕД МУЖ ИМ" ID="4" KSNAME="МОЛОДОЙ1" LEMMA="МОЛОДОЙ" LINK="опред">молодой</W> 
+<W DOM="_root" FEAT="S ЕД МУЖ ИМ ОД" ID="5" LEMMA="КАЗАХ">казах</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ ОД" ID="6" KSNAME="ФИКТ-ЛИЧИМЯ" LEMMA="НУРЛАН" LINK="аппоз">Нурлан</W>, 
+<W DOM="5" FEAT="V СОВ ПРИЧ ПРОШ ЕД МУЖ ИМ" ID="7" LEMMA="ПРИЕЗЖАТЬ" LINK="опред">приехавший</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="9" LEMMA="ГЕРМАНИЯ" LINK="предл">Германию</W> 
+<W DOM="7" FEAT="PR" ID="10" LEMMA="ИЗ" LINK="1-компл">из</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН РОД НЕОД" ID="11" LEMMA="АЛМА-АТА" LINK="предл">Алма-Аты</W> 
+<W DOM="7" FEAT="V НЕСОВ ИНФ" ID="12" LEMMA="УЧИТЬСЯ" LINK="обст">учиться</W> 
+<W DOM="12" FEAT="S ЕД МУЖ ДАТ НЕОД" ID="13" LEMMA="БИЗНЕС" LINK="1-компл">бизнесу</W>, 
+<W DOM="7" FEAT="CONJ" ID="14" KSNAME="ДА2" LEMMA="ДА" LINK="сочин">да</W> 
+<W DOM="17" FEAT="ADV" ID="15" LEMMA="ТАК" LINK="обст">так</W> 
+<W DOM="15" FEAT="PART" ID="16" KSNAME="И2" LEMMA="И" LINK="вспом">и</W> 
+<W DOM="14" FEAT="V СОВ ПРИЧ ПРОШ ЕД МУЖ ИМ" ID="17" KSNAME="ОСТАВАТЬСЯ1" LEMMA="ОСТАВАТЬСЯ" LINK="соч-союзн">оставшийся</W> 
+<W DOM="17" FEAT="ADV" ID="18" LEMMA="ЗДЕСЬ" LINK="присвяз">здесь</W>.
+</S>
+<S ID="70">
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="1" KSNAME="ОН" LEMMA="ОН" LINK="предик">Он</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="2" LEMMA="РАБОТАТЬ">работал</W> 
+<W DOM="2" FEAT="PR" ID="3" KSNAME="С3" LEMMA="С" LINK="обст">с</W> 
+<W DOM="5" FEAT="S ЕД МУЖ ИМ НЕОД" ID="4" LEMMA="ИНТЕРНЕТ" LINK="композ">интернет</W>-
+<W DOM="3" FEAT="S МН ЖЕН ТВОР НЕОД" ID="5" LEMMA="ПРОДАЖА" LINK="предл">продажами</W> 
+<W DOM="8" FEAT="A ЕД ЖЕН РОД" ID="6" LEMMA="СЫРОЙ" LINK="опред">сырой</W> 
+<W DOM="8" FEAT="A ЕД ЖЕН РОД" ID="7" LEMMA="КАЗАХСКИЙ" LINK="опред">казахской</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН РОД НЕОД" ID="8" LEMMA="НЕФТЬ" LINK="1-компл">нефти</W>, 
+<W DOM="2" FEAT="CONJ" ID="9" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="11" FEAT="ADV" ID="10" LEMMA="ТЕПЕРЬ" LINK="обст">теперь</W> 
+<W DOM="9" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="11" LEMMA="ТОРГОВАТЬ" LINK="соч-союзн">торгует</W> 
+<W DOM="13" FEAT="A МН ТВОР" ID="12" LEMMA="СОЛНЕЧНЫЙ" LINK="опред">солнечными</W> 
+<W DOM="11" FEAT="S МН ЖЕН ТВОР НЕОД" ID="13" LEMMA="БАТАРЕЯ" LINK="1-компл">батареями</W> 
+<W DOM="11" FEAT="CONJ" ID="14" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="19" FEAT="ADV" ID="15" KSNAME="ТУТ1" LEMMA="ТУТ" LINK="обст">тут</W> 
+<W DOM="15" FEAT="PART" ID="16" LEMMA="ЖЕ" LINK="огранич">же</W> 
+<W DOM="19" FEAT="PR" ID="17" KSNAME="С3" LEMMA="С" LINK="обст">со</W> 
+<W DOM="17" FEAT="S МН МУЖ ТВОР ОД" ID="18" LEMMA="ЗРИТЕЛЬ" LINK="предл">зрителями</W> 
+<W DOM="14" FEAT="A КР ЕД МУЖ" ID="19" LEMMA="ГОТОВЫЙ" LINK="соч-союзн">готов</W> 
+<W DOM="19" FEAT="V СОВ ИНФ" ID="20" LEMMA="ПОКАЗЫВАТЬ" LINK="1-компл">показать</W>, 
+<W DOM="23" FEAT="ADV" ID="21" KSNAME="КАК2" LEMMA="КАК" LINK="обст">как</W> 
+<W DOM="23" FEAT="S ЕД СРЕД ИМ НЕОД" ID="22" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предик">это</W> 
+<W DOM="20" FEAT="V НЕСОВ СТРАД ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="23" LEMMA="ДЕЛАТЬ" LINK="1-компл">делается</W>.
+</S>
+<S CLASS="LF" ID="71">
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="1" KSNAME="ФИКТ-ЛИЧИМЯ" LEMMA="НУРЛАН" LINK="предик">Нурлан</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="НАЗЫВАТЬ">называет</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ВИН ОД" ID="3" LEMMA="СЕБЯ" LINK="1-компл">себя</W> 
+<W DOM="2" FEAT="S ЕД МУЖ ТВОР ОД" ID="4" LEMMA="ГРАЖДАНИН" LINK="2-компл">гражданином</W> 
+<W DOM="4" FEAT="S ЕД МУЖ РОД НЕОД" ID="5" KSNAME="МИР1" LEMMA="МИР" LINK="1-компл">мира</W>, 
+<W DOM="2" FEAT="CONJ" ID="6" KSNAME="А1" LEMMA="А" LINK="сент-соч">а</W> 
+<W DOM="21" FEAT="PR" ID="7" KSNAME="С1" LEMMA="С" LINK="обст">с</W> 
+<W DOM="7" FEAT="S ЕД МУЖ РОД НЕОД" ID="8" LEMMA="ЭКРАН" LINK="предл">экрана</W> 
+<W DOM="13" FEAT="S ЕД МУЖ РОД ОД" ID="9" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">его</W> 
+<W DOM="11" FEAT="ADV" ID="10" LEMMA="ТРАДИЦИОННО" LINK="огранич">традиционно</W> 
+<W DOM="13" FEAT="A ЕД ЖЕН ИМ" ID="11" LEMMA="ОДЕТЫЙ" LINK="опред">одетая</W> 
+<W DOM="13" FEAT="A ЕД ЖЕН ИМ" ID="12" LEMMA="КАЗАХСКИЙ" LINK="опред">казахская</W> 
+<W DOM="21" FEAT="S ЕД ЖЕН ИМ ОД" ID="13" LEMMA="БАБУШКА" LINK="предик">бабушка</W> 
+<W DOM="13" FEAT="CONJ" ID="14" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ИМ ОД" ID="15" LEMMA="ДЕД" LINK="соч-союзн">дед</W>-
+<W DOM="15" FEAT="S ЕД МУЖ ИМ ОД" ID="16" LEMMA="ФРОНТОВИК" LINK="аппоз">фронтовик</W> - 
+<W DOM="18" FEAT="A ЕД ЖЕН ИМ" ID="17" KSNAME="ВЕСЬ" LEMMA="ВЕСЬ" LINK="опред">вся</W> 
+<W DOM="19" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="18" LEMMA="ГРУДЬ" LINK="предик">грудь</W> 
+<W DOM="15" FEAT="PR" ID="19" KSNAME="В2" LEMMA="В" LINK="разъяснит">в</W> 
+<W DOM="19" FEAT="S МН МУЖ ПР НЕОД" ID="20" KSNAME="ОРДЕН1" LEMMA="ОРДЕН" LINK="предл">орденах</W> - 
+<W DOM="6" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="21" LEMMA="ПЕРЕДАВАТЬ" LINK="соч-союзн">передают</W> 
+<W DOM="21" FEAT="S ЕД МУЖ ДАТ ОД" ID="22" LEMMA="ВНУК" LINK="2-компл">внуку</W> 
+<W DOM="21" FEAT="S ЕД МУЖ ВИН НЕОД" ID="23" LEMMA="ПРИВЕТ" LINK="1-компл">привет</W> 
+<W DOM="21" FEAT="CONJ" ID="24" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="24" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="25" LEMMA="УВЕРЯТЬ" LINK="соч-союзн">уверяют</W>, 
+<W DOM="25" FEAT="CONJ" ID="26" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="2-компл">что</W> 
+<W DOM="29" FEAT="S ЕД СРЕД РОД НЕОД" ID="27" KSNAME="НИЧТО" LEMMA="НИЧТО" LINK="1-компл">ничего</W> 
+<W DOM="29" FEAT="PART" ID="28" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="26" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="29" LEMMA="ИМЕТЬ" LINK="подч-союзн">имеют</W> 
+<W DOM="29" FEAT="PR" ID="30" KSNAME="ПРОТИВ1" LEMMA="ПРОТИВ" LINK="обст">против</W> 
+<W DOM="30" FEAT="S ЕД ЖЕН РОД НЕОД" ID="31" LEMMA="ГЕРМАНИЯ" LINK="предл">Германии</W>, 
+<W DOM="29" FEAT="CONJ" ID="32" LEMMA="ЛИШЬ БЫ" LINK="обст">лишь бы</W> 
+<W DOM="34" FEAT="PART" ID="33" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="32" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="34" KSNAME="БЫТЬ" LEMMA="БЫТЬ" LINK="подч-союзн">было</W> 
+<W DOM="34" FEAT="S ЕД ЖЕН РОД НЕОД" ID="35" LEMMA="ВОЙНА" LINK="предик">войны</W>.
+<LF LFARG="23" LFFUNC="_OPER3" LFVAL="21"/>
+</S>
+<S ID="72">
+<W DOM="3" FEAT="PR" ID="1" KSNAME="НА1" LEMMA="НА" LINK="3-компл">На</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="2" LEMMA="СЦЕНА" LINK="предл">сцену</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="3" KSNAME="ВЫНОСИТЬ1" LEMMA="ВЫНОСИТЬ">выносят</W> 
+<W DOM="5" FEAT="A ЕД МУЖ ВИН НЕОД" ID="4" LEMMA="ПРЕДВЫБОРНЫЙ" LINK="опред">предвыборный</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ВИН НЕОД" ID="5" LEMMA="ПЛАКАТ" LINK="1-компл">плакат</W> 
+<W DOM="5" FEAT="S ЕД МУЖ РОД ОД" ID="6" KSNAME="НАЗАРБАЕВ" LEMMA="НАЗАРБАЕВ" LINK="атриб">Назарбаева</W>, 
+<W DOM="5" FEAT="S ЕД МУЖ ВИН НЕОД" ID="7" LEMMA="МАКЕТ" LINK="сочин">макет</W> 
+<W DOM="9" FEAT="ADV" ID="8" LEMMA="БУРНО" LINK="обст">бурно</W> 
+<W DOM="10" FEAT="V НЕСОВ ПРИЧ НЕПРОШ ЕД ЖЕН РОД" ID="9" KSNAME="СТРОИТЬСЯ1" LEMMA="СТРОИТЬСЯ" LINK="опред">строящейся</W> 
+<W DOM="7" FEAT="S ЕД ЖЕН РОД НЕОД" ID="10" LEMMA="АСТАНА" LINK="1-компл">Астаны</W>.
+</S>
+<S ID="73">
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="1" KSNAME="ФИКТ-ЛИЧИМЯ" LEMMA="НУРЛАН" LINK="предик">Нурлан</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="ЗАМЕЧАТЬ">замечает</W>, 
+<W DOM="2" FEAT="CONJ" ID="3" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W>, 
+<W DOM="7" FEAT="ADV" ID="4" LEMMA="ВОЗМОЖНО" LINK="вводн">возможно</W>, 
+<W DOM="6" FEAT="S ЕД МУЖ РОД ОД" ID="5" KSNAME="ОН" LEMMA="ОН" LINK="1-компл">его</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="6" LEMMA="ДЕД" LINK="предик">дед</W> 
+<W DOM="3" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="7" LEMMA="ВОЕВАТЬ" LINK="подч-союзн">воевал</W> 
+<W DOM="7" FEAT="ADV" ID="8" LEMMA="ТАМ" LINK="обст">там</W> 
+<W DOM="8" FEAT="PART" ID="9" LEMMA="ЖЕ" LINK="огранич">же</W>, 
+<W DOM="11" FEAT="ADV" ID="10" LEMMA="ГДЕ" LINK="обст">где</W> 
+<W DOM="8" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="11" LEMMA="ВОЕВАТЬ" LINK="релят" NODETYPE="FANTOM"/>
+<W DOM="11" FEAT="S ЕД МУЖ ИМ ОД" ID="12" LEMMA="ДЕД" LINK="предик">дед</W> 
+<W DOM="12" FEAT="S ЕД МУЖ РОД ОД" ID="13" KSNAME="ГЕРД1" LEMMA="ГЕРД" LINK="1-компл">Герда</W>, 
+<W DOM="15" FEAT="PART" ID="14" KSNAME="ТОЛЬКО1" LEMMA="ТОЛЬКО" LINK="огранич">только</W> 
+<W DOM="8" FEAT="PR" ID="15" KSNAME="НА2" LEMMA="НА" LINK="сочин">на</W> 
+<W DOM="17" FEAT="A ЕД ЖЕН ПР" ID="16" LEMMA="ПРОТИВОПОЛОЖНЫЙ" LINK="опред">противоположной</W> 
+<W DOM="15" FEAT="S ЕД ЖЕН ПР НЕОД" ID="17" LEMMA="СТОРОНА" LINK="предл">стороне</W>.
+</S>
+<S ID="74">
+<W DOM="3" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="1" KSNAME="ИСТОРИЯ1" LEMMA="ИСТОРИЯ" LINK="предик">История</W> 
+<W DOM="3" FEAT="PART" ID="2" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="3" LEMMA="ХОТЕТЬ">хочет</W> 
+<W DOM="3" FEAT="V НЕСОВ ИНФ" ID="4" KSNAME="СТАНОВИТЬСЯ1" LEMMA="СТАНОВИТЬСЯ" LINK="1-компл">становиться</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="5" KSNAME="ИСТОРИЯ1" LEMMA="ИСТОРИЯ" LINK="присвяз">историей</W>, 
+<W DOM="7" FEAT="S ЕД ЖЕН ИМ ОД" ID="6" LEMMA="ОНА" LINK="предик">она</W> 
+<W DOM="3" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="7" LEMMA="ВЛИЯТЬ" LINK="сент-соч">влияет</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="НА1" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="8" FEAT="S МН ЖЕН ВИН НЕОД" ID="9" LEMMA="ЖИЗНЬ" LINK="предл">жизни</W> 
+<W DOM="9" FEAT="S МН РОД ОД" ID="10" KSNAME="ТОТ1" LEMMA="ТОТ" LINK="квазиагент">тех</W>, 
+<W DOM="12" FEAT="S ЕД МУЖ ИМ ОД" ID="11" LEMMA="КТО" LINK="предик">кто</W> 
+<W DOM="10" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="12" LEMMA="ЖИТЬ" LINK="релят">живет</W> 
+<W DOM="12" FEAT="ADV" ID="13" KSNAME="СЕГОДНЯ1" LEMMA="СЕГОДНЯ" LINK="обст">сегодня</W>.
+</S>
+</body>
+</text>

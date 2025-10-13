@@ -1,0 +1,91 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>20/05/2008</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 51</title>
+</inf>
+<body>
+<S CLASS="LF" ID="1">
+<W DOM="7" FEAT="S ЕД СРЕД ИМ НЕОД" ID="1" LEMMA="ПОСОЛЬСТВО" LINK="предик">Посольство</W> 
+<W DOM="1" FEAT="S МН РОД НЕОД" ID="2" KSNAME="США" LEMMA="США" LINK="квазиагент">США</W> 
+<W DOM="1" FEAT="PR" ID="3" KSNAME="В2" LEMMA="В" LINK="1-компл">в</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ПР НЕОД" ID="4" LEMMA="БЕЛГРАД" LINK="предл">Белграде</W> 
+<W DOM="7" FEAT="PR" ID="5" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="5" FEAT="S ЕД СРЕД ВИН НЕОД" ID="6" KSNAME="ВОСКРЕСЕНЬЕ" LEMMA="ВОСКРЕСЕНЬЕ" LINK="предл">воскресенье</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД СРЕД" ID="7" LEMMA="ОПРОВЕРГАТЬ">опровергло</W> 
+<W DOM="7" FEAT="S МН СРЕД ВИН НЕОД" ID="8" KSNAME="ОБВИНЕНИЕ1" LEMMA="ОБВИНЕНИЕ" LINK="1-компл">обвинения</W>, 
+<W DOM="8" FEAT="V СОВ СТРАД ПРИЧ ПРОШ МН ВИН НЕОД" ID="9" LEMMA="ПРЕДЪЯВЛЯТЬ" LINK="опред">предъявленные</W> 
+<W DOM="9" FEAT="S ЕД МУЖ ДАТ ОД" ID="10" LEMMA="СОТРУДНИК" LINK="2-компл">сотруднику</W> 
+<W DOM="10" FEAT="S ЕД СРЕД РОД НЕОД" ID="11" LEMMA="ПОСОЛЬСТВО" LINK="1-компл">посольства</W> 
+<W DOM="11" FEAT="S МН РОД НЕОД" ID="12" KSNAME="США" LEMMA="США" LINK="квазиагент">США</W> 
+<W DOM="10" FEAT="S ЕД МУЖ ДАТ ОД" ID="13" KSNAME="ДЖОН" LEMMA="ДЖОН" LINK="аппоз">Джону</W> 
+<W DOM="13" FEAT="S ЕД МУЖ ДАТ ОД" ID="14" LEMMA="ДЭВИД" LINK="аппоз">Дэвиду</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ДАТ ОД" ID="15" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="НЕЙБОР" LINK="аппоз">Нейбору</W>, 
+<W DOM="14" FEAT="V СОВ ПРИЧ ПРОШ ЕД МУЖ ДАТ" ID="16" LEMMA="ПОЛУЧАТЬ" LINK="опред">получившему</W> 
+<W DOM="18" FEAT="A МН ВИН НЕОД" ID="17" LEMMA="СЕКРЕТНЫЙ" LINK="опред">секретные</W> 
+<W DOM="16" FEAT="S МН МУЖ ВИН НЕОД" ID="18" LEMMA="ДОКУМЕНТ" LINK="1-компл">документы</W> 
+<W DOM="16" FEAT="PR" ID="19" LEMMA="ОТ" LINK="2-компл">от</W> 
+<W DOM="19" FEAT="S ЕД МУЖ РОД ОД" ID="20" LEMMA="ВИЦЕ-ПРЕМЬЕР" LINK="предл">вице-премьера</W> 
+<W DOM="20" FEAT="S ЕД ЖЕН РОД НЕОД" ID="21" LEMMA="СЕРБИЯ" LINK="1-компл">Сербии</W> 
+<W DOM="20" FEAT="S ЕД МУЖ РОД ОД" ID="22" KSNAME="ФИКТ-ЛИЧИМЯ" LEMMA="МОМЧИЛО" LINK="аппоз">Момчило</W> 
+<W DOM="22" FEAT="S ЕД МУЖ РОД ОД" ID="23" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="ПЕРИШИЧ" LINK="аппоз">Перишича</W>. 
+<LF LFARG="8" LFFUNC="_OPER1" LFVAL="9"/>
+<LF LFARG="18" LFFUNC="_INCEPOPER1" LFVAL="16"/>
+<LF LFARG="4" LFFUNC="_LOC" LFVAL="3"/>
+<LF LFARG="6" LFFUNC="_LOC" LFVAL="5"/>
+</S>
+<S CLASS="LF" ID="2">
+<W DOM="6" FEAT="PR" ID="1" KSNAME="В1" LEMMA="В" LINK="обст">В</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ВИН НЕОД" ID="2" LEMMA="ЧЕТВЕРГ" LINK="предл">четверг</W> 
+<W DOM="6" FEAT="S ЕД МУЖ ИМ ОД" ID="3" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="ПЕРИШИЧ" LINK="предик">Перишич</W> 
+<W DOM="3" FEAT="CONJ" ID="4" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ ОД" ID="5" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="НЕЙБОР" LINK="соч-союзн">Нейбор</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ ПРОШ МН" ID="6" KSNAME="БЫТЬ" LEMMA="БЫТЬ">были</W> 
+<W DOM="6" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР МН" ID="7" KSNAME="АРЕСТОВЫВАТЬ" LEMMA="АРЕСТОВЫВАТЬ" LINK="пасс-анал">арестованы</W> 
+<W DOM="6" FEAT="PR" ID="8" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="8" FEAT="S ЕД МУЖ ПР НЕОД" ID="9" LEMMA="РЕСТОРАН" LINK="предл">ресторане</W> 
+<W DOM="6" FEAT="PR" ID="10" KSNAME="ПРИ" LEMMA="ПРИ" LINK="обст">при</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН ПР НЕОД" ID="11" KSNAME="ПЕРЕДАЧА1" LEMMA="ПЕРЕДАЧА" LINK="предл">передаче</W> 
+<W DOM="11" FEAT="S МН МУЖ РОД НЕОД" ID="12" LEMMA="ДОКУМЕНТ" LINK="1-компл">документов</W>, 
+<W DOM="6" FEAT="CONJ" ID="13" KSNAME="А1" LEMMA="А" LINK="сочин">а</W> 
+<W DOM="17" FEAT="PR" ID="14" LEMMA="ЧЕРЕЗ" LINK="обст">через</W> 
+<W DOM="16" FEAT="NUM" ID="15" KSNAME="ЧИСЛ-БОЛЬШ" LEMMA="15" LINK="количест">15</W> 
+<W DOM="14" FEAT="S МН МУЖ РОД НЕОД" ID="16" KSNAME="ЧАС" LEMMA="ЧАС" LINK="предл">часов</W> 
+<W DOM="13" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР МН" ID="17" KSNAME="ОТПУСКАТЬ1" LEMMA="ОТПУСКАТЬ" LINK="соч-союзн">отпущены</W>. 
+<LF LFARG="2" LFFUNC="_LOC" LFVAL="1"/>
+</S>
+<S ID="3">
+<W DOM="8" FEAT="PR" ID="1" KSNAME="ПО1" LEMMA="ПО" LINK="вводн">По</W> 
+<W DOM="1" FEAT="S МН СРЕД ДАТ НЕОД" ID="2" LEMMA="СЛОВО" LINK="предл">словам</W> 
+<W DOM="4" FEAT="A МН РОД" ID="3" LEMMA="АМЕРИКАНСКИЙ" LINK="опред">американских</W> 
+<W DOM="2" FEAT="S МН МУЖ РОД ОД" ID="4" KSNAME="ДИПЛОМАТ1" LEMMA="ДИПЛОМАТ" LINK="квазиагент">дипломатов</W>, 
+<W DOM="8" FEAT="S МН СРЕД ИМ НЕОД" ID="5" KSNAME="ОБВИНЕНИЕ1" LEMMA="ОБВИНЕНИЕ" LINK="предик">обвинения</W> 
+<W DOM="5" FEAT="PR" ID="6" KSNAME="В2" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="6" FEAT="S ЕД МУЖ ПР НЕОД" ID="7" LEMMA="ШПИОНАЖ" LINK="предл">шпионаже</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="8" KSNAME="ЯВЛЯТЬСЯ1" LEMMA="ЯВЛЯТЬСЯ">являются</W> 
+<W DOM="8" FEAT="A МН ТВОР" ID="9" LEMMA="ОШИБОЧНЫЙ" LINK="1-компл">ошибочными</W>.
+</S>
+<S CLASS="LF" ID="4">
+<W DOM="5" FEAT="S ЕД МУЖ ИМ НЕОД" ID="1" LEMMA="АРЕСТ" LINK="предик">Арест</W> 
+<W DOM="1" FEAT="S ЕД МУЖ РОД ОД" ID="2" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="НЕЙБОР" LINK="1-компл">Нейбора</W> 
+<W DOM="2" FEAT="CONJ" ID="3" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="3" FEAT="S ЕД МУЖ РОД ОД" ID="4" KSNAME="ФИКТ-ФАМИЛИЯ" LEMMA="ПЕРИШИЧ" LINK="соч-союзн">Перишича</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="5" KSNAME="ВЫЗЫВАТЬ2" LEMMA="ВЫЗЫВАТЬ">вызвал</W> 
+<W DOM="7" FEAT="A ЕД ЖЕН ВИН" ID="6" LEMMA="РЕЗКИЙ" LINK="опред">резкую</W> 
+<W DOM="5" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="7" LEMMA="КРИТИКА" LINK="1-компл">критику</W> 
+<W DOM="9" FEAT="A МН РОД" ID="8" KSNAME="СЕРБСКИЙ1" LEMMA="СЕРБСКИЙ" LINK="опред">сербских</W> 
+<W DOM="7" FEAT="S МН МУЖ РОД ОД" ID="9" LEMMA="ЛИДЕР" LINK="1-компл">лидеров</W>, 
+<W DOM="11" FEAT="PART" ID="10" KSNAME="УЖЕ" LEMMA="УЖЕ" LINK="огранич">уже</W> 
+<W DOM="9" FEAT="V СОВ ПРИЧ ПРОШ МН РОД" ID="11" LEMMA="ИЗВИНЯТЬСЯ" LINK="опред">извинившихся</W> 
+<W DOM="11" FEAT="PR" ID="12" KSNAME="ПЕРЕД1" LEMMA="ПЕРЕД" LINK="2-компл">перед</W> 
+<W DOM="12" FEAT="S МН ТВОР НЕОД" ID="13" KSNAME="США" LEMMA="США" LINK="предл">США</W> 
+<W DOM="11" FEAT="PR" ID="14" KSNAME="ЗА1" LEMMA="ЗА" LINK="1-компл">за</W> 
+<W DOM="14" FEAT="S МН СРЕД ВИН НЕОД" ID="15" KSNAME="ДЕЙСТВИЕ1" LEMMA="ДЕЙСТВИЕ" LINK="предл">действия</W> 
+<W DOM="15" FEAT="S МН МУЖ РОД ОД" ID="16" KSNAME="ВОЕННЫЙ2" LEMMA="ВОЕННЫЙ" LINK="квазиагент">военных</W>. 
+<LF LFARG="7" LFFUNC="_MAGN" LFVAL="6"/>
+<LF LFARG="7" LFFUNC="_CAUSFUNC0" LFVAL="5"/>
+</S>
+</body>
+</text>

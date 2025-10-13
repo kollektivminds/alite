@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>04.06.2008</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 52</title>
+</inf>
+<body>
+<S CLASS="LF" ID="1">
+<W DOM="2" FEAT="A ЕД МУЖ ИМ" ID="1" LEMMA="ХУДОЖЕСТВЕННЫЙ" LINK="опред">Художественный</W> 
+<W DOM="10" FEAT="S ЕД МУЖ ИМ ОД" ID="2" LEMMA="РУКОВОДИТЕЛЬ" LINK="предик">руководитель</W> 
+<W DOM="5" FEAT="A ЕД МУЖ РОД" ID="3" LEMMA="ГОСУДАРСТВЕННЫЙ" LINK="опред">Государственного</W> 
+<W DOM="5" FEAT="A ЕД МУЖ РОД" ID="4" LEMMA="КАМЕРНЫЙ" LINK="опред">камерного</W> 
+<W DOM="2" FEAT="S ЕД МУЖ РОД НЕОД" ID="5" LEMMA="ОРКЕСТР" LINK="1-компл">оркестра</W> 
+"<W DOM="5" FEAT="S МН МУЖ ИМ ОД" ID="6" LEMMA="СОЛИСТ" LINK="аппоз">Солисты</W> 
+<W DOM="6" FEAT="S ЕД ЖЕН РОД НЕОД" ID="7" LEMMA="МОСКВА" LINK="атриб">Москвы</W>" 
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="8" LEMMA="ЮРИЙ" LINK="аппоз">Юрий</W> 
+<W DOM="8" FEAT="S ЕД МУЖ ИМ ОД" ID="9" KSNAME="БАШМЕТ1" LEMMA="БАШМЕТ" LINK="аппоз">Башмет</W> 
+<W DOM="_root" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР ЕД МУЖ" ID="10" KSNAME="ВКЛЮЧАТЬ1" LEMMA="ВКЛЮЧАТЬ">включен</W> 
+<W DOM="10" FEAT="PR" ID="11" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="11" FEAT="S ЕД МУЖ ВИН НЕОД" ID="12" KSNAME="СОСТАВ1" LEMMA="СОСТАВ" LINK="предл">состав</W> 
+<W DOM="12" FEAT="S ЕД МУЖ РОД НЕОД" ID="13" KSNAME="СОВЕТ2" LEMMA="СОВЕТ" LINK="квазиагент">совета</W> 
+<W DOM="13" FEAT="PR" ID="14" KSNAME="ПРИ" LEMMA="ПРИ" LINK="атриб">при</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ПР ОД" ID="15" LEMMA="ПРЕЗИДЕНТ" LINK="предл">президенте</W> 
+<W DOM="15" FEAT="S ЕД ЖЕН РОД НЕОД" ID="16" LEMMA="РОССИЯ" LINK="1-компл">России</W> 
+<W DOM="13" FEAT="PR" ID="17" KSNAME="ПО1" LEMMA="ПО" LINK="атриб">по</W> 
+<W DOM="17" FEAT="S ЕД ЖЕН ДАТ НЕОД" ID="18" LEMMA="КУЛЬТУРА" LINK="предл">культуре</W> 
+<W DOM="18" FEAT="CONJ" ID="19" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="19" FEAT="S ЕД СРЕД ДАТ НЕОД" ID="20" LEMMA="ИСКУССТВО" LINK="соч-союзн">искусству</W>. 
+<LF LFARG="12" LFFUNC="_CAUSOPER1" LFPREP="11" LFVAL="10"/>
+<LF LFARG="5" LFFUNC="_CAP" LFVAL="2"/>
+<LF LFARG="13" LFFUNC="_EQUIP" LFVAL="12"/>
+<LF LFARG="15" LFFUNC="_LOC" LFVAL="14"/>
+</S>
+<S ID="2">
+<W DOM="12" FEAT="CONJ" ID="1" KSNAME="КАК1" LEMMA="КАК" LINK="вводн">Как</W> 
+<W DOM="1" FEAT="V СОВ ИЗЪЯВ ПРОШ МН" ID="2" KSNAME="СООБЩАТЬ1" LEMMA="СООБЩАТЬ" LINK="сравн-союзн">сообщили</W> 
+<W DOM="2" FEAT="ADV" ID="3" KSNAME="СЕГОДНЯ1" LEMMA="СЕГОДНЯ" LINK="обст">сегодня</W> 
+<W DOM="2" FEAT="PR" ID="4" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="4" FEAT="S ЕД ЖЕН ПР НЕОД" ID="5" LEMMA="ПРЕСС-СЛУЖБА" LINK="предл">пресс-службе</W> 
+<W DOM="5" FEAT="S ЕД МУЖ РОД ОД" ID="6" KSNAME="ГЛАВА2" LEMMA="ГЛАВА" LINK="атриб">главы</W> 
+<W DOM="8" FEAT="A ЕД СРЕД РОД" ID="7" LEMMA="РОССИЙСКИЙ" LINK="опред">российского</W> 
+<W DOM="6" FEAT="S ЕД СРЕД РОД НЕОД" ID="8" LEMMA="ГОСУДАРСТВО" LINK="1-компл">государства</W>, 
+<W DOM="12" FEAT="S ЕД МУЖ ВИН НЕОД" ID="9" KSNAME="УКАЗ1" LEMMA="УКАЗ" LINK="1-компл">указ</W> 
+<W DOM="9" FEAT="PR" ID="10" KSNAME="О2" LEMMA="О" LINK="1-компл">об</W> 
+<W DOM="10" FEAT="S ЕД СРЕД ПР НЕОД" ID="11" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предл">этом</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="12" LEMMA="ПОДПИСЫВАТЬ">подписал</W> 
+<W DOM="12" FEAT="S ЕД МУЖ ИМ ОД" ID="13" LEMMA="ПРЕЗИДЕНТ" LINK="предик">президент</W> 
+<W DOM="13" FEAT="S ЕД МУЖ ИМ ОД" ID="14" KSNAME="ПУТИН" LEMMA="ПУТИН" LINK="аппоз">Путин</W>. 
+</S>
+</body>
+</text>

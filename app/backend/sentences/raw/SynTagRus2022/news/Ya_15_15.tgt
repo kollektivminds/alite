@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>09/06/2008</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 15</title>
+</inf>
+<body>
+<S CLASS="LF" ID="1">
+<W DOM="7" FEAT="S ЕД МУЖ ИМ ОД" ID="1" LEMMA="ПРЕЗИДЕНТ" LINK="предик">Президент</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН РОД НЕОД" ID="2" LEMMA="РОССИЯ" LINK="1-компл">России</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ИМ ОД" ID="3" KSNAME="ВЛАДИМИР2" LEMMA="ВЛАДИМИР" LINK="аппоз">Владимир</W> 
+<W DOM="3" FEAT="S ЕД МУЖ ИМ ОД" ID="4" KSNAME="ПУТИН" LEMMA="ПУТИН" LINK="аппоз">Путин</W> 
+<W DOM="7" FEAT="ADV" ID="5" KSNAME="СЕГОДНЯ1" LEMMA="СЕГОДНЯ" LINK="обст">сегодня</W> 
+<W DOM="7" FEAT="ADV" ID="6" LEMMA="ВПЕРВЫЕ" LINK="обст">впервые</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="7" KSNAME="ОТВЕЧАТЬ1" LEMMA="ОТВЕЧАТЬ">ответит</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="НА1" LEMMA="НА" LINK="3-компл">на</W> 
+<W DOM="8" FEAT="S МН МУЖ ВИН НЕОД" ID="9" LEMMA="ВОПРОС" LINK="предл">вопросы</W> 
+<W DOM="9" FEAT="S МН МУЖ РОД ОД" ID="10" LEMMA="ГРАЖДАНИН" LINK="квазиагент">граждан</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН РОД НЕОД" ID="11" LEMMA="СТРАНА" LINK="1-компл">страны</W> 
+<W DOM="7" FEAT="PR" ID="12" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="14" FEAT="A ЕД МУЖ ПР" ID="13" LEMMA="ПРЯМОЙ" LINK="опред">прямом</W> 
+<W DOM="12" FEAT="S ЕД МУЖ ПР НЕОД" ID="14" KSNAME="ЭФИР1" LEMMA="ЭФИР" LINK="предл">эфире</W> 
+<W DOM="17" FEAT="NUM РОД" ID="15" LEMMA="ДВА" LINK="количест">двух</W> 
+<W DOM="17" FEAT="A МН РОД" ID="16" LEMMA="РОССИЙСКИЙ" LINK="опред">российских</W> 
+<W DOM="14" FEAT="S МН МУЖ РОД НЕОД" ID="17" LEMMA="ТЕЛЕКАНАЛ" LINK="квазиагент">телеканалов</W> 
+<W DOM="17" FEAT="S ЕД СРЕД ИМ НЕОД" ID="18" KSNAME="ОРТ2" LEMMA="ОРТ" LINK="аппоз">ОРТ</W> 
+<W DOM="18" FEAT="CONJ" ID="19" KSNAME="И1" LEMMA="И" LINK="сочин">и</W> 
+<W DOM="19" FEAT="S ЕД СРЕД ИМ НЕОД" ID="20" LEMMA="РТР" LINK="соч-союзн">РТР</W>, 
+<W DOM="7" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="21" KSNAME="СООБЩАТЬ1" LEMMA="СООБЩАТЬ" LINK="вводн">сообщает</W> 
+<W DOM="21" FEAT="S ЕД МУЖ ИМ НЕОД" ID="22" LEMMA="ИТАР-ТАСС" LINK="предик">ИТАР-ТАСС</W>. 
+<LF LFARG="9" LFFUNC="_REAL3-M" LFPREP="8" LFVAL="7"/>
+<LF LFARG="14" LFFUNC="_ADV1-UN" LFVAL="12"/>
+</S>
+</body>
+</text>

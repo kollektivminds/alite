@@ -4,15 +4,15 @@ set up database
 2. load words and feed to db
 3. CREATE module
 """
-#from ..scraper.funcs import load_json
+#from ..words.funcs import load_json
 import os
 
 import pandas as pd
 #from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
-from scraper.funcs import *
-#from .. scraper.ews import *
-from scraper.pipeline import feed_data
+from words.funcs import *
+#from .. words.ews import *
+from words.pipeline import feed_data
 from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker

@@ -28,6 +28,7 @@ CREATE TABLE lexicon (
     id SERIAL PRIMARY KEY,
     lex_text VARCHAR(50) NOT NULL UNIQUE
     lex_text_clean VARCHAR(50) NOT NULL UNIQUE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- PRIMARY TABLE for all base forms
 -- RELS INCL 
@@ -36,6 +37,7 @@ CREATE TABLE lemmas (
     lem_text VARCHAR(50) NOT NULL,
     -- 0 = adjective, 1 = adverb, 2 = noun, 3 = number, 4 = participle, 5 = pronoun, 6 = verb
     pos INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     CONSTRAINT unique_lemma UNIQUE (lemma_text, part_of_speech)
 );
 -- PRIMARY TABLE for all grammatical combinations
@@ -81,22 +83,24 @@ CREATE TABLE gram_props (
     --#TODO verify this
     --False, True
     noun_dimun BOOLEAN,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     CONSTRAINT unique_grammar UNIQUE (
         verb_aspect,
         verb_conj,
         verb_conj_type,
-        verb_conj_person,
-        verb_conj_tense,
+        verb_infinitive,
         verb_mood,
-        verb_reflexive,
-        verb_transitive,
+        verb_trans_refl,
+        verb_conj_person,
         part_type,
         part_voice,
+        part_parent_verb_id,
         subst_case,
         subst_animacy,
-        subst_gender,
+        adjv_short,
+        gram_gender,
         gram_number,
-        gram_tense,
+        gram_past,
         noun_dimun
     ),
     CONSTRAINT part_parent_verb FOREIGN KEY (part_parent_verb_id) REFERENCES lemmas(id) ON DELETE CASCADE
@@ -108,6 +112,7 @@ CREATE TABLE word_forms (
     lemma_id INT NOT NULL,
     lexicon_id INT NOT NULL,
     grammar_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     CONSTRAINT lemma FOREIGN KEY (lemma_id) REFERENCES lemmas(id) ON DELETE CASCADE,
     CONSTRAINT lexicon FOREIGN KEY (lexicon_id) REFERENCES lexicon(id) ON DELETE CASCADE,
     CONSTRAINT grammar FOREIGN KEY (grammar_id) REFERENCES gram_props(id) ON DELETE CASCADE
@@ -117,12 +122,14 @@ CREATE TABLE word_forms (
 CREATE TABLE definitions (
     id SERIAL PRIMARY KEY,
     def_text TEXT NOT NULL UNIQUE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- PRIMARY TABLE for word definition example sentences
 -- RELS INCL
 CREATE TABLE def_sentences (
     id SERIAL PRIMARY KEY,
     sent_text TEXT NOT NULL UNIQUE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- SECONDARY TABLE for word definitions and their example sentences
 -- RELS INCL
@@ -130,6 +137,7 @@ CREATE TABLE defs_in_sents (
     def_id INT NOT NULL,
     sent_id INT NOT NULL,
     PRIMARY KEY (def_id, sent_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     CONSTRAINT def_sent FOREIGN KEY (sent_id) REFERENCES def_sentences(id) ON DELETE CASCADE,
     CONSTRAINT sent_def FOREIGN KEY (def_id) REFERENCES definitions(id) ON DELETE CASCADE
 );
@@ -143,6 +151,7 @@ CREATE TABLE verb_pairs (
     imperfective_verb_id INT NOT NULL,
     perfective_verb_id INT NOT NULL,
     PRIMARY KEY (imperfective_verb_id, perfective_verb_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     CONSTRAINT imperfective_verb FOREIGN KEY (imperfective_verb_id) REFERENCES lemmas(id) ON DELETE CASCADE,
     CONSTRAINT perfective_verb FOREIGN KEY (perfective_verb_id) REFERENCES lemmas(id) ON DELETE CASCADE
 );
@@ -152,11 +161,12 @@ CREATE TABLE lemma_defs (
     lemma_id INT NOT NULL,
     def_id INT NOT NULL,
     PRIMARY KEY (lemma_id, definition_id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     CONSTRAINT lemma_of_definition FOREIGN KEY (lemma_id) REFERENCES lemmas(id) ON DELETE CASCADE,
     CONSTRAINT definition_of_lemma FOREIGN KEY (definition_id) REFERENCES definitions(id) ON DELETE CASCADE
 );
 --
--- ORGANIZATION
+-- WORD ORGANIZATION
 --
 
 -- PRIMARY TABLE for textbook modules
@@ -164,13 +174,15 @@ CREATE TABLE lemma_defs (
 CREATE TABLE modules (
     id SERIAL PRIMARY KEY,
     module_name VARCHAR(10) NOT NULL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- PRIMARY TABLE for lessons and custom word lists
 -- RELS INCL 
 CREATE TABLE lessons_lists (
     id SERIAL PRIMARY KEY,
-    leslist_name VARCHAR(50) NOT NULL,
+    lesslist_name VARCHAR(50) NOT NULL,
     topic TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- SECONDARY TABLE for lessons/lists in modules
 -- RELS INCL 
@@ -180,15 +192,17 @@ CREATE TABLE lesslists_in_modules (
     PRIMARY KEY (lesslist_id, module_id),
     CONSTRAINT lessons_lists FOREIGN KEY (lesslist_id) REFERENCES lessons_lists(id) ON DELETE CASCADE,
     CONSTRAINT module FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- SECONDARY TABLE for words in lessons/lists
 -- RELS INCL 
 CREATE TABLE words_in_lesslists (
-    word_id INT NOT NULL,
+    lemma_id INT NOT NULL,
     lesslist_id INT NOT NULL,
     PRIMARY KEY (word_id, lesslist_id),
-    CONSTRAINT word FOREIGN KEY (word_id) REFERENCES lemmas(id) ON DELETE CASCADE,
+    CONSTRAINT word FOREIGN KEY (lemma_id) REFERENCES lemmas(id) ON DELETE CASCADE,
     CONSTRAINT lessons_lists FOREIGN KEY (lesslist_id) REFERENCES lessons_lists(id) ON DELETE CASCADE
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 --
 -- SENTENCES
@@ -203,6 +217,7 @@ CREATE TABLE sent_docs (
     source TEXT NOT NULL,
     title TEXT NOT NULL,
     comment TEXT NOT NULL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- PRIMARY TABLE for 
@@ -214,6 +229,7 @@ CREATE TABLE sent_docs (
     source TEXT NOT NULL,
     title TEXT NOT NULL,
     comment TEXT NOT NULL
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 --

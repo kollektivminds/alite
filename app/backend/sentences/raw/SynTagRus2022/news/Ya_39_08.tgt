@@ -1,0 +1,65 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>01/06/2009</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 39</title>
+</inf>
+<body>
+<S CLASS="LF" ID="1">
+<W DOM="8" FEAT="S ЕД МУЖ ИМ ОД" ID="1" LEMMA="МИНИСТР" LINK="предик">Министр</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН РОД НЕОД" ID="2" LEMMA="ОБОРОНА" LINK="1-компл">обороны</W> 
+<W DOM="1" FEAT="S ЕД ЖЕН РОД НЕОД" ID="3" LEMMA="РОССИЯ" LINK="квазиагент">России</W> 
+<W DOM="1" FEAT="S ЕД МУЖ ИМ ОД" ID="4" KSNAME="СЕРГЕЙ" LEMMA="СЕРГЕЙ" LINK="аппоз">Сергей</W> 
+<W DOM="4" FEAT="S ЕД МУЖ ИМ ОД" ID="5" KSNAME="ИВАНОВ" LEMMA="ИВАНОВ" LINK="аппоз">Иванов</W> 
+<W DOM="8" FEAT="PR" ID="6" KSNAME="В1" LEMMA="В" LINK="обст">в</W> 
+<W DOM="6" FEAT="S ЕД СРЕД ВИН НЕОД" ID="7" KSNAME="ВОСКРЕСЕНЬЕ" LEMMA="ВОСКРЕСЕНЬЕ" LINK="предл">воскресенье</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД МУЖ" ID="8" LEMMA="ВЫЛЕТАТЬ">вылетел</W> 
+<W DOM="8" FEAT="PR" ID="9" LEMMA="ИЗ" LINK="1-компл">из</W> 
+<W DOM="9" FEAT="S ЕД ЖЕН РОД НЕОД" ID="10" LEMMA="МОСКВА" LINK="предл">Москвы</W> 
+<W DOM="8" FEAT="PR" ID="11" KSNAME="В1" LEMMA="В" LINK="2-компл">в</W> 
+<W DOM="11" FEAT="S ЕД МУЖ ВИН НЕОД" ID="12" LEMMA="СЕВЕРОМОРСК" LINK="предл">Североморск</W>. 
+<LF LFARG="7" LFFUNC="_LOC" LFVAL="6"/>
+</S>
+<S CLASS="LF" ID="2">
+<W DOM="2" FEAT="S ЕД МУЖ ИМ ОД" ID="1" KSNAME="ОН" LEMMA="ОН" LINK="предик">Он</W> 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="2" LEMMA="СОВЕРШАТЬ">совершит</W> 
+<W DOM="4" FEAT="A ЕД ЖЕН ВИН" ID="3" KSNAME="РАБОЧИЙ1" LEMMA="РАБОЧИЙ" LINK="опред">рабочую</W> 
+<W DOM="2" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="4" LEMMA="ПОЕЗДКА" LINK="1-компл">поездку</W> 
+<W DOM="4" FEAT="PR" ID="5" KSNAME="ПО1" LEMMA="ПО" LINK="3-компл">по</W> 
+<W DOM="7" FEAT="A МН ДАТ" ID="6" LEMMA="ВОИНСКИЙ" LINK="опред">воинским</W> 
+<W DOM="5" FEAT="S МН ЖЕН ДАТ НЕОД" ID="7" LEMMA="ЧАСТЬ" LINK="предл">частям</W>, 
+<W DOM="7" FEAT="V НЕСОВ СТРАД ПРИЧ НЕПРОШ МН ДАТ" ID="8" LEMMA="ДИСЛОЦИРОВАТЬ" LINK="опред">дислоцирующимся</W> 
+<W DOM="8" FEAT="PR" ID="9" KSNAME="НА2" LEMMA="НА" LINK="2-компл">на</W> 
+<W DOM="9" FEAT="S ЕД МУЖ ПР НЕОД" ID="10" LEMMA="СЕВЕРО-ЗАПАД" LINK="предл">северо-западе</W> 
+<W DOM="10" FEAT="S ЕД ЖЕН РОД НЕОД" ID="11" LEMMA="РОССИЯ" LINK="1-компл">России</W>. 
+<LF LFARG="4" LFFUNC="_OPER1" LFVAL="2"/>
+<LF LFARG="10" LFFUNC="_LOC" LFVAL="9"/>
+</S>
+<S CLASS="LF" ID="3">
+<W DOM="9" FEAT="CONJ" ID="1" KSNAME="КАК1" LEMMA="КАК" LINK="вводн">Как</W> 
+<W DOM="1" FEAT="V СОВ ИЗЪЯВ ПРОШ МН" ID="2" KSNAME="СООБЩАТЬ1" LEMMA="СООБЩАТЬ" LINK="сравн-союзн">сообщили</W> 
+<W DOM="2" FEAT="PR" ID="3" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="6" FEAT="A ЕД СРЕД ПР" ID="4" LEMMA="РОССИЙСКИЙ" LINK="опред">российском</W> 
+<W DOM="6" FEAT="A ЕД СРЕД ПР" ID="5" KSNAME="ВОЕННЫЙ1" LEMMA="ВОЕННЫЙ" LINK="опред">военном</W> 
+<W DOM="3" FEAT="S ЕД СРЕД ПР НЕОД" ID="6" LEMMA="ВЕДОМСТВО" LINK="предл">ведомстве</W>, 
+<W DOM="9" FEAT="S ЕД ЖЕН ТВОР НЕОД" ID="7" LEMMA="ПРОГРАММА" LINK="агент">программой</W> 
+<W DOM="7" FEAT="S ЕД МУЖ РОД ОД" ID="8" LEMMA="МИНИСТР" LINK="квазиагент">министра</W> 
+<W DOM="_root" FEAT="V СОВ СТРАД ПРИЧ ПРОШ КР ЕД СРЕД" ID="9" LEMMA="ПРЕДУСМАТРИВАТЬ">предусмотрено</W> 
+<W DOM="9" FEAT="S ЕД СРЕД ИМ НЕОД" ID="10" LEMMA="ПОСЕЩЕНИЕ" LINK="предик">посещение</W> 
+<W DOM="12" FEAT="A ЕД МУЖ РОД" ID="11" LEMMA="СЕВЕРНЫЙ" LINK="опред">Северного</W> 
+<W DOM="10" FEAT="S ЕД МУЖ РОД НЕОД" ID="12" LEMMA="ФЛОТ" LINK="1-компл">флота</W>, 
+<W DOM="15" FEAT="A ЕД МУЖ РОД" ID="13" LEMMA="ЛЕНИНГРАДСКИЙ" LINK="опред">Ленинградского</W> 
+<W DOM="15" FEAT="A ЕД МУЖ РОД" ID="14" KSNAME="ВОЕННЫЙ1" LEMMA="ВОЕННЫЙ" LINK="опред">военного</W> 
+<W DOM="12" FEAT="S ЕД МУЖ РОД НЕОД" ID="15" KSNAME="ОКРУГ" LEMMA="ОКРУГ" LINK="сочин">округа</W>, 
+<W DOM="15" FEAT="CONJ" ID="16" LEMMA="А ТАКЖЕ" LINK="сочин">а также</W> 
+<W DOM="19" FEAT="A ЕД ЖЕН РОД" ID="17" KSNAME="ФИКТ-ПРИЛ" LEMMA="76-Й" LINK="опред">76-й</W> 
+<W DOM="19" FEAT="A ЕД ЖЕН РОД" ID="18" LEMMA="ВОЗДУШНО-ДЕСАНТНЫЙ" LINK="опред">воздушно-десантной</W> 
+<W DOM="16" FEAT="S ЕД ЖЕН РОД НЕОД" ID="19" LEMMA="ДИВИЗИЯ" LINK="соч-союзн">дивизии</W> 
+<W DOM="19" FEAT="PR" ID="20" KSNAME="В2" LEMMA="В" LINK="атриб">в</W> 
+<W DOM="20" FEAT="S ЕД МУЖ ПР НЕОД" ID="21" KSNAME="ПСКОВ" LEMMA="ПСКОВ" LINK="предл">Пскове</W>. 
+<LF LFARG="21" LFFUNC="_LOC" LFVAL="20"/>
+</S>
+</body>
+</text>

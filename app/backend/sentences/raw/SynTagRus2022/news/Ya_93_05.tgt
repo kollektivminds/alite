@@ -1,0 +1,64 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<text ver="1.1">
+<inf>
+<author>_</author>
+<date>18/06/2008</date>
+<source>Материал новостных лент Интернета 2002-2003</source>
+<title>Материал новостных лент Интернета 2002-2003, коллекция 93</title>
+</inf>
+<body>
+<S ID="1">
+<W DOM="3" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="1" KSNAME="ОРГАНИЗАЦИЯ1" LEMMA="ОРГАНИЗАЦИЯ" LINK="предик">Организация</W> 
+"<W DOM="1" FEAT="S ЕД ЖЕН ИМ НЕОД" ID="2" LEMMA="ХЕЗБОЛЛА" LINK="аппоз">Хизбалла</W>" 
+<W DOM="_root" FEAT="V СОВ ИЗЪЯВ ПРОШ ЕД ЖЕН" ID="3" LEMMA="ОТВЕРГАТЬ">отвергла</W> 
+<W DOM="5" FEAT="A ЕД СРЕД ВИН" ID="4" LEMMA="ВЧЕРАШНИЙ" LINK="опред">вчерашнее</W> 
+<W DOM="3" FEAT="S ЕД СРЕД ВИН НЕОД" ID="5" KSNAME="ЗАЯВЛЕНИЕ1" LEMMA="ЗАЯВЛЕНИЕ" LINK="1-компл">заявление</W> 
+<W DOM="5" FEAT="S ЕД СРЕД РОД НЕОД" ID="6" LEMMA="КОМАНДОВАНИЕ" LINK="квазиагент">командования</W> 
+<W DOM="8" FEAT="A ЕД ЖЕН РОД" ID="7" LEMMA="ИЗРАИЛЬСКИЙ" LINK="опред">израильской</W> 
+<W DOM="6" FEAT="S ЕД ЖЕН РОД НЕОД" ID="8" LEMMA="АРМИЯ" LINK="квазиагент">армии</W>, 
+<W DOM="6" FEAT="V НЕСОВ ПРИЧ ПРОШ ЕД СРЕД РОД" ID="9" KSNAME="УТВЕРЖДАТЬ1" LEMMA="УТВЕРЖДАТЬ" LINK="опред">утверждавшего</W>, 
+<W DOM="9" FEAT="CONJ" ID="10" KSNAME="ЧТО1" LEMMA="ЧТО" LINK="1-компл">что</W> 
+<W DOM="13" FEAT="NUM ИМ" ID="11" KSNAME="ТРИ" LEMMA="ТРИ" LINK="количест">три</W> 
+<W DOM="13" FEAT="V СОВ СТРАД ПРИЧ ПРОШ МН РОД" ID="12" LEMMA="ПОХИЩАТЬ" LINK="опред">похищенных</W> 
+<W DOM="14" FEAT="S ЕД МУЖ РОД ОД" ID="13" LEMMA="СОЛДАТ" LINK="предик">солдата</W> 
+<W DOM="10" FEAT="A КР МН" ID="14" LEMMA="МЕРТВЫЙ" LINK="подч-союзн">мертвы</W>. 
+</S>
+<S CLASS="LF" ID="2">
+<W DOM="7" FEAT="PR" ID="1" KSNAME="ПО1" LEMMA="ПО" LINK="вводн">По</W> 
+<W DOM="1" FEAT="S ЕД СРЕД ДАТ НЕОД" ID="2" LEMMA="МНЕНИЕ" LINK="предл">мнению</W> 
+<W DOM="2" FEAT="S МН МУЖ РОД ОД" ID="3" LEMMA="ЛИДЕР" LINK="квазиагент">лидеров</W> 
+"<W DOM="3" FEAT="S ЕД ЖЕН РОД НЕОД" ID="4" LEMMA="ХЕЗБОЛЛА" LINK="1-компл">Хизбаллы</W>", 
+<W DOM="7" FEAT="S ЕД СРЕД ИМ НЕОД" ID="5" KSNAME="ЭТО" LEMMA="ЭТО" LINK="предик">это</W> 
+<W DOM="7" FEAT="PART" ID="6" LEMMA="ЛИШЬ" LINK="огранич">лишь</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="7" KSNAME="УКАЗЫВАТЬ2" LEMMA="УКАЗЫВАТЬ">указывает</W> 
+<W DOM="7" FEAT="PR" ID="8" KSNAME="НА1" LEMMA="НА" LINK="1-компл">на</W> 
+<W DOM="8" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="9" LEMMA="НЕСПОСОБНОСТЬ" LINK="предл">неспособность</W> 
+<W DOM="11" FEAT="A МН РОД" ID="10" LEMMA="ИЗРАИЛЬСКИЙ" LINK="опред">израильских</W> 
+<W DOM="9" FEAT="S МН ЖЕН РОД НЕОД" ID="11" LEMMA="СПЕЦСЛУЖБА" LINK="квазиагент">спецслужб</W> 
+<W DOM="9" FEAT="V НЕСОВ ИНФ" ID="12" LEMMA="ДОБЫВАТЬ" LINK="1-компл">добывать</W> 
+<W DOM="14" FEAT="A ЕД ЖЕН ВИН" ID="13" LEMMA="НУЖНЫЙ" LINK="опред">нужную</W> 
+<W DOM="12" FEAT="S ЕД ЖЕН ВИН НЕОД" ID="14" LEMMA="ИНФОРМАЦИЯ" LINK="1-компл">информацию</W>. 
+<LF LFARG="14" LFFUNC="_INCEPOPER1" LFVAL="12"/>
+<LF LFARG="2" LFFUNC="_ADV2-UN" LFVAL="1"/>
+</S>
+<S ID="3">
+"<W DOM="3" FEAT="S МН МУЖ ИМ ОД" ID="1" LEMMA="СИОНИСТ" LINK="предик">Сионисты</W> 
+<W DOM="3" FEAT="PART" ID="2" KSNAME="ПРОСТО2" LEMMA="ПРОСТО" LINK="огранич">просто</W> 
+<W DOM="_root" FEAT="V НЕСОВ ИЗЪЯВ НЕПРОШ МН 3-Л" ID="3" LEMMA="ТЯНУТЬ">тянут</W> 
+<W DOM="3" FEAT="S ЕД СРЕД ВИН НЕОД" ID="4" LEMMA="ВРЕМЯ" LINK="1-компл">время</W>, 
+<W DOM="3" FEAT="CONJ" ID="5" LEMMA="ЧТОБЫ" LINK="обст">чтобы</W> 
+<W DOM="7" FEAT="PART" ID="6" KSNAME="НЕ1" LEMMA="НЕ" LINK="огранич">не</W> 
+<W DOM="5" FEAT="V НЕСОВ ИНФ" ID="7" LEMMA="ПЛАТИТЬ" LINK="инф-союзн">платить</W> 
+<W DOM="7" FEAT="S ЕД МУЖ ВИН НЕОД" ID="8" KSNAME="ВЫКУП2" LEMMA="ВЫКУП" LINK="1-компл">выкуп</W>", - 
+<W DOM="3" FEAT="V НЕСОВ СТРАД ИЗЪЯВ НЕПРОШ ЕД 3-Л" ID="9" KSNAME="ГОВОРИТЬ1" LEMMA="ГОВОРИТЬ" LINK="вводн">говорится</W> 
+<W DOM="9" FEAT="PR" ID="10" KSNAME="В2" LEMMA="В" LINK="обст">в</W> 
+<W DOM="10" FEAT="S ЕД СРЕД ПР НЕОД" ID="11" KSNAME="ЗАЯВЛЕНИЕ1" LEMMA="ЗАЯВЛЕНИЕ" LINK="предл">заявлении</W> 
+<W DOM="13" FEAT="A ЕД ЖЕН РОД" ID="12" LEMMA="ШИИТСКИЙ" LINK="опред">шиитской</W> 
+<W DOM="11" FEAT="S ЕД ЖЕН РОД НЕОД" ID="13" KSNAME="ОРГАНИЗАЦИЯ1" LEMMA="ОРГАНИЗАЦИЯ" LINK="квазиагент">организации</W>, 
+<W DOM="11" FEAT="V СОВ СТРАД ПРИЧ ПРОШ ЕД СРЕД ПР" ID="14" LEMMA="ПЕРЕДАВАТЬ" LINK="опред">переданном</W> 
+<W DOM="14" FEAT="S ЕД МУЖ ТВОР НЕОД" ID="15" LEMMA="ТЕЛЕКАНАЛ" LINK="агент">телеканалом</W> 
+<W DOM="15" FEAT="NID" ID="16" KSNAME="ФИКТ-ЛЕКС" LEMMA="АЛЬ" LINK="аппоз">Аль</W> 
+<W DOM="16" FEAT="NID" ID="17" KSNAME="ФИКТ-ЛЕКС" LEMMA="МАНАР" LINK="аппоз">Манар</W>. 
+</S>
+</body>
+</text>
