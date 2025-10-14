@@ -35,33 +35,40 @@ class ReturnedLemmaProcessor:
 
         self.result = None
         
-    def _handle_entries(self, entries):
-        return_dict = None
+    def _sort_entries(self, word, entries):
+        return_dicts = []
         for entry in entries:
-            entry_dict = {}
             pos = entry.partOfSpeech
-            print("this is a %s", pos)
+            logger.debug("this is a %s", pos)
             if entry.language.code != 'ru':
                 logger.error("%s is %s!!!", entry['word'], entry.language.name)
-                #TODO keep these?
+                # keep these?
                 continue
             elif 'form of' in [x.tags for x in entry.senses]:
                 logger.error("This word form was found but is not canonical (a lemma)")
                 #TODO catch these to put back in the queue if not already
                 continue
-            # 
-            # pronunciations = entry.pronunciations
-            # forms = entry.forms
-            # senses = entry.senses
+             
+            pronunciations = entry.pronunciations
+            forms = entry.forms
+            senses = entry.senses
             
             # make lemma table entry (lemma_text, part_of_speech)
-            load_to_lemma = {"lemma_text": entry['word'], "part_of_speech": pos}
+            entry_dict = {
+                (word, pos): {
+                    "gram_props": {},
+                    "word_forms": {},
+                    "definitions": {},
+                    "def_sentences": {},
+                    "defs_in_sentences": {},
+                    "verb_pairs": {},
+                    "lemma_defs": {}
+                }
+            }
             
+            return_dicts.append(entry_dict)
             
-            
-            entry_dict['lemma'] = load_to_lemma
-            
-        return return_dict
+        return return_dicts
 
     def process(self, word_data):
         final_payloads = []
@@ -77,6 +84,8 @@ class ReturnedLemmaProcessor:
             raise e
         if this_word:
             #TODO get lexeme to query in DB
+            return_dicts = self._sort_entries(this_word, unprocessed_word.entries)
+            logger.debug(return_dicts)
             pass
         #
         entries = unprocessed_word.entries

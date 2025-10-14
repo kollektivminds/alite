@@ -30,6 +30,19 @@
     - [17. users](#17-users)
     - [18. user\_groups](#18-user_groups)
     - [19. users\_in\_groups](#19-users_in_groups)
+  - [questions \& answers](#questions--answers)
+    - [20. questions](#20-questions)
+    - [21. question\_sessions](#21-question_sessions)
+    - [22. student\_responses](#22-student_responses)
+    - [23. student\_decisions](#23-student_decisions)
+  - [skills](#skills)
+    - [24. skills](#24-skills)
+      - [table](#table-2)
+      - [controlled vocab](#controlled-vocab-2)
+    - [25. skills\_in\_questions](#25-skills_in_questions)
+    - [26. student\_skill\_mastery](#26-student_skill_mastery)
+  - [experiments](#experiments)
+    - [27. user\_experiments](#27-user_experiments)
 
 ## Word Tables
 
@@ -306,9 +319,51 @@ User groups
 
 ### 19. users_in_groups
 
-Represents users in groups; joins users, groups
+Users in groups; joins users, groups
 
 | name     | type | constraints                          | description |
 | -------- | ---- | ------------------------------------ | ----------- |
 | group_id | INT  | NOT NULL user_groups(id) PRIMARY KEY |             |
 | user_id  | INT  | NOT NULL users(id) PRIMARY KEY       |             |
+
+## questions & answers
+
+### 20. questions
+
+student-generated questions
+
+### 21. question_sessions
+
+students' sessions composed of questions
+
+### 22. student_responses
+
+student responses to questions
+
+### 23. student_decisions
+
+student decision tracking for, e.g., popular topics or overlooked vocab
+
+## skills
+
+### 24. skills
+
+skills for BKT
+
+#### table
+
+#### controlled vocab
+
+### 25. skills_in_questions
+
+joins skills, questions
+
+### 26. student_skill_mastery
+
+measurements of students' masteries of skills
+
+## experiments
+
+### 27. user_experiments
+
+A/B testing

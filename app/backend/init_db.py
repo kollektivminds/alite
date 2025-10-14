@@ -6,31 +6,68 @@ set up database
 """
 #from ..words.funcs import load_json
 import os
+import random
 
-import pandas as pd
+#import pandas as pd
 #from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 from words.funcs import *
 #from .. words.ews import *
 from words.pipeline import feed_data
-from sqlalchemy import Engine, create_engine, text
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+#from sqlalchemy import Engine, create_engine, text
+#from sqlalchemy.ext.declarative import declarative_base
+#from sqlalchemy.orm import sessionmaker
 
 load_dotenv()
 
 DB_URL = os.getenv("DB_URL")
-sql_file_path = "./init_db.sql"
-json_path = "../../json/"
+VOCAB_LIST_LOC = os.getenv("VOCAB_LIST_LOC")
+APP_DIR = os.getenv("APP_DIR")
+INIT_DB_LOC = "./init_db.sql"
 
 bodyLibDfLoc = "../syntagrus/bodyLibDf.json"
 bodyTextDfLoc = "../syntagrus/bodyTextDf.json"
 infDictLoc = "../syntagrus/infDict.json"
 
+def get_all_words(data):
+    """
+    This function extracts all vocabulary words from the provided JSON data.
 
-test_words = ["пасть", "красный", "деньги"]
+    Args:
+        data: The loaded JSON data.
 
-feed_data(test_words)
+    Returns:
+        A list of all the words found in the "vocab" sections.
+    """
+    all_words = []
+    textbook = data.get("textbook", {})
+
+    for module in textbook.values():
+        for lesson in module.values():
+            vocab = lesson.get("vocab", {})
+            for pos_words in vocab.values():
+                all_words.extend(pos_words)
+
+    return all_words
+
+# Load the JSON file
+with open(VOCAB_LIST_LOC, 'r', encoding='utf-8') as f:
+    vocab_data = json.load(f)
+
+# Get all the words
+words = get_all_words(vocab_data)
+
+# Print the list of words
+print(
+    f"a total of {str(len(words))} words, of which,\
+        {str(len(set(words)))} words are unique"
+    )
+
+rand_samp = random.sample(words, 5)
+
+logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
+
+feed_data(rand_samp)
 
 # --- Create the SQLAlchemy Engine ---
 #engine = create_engine(DB_URL)  # type: ignore

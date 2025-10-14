@@ -2,6 +2,7 @@ from sqlalchemy import (
     Column,
     Integer,
     String,
+    Float,
     ForeignKey,
     Boolean,
     DateTime,
@@ -301,7 +302,97 @@ class UserInGroup(Base):
     user_group = relationship("UserGroup", back_populates="users")
 
 
-# TODO: results
+# --- Questions, Sessions, and Responses ---
+
+class Question(Base):
+    __tablename__ = 'questions'
+
+    id = Column(Integer, primary_key=True)
+    question_type = Column(String(50), nullable=False)
+    question_text = Column(Text, nullable=False)
+    choices = Column(JSONB) # Using JSONB for flexibility
+    correct_answer = Column(Text, nullable=False)
+    lemma_id = Column(Integer, ForeignKey('lemmas.id'))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    lemma = relationship("Lemma")
 
 
-# TODO: metrics
+class QuestionSession(Base):
+    __tablename__ = 'question_sessions'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    session_start_time = Column(DateTime(timezone=True), server_default=func.now())
+    session_end_time = Column(DateTime(timezone=True))
+
+    user = relationship("User")
+    responses = relationship("StudentResponse", back_populates="session")
+
+
+class StudentResponse(Base):
+    __tablename__ = 'student_responses'
+
+    id = Column(Integer, primary_key=True)
+    session_id = Column(Integer, ForeignKey('question_sessions.id'), nullable=False)
+    question_id = Column(Integer, ForeignKey('questions.id'), nullable=False)
+    student_answer = Column(Text)
+    is_correct = Column(Boolean)
+    response_time_ms = Column(Integer)
+    submitted_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    session = relationship("QuestionSession", back_populates="responses")
+    question = relationship("Question")
+
+
+class StudentDecision(Base):
+    __tablename__ = 'student_decisions'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    decision_type = Column(String(100), nullable=False)
+    decision_value = Column(Text, nullable=False)
+    made_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
+    
+class Skill(Base):
+    __tablename__ = 'skills'
+
+    id = Column(Integer, primary_key=True)
+    skill_name = Column(String(255), nullable=False, unique=True)
+    skill_description = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+class SkillInQuestion(Base):
+    __tablename__ = 'question_skills'
+
+    question_id = Column(Integer, ForeignKey('questions.id'), primary_key=True)
+    skill_id = Column(Integer, ForeignKey('skills.id'), primary_key=True)
+
+class StudentSkillMastery(Base):
+    __tablename__ = 'student_skill_mastery'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    skill_id = Column(Integer, ForeignKey('skills.id'), nullable=False)
+    mastery_level = Column(Float, default=0.0)
+    p_learn = Column(Float)
+    p_guess = Column(Float)
+    p_slip = Column(Float)
+    last_seen_at = Column(DateTime(timezone=True))
+    next_review_at = Column(DateTime(timezone=True))
+
+    user = relationship("User")
+    skill = relationship("Skill")
+    
+class UserExperiment(Base):
+    __tablename__ = 'user_experiments'
+
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    experiment_name = Column(String(255), nullable=False)
+    variant_name = Column(String(255), nullable=False)
+    assigned_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User")
