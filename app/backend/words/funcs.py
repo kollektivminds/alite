@@ -44,11 +44,17 @@ db_url = f"postgresql://{db_user}:{db_pw}@{db_host}:{db_port}/{db_name}"
 pos = [
     "adjective",
     "adverb",
+    "com",
+    "conjunction",
+    "interjection",
     "noun",
     "number",
     "participle",
+    "particle",
+    "preposition",
     "pronoun",
-    "verb"
+    "verb",
+    "unknown"
 ]
 
 pos_dict = dict(enumerate(pos))

@@ -126,13 +126,22 @@ CREATE TABLE word_forms (
 -- RELS INCL 
 CREATE TABLE definitions (
     id SERIAL PRIMARY KEY,
-    def_text TEXT NOT NULL UNIQUE created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    def_text TEXT NOT NULL ,
+    UNIQUE created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- PRIMARY TABLE for word definition example sentences
 -- RELS INCL
 CREATE TABLE def_sentences (
     id SERIAL PRIMARY KEY,
-    sent_text TEXT NOT NULL UNIQUE created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    sent_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+-- PRIMARY TABLE for word pronunciations
+-- RELS INCL
+CREATE TABLE word_pronuncations (
+    id SERIAL PRIMARY KEY,
+    sent_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- SECONDARY TABLE for word definitions and their example sentences
 -- RELS INCL
@@ -140,7 +149,8 @@ CREATE TABLE defs_in_sents (
     def_id INT NOT NULL,
     sent_id INT NOT NULL,
     PRIMARY KEY (def_id, sent_id),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP CONSTRAINT def_sent FOREIGN KEY (sent_id) REFERENCES def_sentences(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT def_sent FOREIGN KEY (sent_id) REFERENCES def_sentences(id) ON DELETE CASCADE,
     CONSTRAINT sent_def FOREIGN KEY (def_id) REFERENCES definitions(id) ON DELETE CASCADE
 );
 --

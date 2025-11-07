@@ -10,7 +10,7 @@ class Loader:
     def __init__(self, db_session: Session):
         self.db = db_session
 
-    def load_to_sql_db(self, payload: schemas.ProcessedPayload):
+    def load_to_db(self, payload: schemas.ProcessedPayload):
         logger.debug(payload.lemma.lemma_text)
 
         # 1. get or create lemma (with pos) for lemma.id

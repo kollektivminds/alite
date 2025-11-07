@@ -1,0 +1,2 @@
+* !text !filter !merge !diff
+app/backend/sentences/data/body*.json filter=lfs diff=lfs merge=lfs -text

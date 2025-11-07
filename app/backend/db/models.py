@@ -17,8 +17,6 @@ from sqlalchemy.sql import func
 Base = declarative_base()
 
 # --- Word Primary Tables ---
-
-
 class Lexeme(Base):
     """Represents a unique word string as it appears in a text."""
 

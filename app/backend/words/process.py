@@ -18,9 +18,11 @@ Example:
 #!/usr/bin/env python
 # coding: utf-8
 import logging
+import uuid
 
 from db.schemas import FDAPIreturn, ProcessedPayload
 from pydantic import ValidationError
+from .funcs import pos_dict, sop_dict, remove_accents
 
 logger = logging.getLogger(__name__)
 
@@ -35,43 +37,111 @@ class ReturnedLemmaProcessor:
 
         self.result = None
         
-    def _sort_entries(self, word, entries):
-        return_dicts = []
+    def _sort_entries(self, clean_lemma, entries):
+        sorted_data = {
+            "lemmas": [],
+            "lexicon": [],
+            "gram_props": [],
+            "word_forms": [],
+            "definitions": [],
+            "def_sentences": [],
+            "pronunciations": [],
+            "verb_pairs": [],
+        }
+        lang_code = 'ru'
         for entry in entries:
-            pos = entry.partOfSpeech
-            logger.debug("this is a %s", pos)
-            if entry.language.code != 'ru':
-                logger.error("%s is %s!!!", entry['word'], entry.language.name)
-                # keep these?
+            # gather basic data
+            #logger.debug(entry)
+            language = entry.language
+            if language.code != lang_code:
+                logger.error("%s is %s!!!", entry['word'], language.name)
+                #TODO keep these?
                 continue
             elif 'form of' in [x.tags for x in entry.senses]:
                 logger.error("This word form was found but is not canonical (a lemma)")
                 #TODO catch these to put back in the queue if not already
                 continue
-             
-            pronunciations = entry.pronunciations
-            forms = entry.forms
-            senses = entry.senses
             
-            # make lemma table entry (lemma_text, part_of_speech)
-            entry_dict = {
-                (word, pos): {
-                    "gram_props": {},
-                    "word_forms": {},
-                    "definitions": {},
-                    "def_sentences": {},
-                    "defs_in_sentences": {},
-                    "verb_pairs": {},
-                    "lemma_defs": {}
-                }
+            # lemma + pos make the entry key tuple
+            pos = entry.partOfSpeech
+            if not pos:
+                continue
+            entry_key = (clean_lemma, pos)
+            logger.debug("entry: %s", entry_key)
+            
+            # make entry's lemma dict
+            lemma_dict = {
+                "clean_lemma": clean_lemma,
+                "accent_lemma": None,
+                "pos": sop_dict.get(pos)
             }
+            sorted_data['lemmas'].append(lemma_dict)
+
+            # lexicon and gram_props
+            for form in entry.forms:
+                form_word = form.word
+                if not form_word or form_word == '-':
+                    continue
+                    
+                # Create a temp ID for this specific word form
+                temp_form_id = str(uuid.uuid4())
+                
+                sorted_data['word_forms'].append({
+                    "temp_id": temp_form_id,
+                    "temp_lexicon_id": entry_key, # To link to the lexicon entry
+                    "word": form_word
+                })
+                
+                # Link all its tags as grammatical properties
+                tags = form.tags
+                for tag in tags:
+                    sorted_data['gram_props'].append({
+                        "temp_form_id": temp_form_id, # For load.py to find word_form_id
+                        "prop_name": tag # load.py will get-or-create this property
+                    })
+                    
+                # 6. Verb Pairs (Special case while looping forms)
+                if pos == 'verb' and 'perfective' in tags:
+                    perfective_lemma = form_word
+                    
+            # pronunciations
+            # These link directly to the lexicon entry
+            for pron in entry.pronunciations:
+                sorted_data['pronunciations'].append({
+                    "temp_lexicon_id": entry_key, # For load.py to find lexicon_id
+                    "text": pron.text,
+                    "type": pron.type,
+                    "tags": pron.tags
+                })
+
+            # senses (definitions) and example sentences
+            for sense in entry.senses:
+                # Create a temp ID for this definition
+                temp_def_id = str(uuid.uuid4())
+                
+                sorted_data['definitions'].append({
+                    "temp_id": temp_def_id,
+                    "temp_lexicon_id": entry_key, # To link to the lexicon entry
+                    "definition_text": sense.definition,
+                    "tags": sense.tags
+                })
+                
+                # Link examples and quotes to this definition
+                all_examples = sense.examples + sense.quotes
+                for ex in all_examples:
+                    # 'text' is the key for quotes
+                    sentence_text = ex.text if 'text' in ex else ex
+                    if sentence_text:
+                        sorted_data['def_sentences'].append({
+                            "temp_def_id": temp_def_id, # For load.py to find definition_id
+                            "sentence": sentence_text
+                        })
             
-            return_dicts.append(entry_dict)
-            
-        return return_dicts
+        return sorted_data
+
 
     def process(self, word_data):
-        final_payloads = []
+        
         try:
             unprocessed_word = FDAPIreturn(**word_data)
             this_word = unprocessed_word.word
@@ -84,14 +154,16 @@ class ReturnedLemmaProcessor:
             raise e
         if this_word:
             #TODO get lexeme to query in DB
-            return_dicts = self._sort_entries(this_word, unprocessed_word.entries)
-            logger.debug(return_dicts)
-            pass
+            sorted_entries_dict = self._sort_entries(this_word, unprocessed_word.entries)
+            logger.debug(sorted_entries_dict)
+            
+            return sorted_entries_dict
+        else:
+            return []
         #
-        entries = unprocessed_word.entries
-        logger.debug("%d entries", len(entries))
+        #entries = unprocessed_word.entries
+        #logger.debug("%d entries", len(entries))
         # verify the lang is Russian
-        
             
 
         # pronunciations (type='ipa', text=?)
@@ -108,7 +180,7 @@ class ReturnedLemmaProcessor:
         # verb conj, transitivity, reflexivity in forms.tags=class (but not unique)
         # participles searched as is must be specified as 'adjectives'
 
-        return final_payloads
+        
 
     def run(self, word_data):
         return self.process(word_data=word_data)
