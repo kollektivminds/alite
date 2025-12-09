@@ -68,3 +68,4 @@ def feed_data(word_s: list[str]):
             logger.error("Failed to process an item from the lookup stream: %s", e, exc_info=True)
 
     logger.info("Pipeline run finished.")
+    

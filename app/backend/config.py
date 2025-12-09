@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     CANVAS_TOKEN: str
     APP_DIR: str
     LOG_LOC: str
+    VOCAB_LIST_LOC: str
 
     # Computed Database URL (as a property)
     @property

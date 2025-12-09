@@ -5,7 +5,6 @@ from app.backend.db.crud import word_data as crud_words
 import logging
 
 logger=logging.getLogger(__name__)
-
 class Loader:
     def __init__(self, db_session: Session):
         self.db = db_session

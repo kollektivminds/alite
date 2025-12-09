@@ -1,21 +1,11 @@
-import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
+# Import the configured settings object from the central config file
+from app.backend.config import settings
 
-# Load environment variables from a .env file
-load_dotenv()
-DB_USER = os.getenv("DB_USER")
-DB_PW = os.getenv("DB_PW")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_NAME = os.getenv("DB_NAME")
-
-# --- 1. Define the Database URL ---
-# This is the connection string for your database.
-# It's critical to load this from an environment variable for security.
-# Format: postgresql://<user>:<password>@<host>:<port>/<dbname>
-DATABASE_URL = f"postgresql://{DB_USER}:{DB_PW}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+# --- 1. Define the Database URL using the central config object ---
+# The settings object already securely computes the full URL using pydantic.SecretStr
+DATABASE_URL = settings.DATABASE_URL
 
 # --- 2. Create the SQLAlchemy Engine ---
 # The engine is the starting point for any SQLAlchemy application.
@@ -26,13 +16,14 @@ engine = create_engine(DATABASE_URL)
 # This is a factory that will generate new Session objects (database connections).
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# --- 4. Create a Dependency for your API ---
-# This function will be used by your FastAPI endpoints to get a database session.
-# It ensures that the database connection is opened when the request starts
-# and closed when the request is finished.
+# --- 4. Create a Dependency for your API (FastAPI) ---
+# This is the function you'll use for Dependency Injection in your API endpoints.
+# It ensures the database connection is managed (opened on request, closed on finish).
 def get_db():
     db = SessionLocal()
     try:
+        # Provide the database session
         yield db
     finally:
+        # Close the connection when the request is finished
         db.close()

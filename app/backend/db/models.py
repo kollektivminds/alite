@@ -9,6 +9,7 @@ from sqlalchemy import (
     Text,
     create_engine,
     UniqueConstraint,
+    JSON
 )
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
@@ -308,7 +309,7 @@ class Question(Base):
     id = Column(Integer, primary_key=True)
     question_type = Column(String(50), nullable=False)
     question_text = Column(Text, nullable=False)
-    choices = Column(JSONB) # Using JSONB for flexibility
+    choices = Column(JSON) # Using JSONB for flexibility
     correct_answer = Column(Text, nullable=False)
     lemma_id = Column(Integer, ForeignKey('lemmas.id'))
     created_at = Column(DateTime(timezone=True), server_default=func.now())

@@ -11,9 +11,9 @@ import random
 #import pandas as pd
 #from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
-from words.funcs import *
+from .words.funcs import *
 #from .. words.ews import *
-from words.pipeline import feed_data
+from .words.pipeline import feed_data
 #from sqlalchemy import Engine, create_engine, text
 #from sqlalchemy.ext.declarative import declarative_base
 #from sqlalchemy.orm import sessionmaker
@@ -63,7 +63,7 @@ print(
         {str(len(set(words)))} words are unique"
     )
 
-rand_samp = random.sample(words, 5)
+rand_samp = random.sample(words, 2)
 
 logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
 
