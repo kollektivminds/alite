@@ -1,15 +1,20 @@
 --- Starting Git Operations ---
 Committing changes...
-[main 40d420a] Auto backup: 2025-12-08 17:25:17
- 14 files changed, 44623 insertions(+), 70 deletions(-)
+[main 8a5d07d] Auto backup: 2026-01-05 09:37:44
+ 10 files changed, 94 insertions(+), 38 deletions(-)
+ rename app/backend/db/crud/{words_questions.py => questions.py} (100%)
+ create mode 100644 app/backend/db/testing/conftest.py
+ rename app/backend/db/{ => testing}/init_db.sql (100%)
+ rename app/backend/db/{ => testing}/init_vocab.json (100%)
+ create mode 100644 app/backend/db/testing/testing_utils.py
 Pushing to origin/main...
-remote: error: Trace: 65a5f1cc26a85cbf2c42235c253950647688c739c9477585e3f42c3dee4b701b        
+remote: error: Trace: 49a1e9a3c6f6a108ee408eadb8a521e5f5aa37a09ee6305d1c12fe9648773a30        
 remote: error: See https://gh.io/lfs for more information.        
-remote: error: File app/backend/sentences/data/bodyLibDf.json is 330.51 MB; this exceeds GitHub's file size limit of 100.00 MB        
 remote: error: File app/backend/sentences/data/bodyTextDf.json is 477.99 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: File app/backend/sentences/data/bodyLibDf.json is 330.51 MB; this exceeds GitHub's file size limit of 100.00 MB        
 remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.        
 To https://github.com/kollektivminds/alite.git
  ! [remote rejected] main -> main (pre-receive hook declined)
 error: failed to push some refs to 'https://github.com/kollektivminds/alite.git'
 ✅ Success! Backup committed and pushed.
---- Finished Script: Mon Dec  8 17:26:09 PST 2025 ---
+--- Finished Script: Mon Jan  5 09:38:37 PST 2026 ---

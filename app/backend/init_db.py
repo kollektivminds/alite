@@ -11,12 +11,11 @@ import random
 #import pandas as pd
 #from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
-from .words.funcs import *
+from app.backend.db.db_session import engine
+from app.backend.db.models import Base
+from app.backend.words.funcs import *
 #from .. words.ews import *
-from .words.pipeline import feed_data
-#from sqlalchemy import Engine, create_engine, text
-#from sqlalchemy.ext.declarative import declarative_base
-#from sqlalchemy.orm import sessionmaker
+from app.backend.words.pipeline import feed_data
 
 load_dotenv()
 
