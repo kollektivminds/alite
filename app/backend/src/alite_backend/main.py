@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.exc import IntegrityError
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from config import settings
+from alite_backend.config import settings
 
 app = FastAPI()
 

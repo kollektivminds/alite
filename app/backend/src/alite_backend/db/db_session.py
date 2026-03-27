@@ -1,0 +1,19 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+#import alite_backend
+from alite_backend.config import settings
+
+# --- 1. Default Development Engine ---
+# This uses the default DB_NAME for the running application
+engine = create_engine(settings.DATABASE_URL)
+
+# --- 2. Session Factory ---
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# --- 3. API Dependency ---
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

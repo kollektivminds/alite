@@ -10,7 +10,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file='.env',
         env_file_encoding='utf-8',
-        case_sensitive=False,
+        case_sensitive=True,
         extra='forbid'
     )
 
@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     APP_DIR: str
     LOG_LOC: str
     VOCAB_LIST_LOC: str
+    VITE_API_BASE_URL: str
 
     # Computed Database URL (as a property)
     @property
@@ -33,4 +34,4 @@ class Settings(BaseSettings):
         return f"postgresql://{self.DB_USER}:{self.DB_PW.get_secret_value()}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
 # Instantiate the settings once for the entire application
-settings = Settings() # type: ignore
+settings = Settings()

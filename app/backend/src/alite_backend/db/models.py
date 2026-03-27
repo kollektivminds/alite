@@ -216,7 +216,7 @@ class Lesson(Base):
     lesson_topic = Column(String, nullable=False)
 
     has_word = relationship("ListInLesson", back_populates="in_lesson")
-    in_module = relationship("LessonInModule", back_populate="lesson_in")
+    in_module = relationship("LessonInModule", back_populates="lesson_in")
 
 class WordList(Base):
     __tablename__ = "word_lists"
@@ -230,10 +230,10 @@ class WordList(Base):
 # --- Secondary Organization Tables ---
 
 class LessonInModule(Base):
-    __table__ = "lessons_in_modules"
+    __tablename__ = "lessons_in_modules"
 
-    lesson_id = Column(Integer, ForeignKey("lessons.id"))
-    module_id = Column(Integer, ForeignKey("modules.id"))
+    lesson_id = Column(Integer, ForeignKey("lessons.id"), primary_key=True)
+    module_id = Column(Integer, ForeignKey("modules.id"), primary_key=True)
 
     lesson_in = relationship(
         "Lesson", foreign_keys="[lessons.id]", back_populates="in_module"
@@ -245,8 +245,8 @@ class LessonInModule(Base):
 class WordInLesson(Base):
     __tablename__ = "words_in_lessons"
 
-    word_id = Column(Integer, ForeignKey("lemmas.id"))
-    lesson_id = Column(Integer, ForeignKey("lessons.id"))
+    word_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
+    lesson_id = Column(Integer, ForeignKey("lessons.id"), primary_key=True)
 
     word_in = relationship(
         "Lemma", foreign_keys="[lemmas.id]", back_populates="in_lesson"
@@ -258,8 +258,8 @@ class WordInLesson(Base):
 class WordInList(Base):
     __tablename__ = "words_in_lists"
 
-    word_id = Column(Integer, ForeignKey("lemmas.id"))
-    list_id = Column(Integer, ForeignKey("word_lists.id"))
+    word_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
+    list_id = Column(Integer, ForeignKey("word_lists.id"), primary_key=True)
 
     word_in = relationship(
         "Lemma", foreign_keys="[lemmas.id]", back_populates="in_list"
@@ -294,8 +294,8 @@ class UserGroup(Base):
 class UserInGroup(Base):
     __tablename__ = "users_in_groups"
 
-    user_id = Column(Integer, ForeignKey("users.id"))
-    group_id = Column(Integer, ForeignKey("user_groups.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    group_id = Column(Integer, ForeignKey("user_groups.id"), primary_key=True)
 
     group_user = relationship("User", back_populates="in_group")
     user_group = relationship("UserGroup", back_populates="users")

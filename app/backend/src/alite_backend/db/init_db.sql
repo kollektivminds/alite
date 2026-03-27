@@ -44,7 +44,7 @@ CREATE TABLE lemmas (
     -- 0 = adjective, 1 = adverb, 2 = noun, 3 = number, 4 = participle, 5 = pronoun, 6 = verb
     pos INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT unique_lemma UNIQUE (lemma_text, part_of_speech)
+    CONSTRAINT unique_lemma UNIQUE (lem_text, pos)
 );
 -- PRIMARY TABLE for all grammatical combinations
 -- RELS INCL 
@@ -115,19 +115,20 @@ CREATE TABLE gram_props (
 -- RELS INCL 
 CREATE TABLE word_forms (
     id SERIAL PRIMARY KEY,
-    lemma_id INT NOT NULL,
-    lexicon_id INT NOT NULL,
-    grammar_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP CONSTRAINT lemma FOREIGN KEY (lemma_id) REFERENCES lemmas(id) ON DELETE CASCADE,
-    CONSTRAINT lexicon FOREIGN KEY (lexicon_id) REFERENCES lexicon(id) ON DELETE CASCADE,
-    CONSTRAINT grammar FOREIGN KEY (grammar_id) REFERENCES gram_props(id) ON DELETE CASCADE
+    lem_id INT NOT NULL,
+    lex_id INT NOT NULL,
+    gram_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT lemma FOREIGN KEY (lem_id) REFERENCES lemmas(id) ON DELETE CASCADE,
+    CONSTRAINT lexicon FOREIGN KEY (lex_id) REFERENCES lexicon(id) ON DELETE CASCADE,
+    CONSTRAINT grammar FOREIGN KEY (gram_id) REFERENCES gram_props(id) ON DELETE CASCADE
 );
 -- PRIMARY TABLE for word definitions
 -- RELS INCL 
 CREATE TABLE definitions (
     id SERIAL PRIMARY KEY,
-    def_text TEXT NOT NULL ,
-    UNIQUE created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    def_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP UNIQUE
 );
 -- PRIMARY TABLE for word definition example sentences
 -- RELS INCL
@@ -170,12 +171,12 @@ CREATE TABLE verb_pairs (
 -- SECONDARY TABLE for definitions (M-M)
 -- RELS INCL
 CREATE TABLE lemma_defs (
-    lemma_id INT NOT NULL,
+    lem_id INT NOT NULL,
     def_id INT NOT NULL,
-    PRIMARY KEY (lemma_id, definition_id),
+    PRIMARY KEY (lem_id, def_id),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT lemma_of_definition FOREIGN KEY (lemma_id) REFERENCES lemmas(id) ON DELETE CASCADE,
-    CONSTRAINT definition_of_lemma FOREIGN KEY (definition_id) REFERENCES definitions(id) ON DELETE CASCADE
+    CONSTRAINT lemma_of_definition FOREIGN KEY (lem_id) REFERENCES lemmas(id) ON DELETE CASCADE,
+    CONSTRAINT definition_of_lemma FOREIGN KEY (def_id) REFERENCES definitions(id) ON DELETE CASCADE
 );
 --
 -- WORD ORGANIZATION
@@ -201,35 +202,25 @@ CREATE TABLE lessons_lists (
 CREATE TABLE lesslists_in_modules (
     lesslist_id INT NOT NULL,
     module_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (lesslist_id, module_id),
     CONSTRAINT lessons_lists FOREIGN KEY (lesslist_id) REFERENCES lessons_lists(id) ON DELETE CASCADE,
-    CONSTRAINT module FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    CONSTRAINT module FOREIGN KEY (module_id) REFERENCES modules(id) ON DELETE CASCADE
 );
 -- SECONDARY TABLE for words in lessons/lists
 -- RELS INCL 
 CREATE TABLE words_in_lesslists (
-    lemma_id INT NOT NULL,
+    lem_id INT NOT NULL,
     lesslist_id INT NOT NULL,
-    PRIMARY KEY (word_id, lesslist_id),
-    CONSTRAINT word FOREIGN KEY (lemma_id) REFERENCES lemmas(id) ON DELETE CASCADE,
-    CONSTRAINT lessons_lists FOREIGN KEY (lesslist_id) REFERENCES lessons_lists(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (lem_id, lesslist_id),
+    CONSTRAINT word FOREIGN KEY (lem_id) REFERENCES lemmas(id) ON DELETE CASCADE,
+    CONSTRAINT lessons_lists FOREIGN KEY (lesslist_id) REFERENCES lessons_lists(id) ON DELETE CASCADE
 );
 --
 -- SENTENCES
 --
 
--- PRIMARY TABLE for 
--- RELS INCL
-CREATE TABLE sent_docs (
-    id SERIAL PRIMARY KEY,
-    author TEXT NOT NULL,
-    date DATE NOT NULL,
-    source TEXT NOT NULL,
-    title TEXT NOT NULL,
-    comment TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
 -- PRIMARY TABLE for 
 -- RELS INCL
 CREATE TABLE sent_docs (
@@ -279,17 +270,16 @@ CREATE TABLE questions (
     choices JSONB,
     -- For multiple choice options
     correct_answer TEXT NOT NULL,
-    lemma_id INT,
+    lem_id INT,
     -- Optional link to a specific word
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    ADD COLUMN difficulty FLOAT,
+    difficulty FLOAT,
     -- IRT 'b' parameter
-    ADD COLUMN discrimination FLOAT,
-        -- IRT 'a' parameter
-    ADD COLUMN guess_probability FLOAT;
--- IRT 'c' parameter
-CONSTRAINT fk_lemma FOREIGN KEY (lemma_id) REFERENCES lemmas(id) ON DELETE
-SET NULL
+    discrimination FLOAT,
+    -- IRT 'a' parameter
+    guess_probability FLOAT,
+    -- IRT 'c' parameter
+    CONSTRAINT fk_lemma FOREIGN KEY (lem_id) REFERENCES lemmas(id) ON DELETE CASCADE
 );
 --
 -- QUESTION SESSIONS

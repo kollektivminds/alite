@@ -96,7 +96,7 @@ class LookupFDAPI:
                 # 4. Check if the request was successful (i.e., not None).
                 if lemma_return:
                     # 5. If successful, add to local cache
-                    self._update_cache(word, lemma_return)
+                    #self._update_cache(word, lemma_return)
                     # 6. If successful, yield the result to the pipeline.
                     yield lemma_return
                 else:
