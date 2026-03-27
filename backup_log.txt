@@ -1,1 +1,23 @@
 --- Starting Git Operations ---
+Committing changes...
+[main 0104580] Auto backup: 2026-03-27 14:42:22
+ 14 files changed, 1285 insertions(+), 57 deletions(-)
+ create mode 100644 app/backend/src/alite_backend/db/crud/orgi_crud.py
+ rename app/backend/src/alite_backend/db/crud/{questions.py => ques_crud.py} (100%)
+ rename app/backend/src/alite_backend/db/crud/{sentence_data.py => sent_crud.py} (100%)
+ rename app/backend/src/alite_backend/db/crud/{users.py => user_crud.py} (100%)
+ rename app/backend/src/alite_backend/db/crud/{word_data.py => word_crud.py} (88%)
+ delete mode 100644 app/backend/src/alite_backend/sentences/data/.gitattributes
+ create mode 100644 app/backend/src/alite_backend/sentences/data/bodyLibDf.json
+ create mode 100644 app/backend/src/alite_backend/sentences/data/bodyTextDf.json
+Pushing to origin/main...
+remote: error: Trace: 06fa73be102e3a2944b2e7c3c24bd896b4f7d82fc1dc5e0940f8144f10b1e190        
+remote: error: See https://gh.io/lfs for more information.        
+remote: error: File app/backend/src/alite_backend/sentences/data/bodyLibDf.json is 330.51 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: File app/backend/src/alite_backend/sentences/data/bodyTextDf.json is 477.99 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.        
+To https://github.com/kollektivminds/alite.git
+ ! [remote rejected] main -> main (pre-receive hook declined)
+error: failed to push some refs to 'https://github.com/kollektivminds/alite.git'
+✅ Success! Backup committed and pushed.
+--- Finished Script: Fri Mar 27 14:43:03 PDT 2026 ---

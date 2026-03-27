@@ -6,9 +6,30 @@ import logging
 # O
 # H
 
+session = Session()
+
 #
 # C
 #
+
+def create_lemma(db: Session, lemma_data: schemas.LemmasRecord) -> models.Lemma:
+    """
+    Finds a lemma by its text and POS. If it doesn't exist, it creates it.
+    """
+
+    # Try to find the lemma first
+    db_lemma = get_lemma(db, lemma_data=lemma_data)
+
+    if db_lemma:
+        return db_lemma
+
+    # If not found, create a new one
+    logging.debug("making entry for %s", lemma_data)
+    db_lemma = models.Lemma(**lemma_data.dict())
+    db.add(db_lemma)
+    db.commit()
+    db.refresh(db_lemma)
+    return db_lemma
 
 def create_lexeme(db: Session, lexeme_data: schemas.LexiconRecord, lemma_id: int) -> models.Lexeme:
     """
@@ -37,7 +58,7 @@ def get_lemma(db: Session, lemma_data: schemas.LemmasRecord):
     """
     Finds a lemma by its text and POS. If it doesn't exist, it creates it.
     """
-
+    print("type of db", type(db))
     # Try to find the lemma first
     db_lemma = db.query(models.Lemma).filter(
         models.Lemma.lemma_text == lemma_data.lemma_text,
@@ -46,27 +67,5 @@ def get_lemma(db: Session, lemma_data: schemas.LemmasRecord):
 
     if db_lemma:
         return db_lemma
-
-def create_lemma(db: Session, lemma_data: schemas.LemmasRecord) -> models.Lemma:
-    """
-    Finds a lemma by its text and POS. If it doesn't exist, it creates it.
-    """
-
-    # Try to find the lemma first
-    db_lemma = db.query(models.Lemma).filter(
-        models.Lemma.lemma_text == lemma_data.lemma_text,
-        models.Lemma.part_of_speech == lemma_data.part_of_speech
-    ).first()
-
-    if db_lemma:
-        return db_lemma
-
-    # If not found, create a new one
-    logging.debug("making entry for %s", lemma_data)
-    db_lemma = models.Lemma(**lemma_data.dict())
-    db.add(db_lemma)
-    db.commit()
-    db.refresh(db_lemma)
-    return db_lemma
 
 # creating definitions, gram_props and linking them together in join tables

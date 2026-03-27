@@ -10,8 +10,8 @@ from .funcs import validate_word_list
 from .logging_config import setup_logging
 from .lookup import LookupFDAPI as lfa
 from .process import ReturnedLemmaProcessor as rlp
-
-#from load import LoadDB as ldb
+from alite_backend.db.crud import word_crud
+#from .load import LoadDB as ldb
 
 setup_logging()
 
@@ -54,15 +54,17 @@ def feed_data(word_s: list[str]):
     # The API call for each word happens as this loop runs.
     for raw_data_dict in results_stream:
         try:
-            # a. PROCESS: Pass the raw dictionary to the processor
+            # a. GET: Grab the raw dictionary data
             word_lemma = raw_data_dict.get('word', 'unknown')
-            logger.debug("Successfully looked up data for '%s':\n%s\n", word_lemma, raw_data_dict)
+            #logger.debug("Successfully looked up data for '%s':\n%s\n", word_lemma, raw_data_dict)
             
-            # b. LOAD: Pass the clean, final payload to your loader
+            # b. PROCESS: Pass the raw dictionary to the processor
             processed_payload = processor.process(raw_data_dict)
             if processed_payload:
                 logger.debug("Successfully processed data for '%s':\n%s\n", word_lemma, processed_payload)
-                #loader.load_to_db(processed_payload)
+                # c. LOAD: Pass the clean, final payload to CRUD
+                session = Session()
+                word_crud.create_lemma(session, processed_payload)
 
         except Exception as e:
             logger.error("Failed to process an item from the lookup stream: %s", e, exc_info=True)

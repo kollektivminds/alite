@@ -1,13 +1,15 @@
 -- Drop tables in the correct reverse order of dependency to avoid errors
 -- First, drop all junction tables and tables with foreign keys
+DROP TABLE IF EXISTS user_experiments;
 DROP TABLE IF EXISTS student_skill_mastery;
-DROP TABLE IF EXISTS skills_in_questions;
+DROP TABLE IF EXISTS skills_in_word_questions;
 DROP TABLE IF EXISTS student_decisions;
 DROP TABLE IF EXISTS student_responses;
 DROP TABLE IF EXISTS question_sessions;
 DROP TABLE IF EXISTS users_in_groups;
 DROP TABLE IF EXISTS lesslists_in_modules;
-DROP TABLE IF EXISTS words_in_lists;
+DROP TABLE IF EXISTS words_in_lesslists;
+DROP TABLE IF EXISTS sent_docs;
 DROP TABLE IF EXISTS verb_pairs;
 DROP TABLE IF EXISTS lemma_defs;
 DROP TABLE IF EXISTS defs_in_sents;
@@ -19,9 +21,12 @@ DROP TABLE IF EXISTS user_groups;
 DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS lessons_lists;
 DROP TABLE IF EXISTS modules;
+DROP TABLE IF EXISTS word_pronuncations;
 DROP TABLE IF EXISTS def_sentences;
 DROP TABLE IF EXISTS definitions;
 DROP TABLE IF EXISTS gram_props;
+DROP TABLE IF EXISTS questions;
+DROP TABLE IF EXISTS word_questions;
 DROP TABLE IF EXISTS lemmas;
 DROP TABLE IF EXISTS lexicon;
 --
@@ -263,7 +268,7 @@ CREATE TABLE users_in_groups (
 -- QUESTIONS
 --
 
-CREATE TABLE questions (
+CREATE TABLE word_questions (
     id SERIAL PRIMARY KEY,
     question_type VARCHAR(50) NOT NULL,
     question_text TEXT NOT NULL,
@@ -305,7 +310,7 @@ CREATE TABLE student_responses (
     response_time_ms INT,
     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES question_sessions(id) ON DELETE CASCADE,
-    CONSTRAINT fk_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE
+    CONSTRAINT fk_question FOREIGN KEY (question_id) REFERENCES word_questions(id) ON DELETE CASCADE
 );
 --
 -- STUDENT DECISIONS
@@ -330,11 +335,11 @@ CREATE TABLE skills (
     skill_description TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-CREATE TABLE skills_in_questions (
+CREATE TABLE skills_in_word_questions (
     question_id INT NOT NULL,
     skill_id INT NOT NULL,
     PRIMARY KEY (question_id, skill_id),
-    CONSTRAINT fk_question FOREIGN KEY (question_id) REFERENCES questions(id) ON DELETE CASCADE,
+    CONSTRAINT fk_question FOREIGN KEY (question_id) REFERENCES word_questions(id) ON DELETE CASCADE,
     CONSTRAINT fk_skill FOREIGN KEY (skill_id) REFERENCES skills(id) ON DELETE CASCADE
 );
 CREATE TABLE student_skill_mastery (
