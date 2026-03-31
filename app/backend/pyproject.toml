@@ -29,9 +29,9 @@ packages = [{include = "alite_backend", from = "src"}]
 
 [tool.poetry.group.dev.dependencies]
 jupyterlab = "^4.0.0"
-ipykernel = "^6.0.0"
 black = "^25.1.0"
 pytest = "^8.0.0"
 pylint = "^3.3.0"
 pre-commit = "^4.0.0"
 bandit = "^1.8.6"
+ipykernel = "^7.2.0"

@@ -3,7 +3,7 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from pydantic import BaseModel, EmailStr, Field, HttpUrl
+from pydantic import BaseModel, Field, HttpUrl, UUID4, UUID5
 
 #
 # --- Data Processing Schmae ---
@@ -78,48 +78,61 @@ class FDAPIreturn(BaseModel):
 # These models define the clean, structured data that your
 # 'Processor' will output, ready for the 'Loader'.
 
-class LexiconRecord(BaseModel):
-    """Schema for an entry in the Lexicon table."""
-    word_text: str
-
 class LemmasRecord(BaseModel):
     """Schema for an entry in the Lemmas table."""
-    lemma_text: str
-    part_of_speech: int
+    clean_lemma: str
+    accent_lemma: Optional[str] = None
+    pos: int
+    entry_key: UUID5
 
 class GramPropsRecord(BaseModel):
-    """Schema for the grammatical properties of a word form."""
-    verb_aspect: Optional[int] = None
-    verb_conj: Optional[str] = None
-    verb_conj_type: Optional[str] = None
-    verb_infinitive: Optional[bool] = None
-    verb_mood: Optional[int] = None
-    verb_trans_refl: Optional[int] = None
-    verb_conj_person: Optional[int] = None
-    part_type: Optional[int] = None
-    part_voice: Optional[int] = None
-    subst_case: Optional[int] = None
-    subst_animacy: Optional[bool] = None
-    adjv_short: Optional[bool] = None
-    gram_gender: Optional[int] = None
-    gram_number: Optional[int] = None
-    gram_tense: Optional[int] = None
-    noun_dimun: Optional[bool] = None
+    temp_form_id: UUID4
+    prop_name: str
+
+class LexiconRecord(BaseModel):
+    """Schema for an entry in the Lexicon table."""
+    temp_form_id: UUID4
+    entry_key: UUID5
+    form: str
 
 class DefinitionsRecord(BaseModel):
     """Schema for a single definition entry."""
-    definition_text: str
+    temp_def_id: UUID4
+    entry_key: UUID5
+    def_text: str
+    tags: List[str]
+
+class DefSentencesRecord(BaseModel):
+    """Schema for a single definition entry."""
+    temp_def_id: UUID4
+    def_sentence: str
+
+class PronunciationsRecord(BaseModel):
+    """Schema for a single definition entry."""
+    entry_key: UUID5
+    text: str
+    type: str
+    tags: List[str]
+
+class VerbPairsRecord(BaseModel):
+    """Schema for a single definition entry."""
+    entry_key: UUID5
+    pair_form: str
+    pair_aspect: int
 
 class ProcessedPayload(BaseModel):
     """
     A container for the structured, processed data, ready for the Loader.
     This is the final output of your 'Processor' class.
     """
-    lexicon: LexiconRecord
-    lemma: LemmasRecord
+    lemmas: List[LemmasRecord]
+    gram_props: List[GramPropsRecord]
+    lexicon: List[LexiconRecord]
     # A word can have multiple definitions
     definitions: List[DefinitionsRecord]
-    gram_props: GramPropsRecord
+    def_sentences: List[DefSentencesRecord]
+    pronunciations: List[PronunciationsRecord]
+    verb_pairs: List[VerbPairsRecord]
 
 # --- Wiki Pre-Processing Schema ---
 
@@ -156,7 +169,6 @@ class RawWikiLemma(BaseModel):
     """"""
     lemma: Optional[str] = None
     parts_of_speech: Dict[str, List[UnprocessedWikiWord]]
-
 
 
 #

@@ -48,8 +48,8 @@ CREATE TABLE lemmas (
     lem_text VARCHAR(50) NOT NULL,
     -- 0 = adjective, 1 = adverb, 2 = noun, 3 = number, 4 = participle, 5 = pronoun, 6 = verb
     pos INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT unique_lemma UNIQUE (lem_text, pos)
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    -- CONSTRAINT unique_lemma UNIQUE (lem_text, pos)
 );
 -- PRIMARY TABLE for all grammatical combinations
 -- RELS INCL 

@@ -9,13 +9,14 @@ from sqlalchemy import (
     Text,
     create_engine,
     UniqueConstraint,
-    JSON
+    JSON,
 )
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
 
 # This is the base class which our ORM models will inherit from
 Base = declarative_base()
+
 
 # --- Word Primary Tables ---
 class Lexeme(Base):
@@ -26,7 +27,7 @@ class Lexeme(Base):
     id = Column(Integer, primary_key=True)
     word_text = Column(String(50), nullable=False, unique=True)
 
-    word_forms = relationship("WordForm", back_populates="lexicon_entry")
+    lexeme_word_form = relationship("WordForm", back_populates="word_form_lexicon")
 
 
 class Lemma(Base):
@@ -36,39 +37,34 @@ class Lemma(Base):
 
     id = Column(Integer, primary_key=True)
     # text of the lemma
-    lemma_text = Column(String(50), nullable=False)
+    lem_text = Column(String(50), nullable=False)
     # part of speech of the lemma
-    part_of_speech = Column(Integer, nullable=False)
+    pos = Column(Integer, nullable=False)
 
     # A single lemma has many inflected word forms
-    word_forms = relationship("WordForm", back_populates="lemma")
-    # Relationships for verb aspect pairs as keys in VerbPair
-    imperfective_pairs = relationship(
-        "VerbPair",
-        foreign_keys="[VerbPair.imperfective_verb_id]",
-        back_populates="imperfective_verb",
-    )
-    perfective_pairs = relationship(
-        "VerbPair",
-        foreign_keys="[VerbPair.perfective_verb_id]",
-        back_populates="perfective_verb",
-    )
-    # Relationship for parent verbs of participles
-    parent_verb = relationship("ParentVerb", back_populates="parent_verb")
+    lemma_word_form = relationship("WordForm", back_populates="word_form_lemma")
     # Relationship for lemma defintion
     lemma_definition = relationship(
-        "LemmaDefinition", back_populates="definition_lemma"
+        "LemmaDefinition", back_populates="lemma_definition"
+    )
+    # Relationship to other lemmas
+    related_to = relationship(
+        "Lemma",
+        secondary="lemma_relations",
+        primaryjoin="Lemma.id==LemmaRelation.source_id",
+        secondaryjoin="Lemma.id==LemmaRelation.target_id",
+        backref="related_from",
     )
     # Relationships for study results
-    lemma_crws = relationship(
-        "ConjugationResultWordStudied", back_populates="crws_lemma"
-    )
-    lemma_drws = relationship(
-        "DeclensionResultWordStudied", back_populates="drws_lemma"
-    )
-    # Unique pair of "lemma_text" and "part_of_speech" to prevent duplicates
+    # lemma_crws = relationship(
+    #     "ConjugationResultWordStudied", back_populates="crws_lemma"
+    # )
+    # lemma_drws = relationship(
+    #     "DeclensionResultWordStudied", back_populates="drws_lemma"
+    # )
+    # Unique pair of "lem_text" and "pos" to prevent duplicates
     __table_args__ = (
-        UniqueConstraint("lemma_text", "part_of_speech", name="unique_lemma"),
+        UniqueConstraint("lem_text", "pos", name="unique_lemma"),
     )
     in_list = relationship("WordInList", back_populates="word_in")
     in_lesson = relationship("WordInLesson", back_populates="word_in")
@@ -104,14 +100,8 @@ class GrammaticalProperty(Base):
     subst_animacy = Column(Boolean)
     gram_gender = Column(Integer)
     gram_number = Column(Integer)
-    # Relationship for lemma's parent verb as Lemma.id
-    part_parent_verb = relationship(
-        "Lemma", foreign_keys="[Lemma.id]", back_populates="parent_verb"
-    )
     # Relationship for a word form's grammatical properties
-    gram_word_form = relationship(
-        "WordForm", foreign_keys="[WordForm.id]", back_populates="word_form_gram"
-    )
+    gram_word_form = relationship("WordForm", back_populates="word_form_gram")
     # Unique set of grammatical properties to prevent duplicates
     __table_args__ = (
         UniqueConstraint(
@@ -143,11 +133,11 @@ class WordForm(Base):
 
     id = Column(Integer, primary_key=True)
     lemma_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
-    lexicon_id = Column(Integer, ForeignKey("lexicon.id"), nullable=False)
+    lexeme_id = Column(Integer, ForeignKey("lexicon.id"), nullable=False)
     grammar_id = Column(Integer, ForeignKey("gram_props.id"), nullable=False)
 
     word_form_lemma = relationship("Lemma", back_populates="lemma_word_form")
-    word_form_lexicon = relationship("Lexicon", back_populates="lexicon_word_form")
+    word_form_lexicon = relationship("Lexeme", back_populates="lexeme_word_form")
     word_form_gram = relationship(
         "GrammaticalProperty", back_populates="gram_word_form"
     )
@@ -160,29 +150,26 @@ class Definition(Base):
     definition_text = Column(String, unique=True, nullable=False)
 
     definition_lemma = relationship(
-        "LemmaDefinition", back_populates="lemma_definition"
+        "LemmaDefinition", back_populates="definition_lemma"
     )
 
 
 # --- Word Junction Tables ---
 
 
-class VerbPair(Base):
-    """Junction table for imperfective/perfective verb pairs."""
+class LemmaRelation(Base):
+    """Junction table for aspectual verb pairs and participle-verb pairs"""
 
-    __tablename__ = "verb_pairs"
+    __tablename__ = "lemma_relations"
 
-    imperfective_verb_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
-    perfective_verb_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
+    source_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
+    target_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
 
-    imperfective_verb = relationship(
-        "Lemma",
-        foreign_keys=[imperfective_verb_id],
-        back_populates="imperfective_pairs",
-    )
-    perfective_verb = relationship(
-        "Lemma", foreign_keys=[perfective_verb_id], back_populates="perfective_pairs"
-    )
+    relation_type = Column(Integer, nullable=False)
+
+    source_lemma = relationship("Lemma", foreign_keys=[source_id])
+    target_lemma = relationship("Lemma", foreign_keys=[target_id])
 
 
 class LemmaDefinition(Base):
@@ -193,12 +180,15 @@ class LemmaDefinition(Base):
     lemma_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
     definition_id = Column(Integer, ForeignKey("definitions.id"), primary_key=True)
 
-    lemma_definition = relationship("Lemma", back_populates="word_definition")
-    definition_lemma = relationship("Definition", back_populates="definition_word")
+    lemma_definition = relationship(
+        "Lemma", foreign_keys=[lemma_id], back_populates="lemma_definition"
+    )
+    definition_lemma = relationship(
+        "Definition", foreign_keys=[definition_id], back_populates="definition_lemma"
+    )
 
 
 # --- Lemma Container Organization Tables ---
-
 
 class Module(Base):
     __tablename__ = "modules"
@@ -206,7 +196,7 @@ class Module(Base):
     id = Column(Integer, primary_key=True)
     module_name = Column(String(10), nullable=False)
 
-    with_lesson = relationship("LessonInModule", back_populates="in_module")
+    has_lesson = relationship("LessonInModule", back_populates="in_module")
 
 class Lesson(Base):
     __tablename__ = "lessons"
@@ -215,8 +205,9 @@ class Lesson(Base):
     lesson_name = Column(String(50), nullable=False)
     lesson_topic = Column(String, nullable=False)
 
-    has_word = relationship("ListInLesson", back_populates="in_lesson")
+    has_list = relationship("ListInLesson", back_populates="in_lesson")
     in_module = relationship("LessonInModule", back_populates="lesson_in")
+    has_word = relationship("WordInLesson", back_populates="in_lesson")
 
 class WordList(Base):
     __tablename__ = "word_lists"
@@ -230,17 +221,35 @@ class WordList(Base):
 # --- Secondary Organization Tables ---
 
 class LessonInModule(Base):
+    """Junction table for lessons and modules"""
+    
     __tablename__ = "lessons_in_modules"
 
     lesson_id = Column(Integer, ForeignKey("lessons.id"), primary_key=True)
     module_id = Column(Integer, ForeignKey("modules.id"), primary_key=True)
 
     lesson_in = relationship(
-        "Lesson", foreign_keys="[lessons.id]", back_populates="in_module"
-        )
+        "Lesson", back_populates="in_module"
+    )
     in_module = relationship(
-        "Module", foreign_keys="[modules.id]", back_populates="with_lesson"
-        )
+        "Module", back_populates="has_lesson"
+    )
+
+class ListInLesson(Base):
+    """Junction table for lists and lessons"""
+    
+    __tablename__ = "lists_in_lessons"
+
+    list_id = Column(Integer, ForeignKey("word_lists.id"), primary_key=True)
+    lesson_id = Column(Integer, ForeignKey("lessons.id"), primary_key=True)
+
+    list_in = relationship(
+        "WordList", back_populates="in_lesson"
+    )
+    in_lesson = relationship(
+        "Lesson", back_populates="has_list"
+    )
+
 
 class WordInLesson(Base):
     __tablename__ = "words_in_lessons"
@@ -249,11 +258,12 @@ class WordInLesson(Base):
     lesson_id = Column(Integer, ForeignKey("lessons.id"), primary_key=True)
 
     word_in = relationship(
-        "Lemma", foreign_keys="[lemmas.id]", back_populates="in_lesson"
+        "Lemma", back_populates="in_lesson"
     )
     in_lesson = relationship(
-        "Lesson", foreign_keys="[lessons.id]", back_populates="has_word"
+        "Lesson", back_populates="has_word"
     )
+
 
 class WordInList(Base):
     __tablename__ = "words_in_lists"
@@ -262,11 +272,12 @@ class WordInList(Base):
     list_id = Column(Integer, ForeignKey("word_lists.id"), primary_key=True)
 
     word_in = relationship(
-        "Lemma", foreign_keys="[lemmas.id]", back_populates="in_list"
+        "Lemma", back_populates="in_list"
     )
     in_list = relationship(
-        "WordList", foreign_keys="[word_lists.id]", back_populates="with_word"
+        "WordList", back_populates="with_word"
     )
+
 
 # --- Users ---
 
@@ -303,25 +314,26 @@ class UserInGroup(Base):
 
 # --- Questions, Sessions, and Responses ---
 
+
 class Question(Base):
-    __tablename__ = 'questions'
+    __tablename__ = "questions"
 
     id = Column(Integer, primary_key=True)
     question_type = Column(String(50), nullable=False)
     question_text = Column(Text, nullable=False)
-    choices = Column(JSON) # Using JSONB for flexibility
+    choices = Column(JSON)  # Using JSONB for flexibility
     correct_answer = Column(Text, nullable=False)
-    lemma_id = Column(Integer, ForeignKey('lemmas.id'))
+    lemma_id = Column(Integer, ForeignKey("lemmas.id"))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     lemma = relationship("Lemma")
 
 
 class QuestionSession(Base):
-    __tablename__ = 'question_sessions'
+    __tablename__ = "question_sessions"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     session_start_time = Column(DateTime(timezone=True), server_default=func.now())
     session_end_time = Column(DateTime(timezone=True))
 
@@ -330,11 +342,11 @@ class QuestionSession(Base):
 
 
 class StudentResponse(Base):
-    __tablename__ = 'student_responses'
+    __tablename__ = "student_responses"
 
     id = Column(Integer, primary_key=True)
-    session_id = Column(Integer, ForeignKey('question_sessions.id'), nullable=False)
-    question_id = Column(Integer, ForeignKey('questions.id'), nullable=False)
+    session_id = Column(Integer, ForeignKey("question_sessions.id"), nullable=False)
+    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
     student_answer = Column(Text)
     is_correct = Column(Boolean)
     response_time_ms = Column(Integer)
@@ -345,36 +357,39 @@ class StudentResponse(Base):
 
 
 class StudentDecision(Base):
-    __tablename__ = 'student_decisions'
+    __tablename__ = "student_decisions"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     decision_type = Column(String(100), nullable=False)
     decision_value = Column(Text, nullable=False)
     made_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User")
-    
+
+
 class Skill(Base):
-    __tablename__ = 'skills'
+    __tablename__ = "skills"
 
     id = Column(Integer, primary_key=True)
     skill_name = Column(String(255), nullable=False, unique=True)
     skill_description = Column(Text)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-class SkillInQuestion(Base):
-    __tablename__ = 'question_skills'
 
-    question_id = Column(Integer, ForeignKey('questions.id'), primary_key=True)
-    skill_id = Column(Integer, ForeignKey('skills.id'), primary_key=True)
+class SkillInQuestion(Base):
+    __tablename__ = "question_skills"
+
+    question_id = Column(Integer, ForeignKey("questions.id"), primary_key=True)
+    skill_id = Column(Integer, ForeignKey("skills.id"), primary_key=True)
+
 
 class StudentSkillMastery(Base):
-    __tablename__ = 'student_skill_mastery'
+    __tablename__ = "student_skill_mastery"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-    skill_id = Column(Integer, ForeignKey('skills.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    skill_id = Column(Integer, ForeignKey("skills.id"), nullable=False)
     mastery_level = Column(Float, default=0.0)
     p_learn = Column(Float)
     p_guess = Column(Float)
@@ -384,12 +399,13 @@ class StudentSkillMastery(Base):
 
     user = relationship("User")
     skill = relationship("Skill")
-    
+
+
 class UserExperiment(Base):
-    __tablename__ = 'user_experiments'
+    __tablename__ = "user_experiments"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     experiment_name = Column(String(255), nullable=False)
     variant_name = Column(String(255), nullable=False)
     assigned_at = Column(DateTime(timezone=True), server_default=func.now())

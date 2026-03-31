@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     LOG_LOC: str
     VOCAB_LIST_LOC: str
     VITE_API_BASE_URL: str
+    NAMESPACE: str
 
     # Computed Database URL (as a property)
     @property

@@ -18,9 +18,11 @@ def create_lemma(db: Session, lemma_data: schemas.LemmasRecord) -> models.Lemma:
     """
 
     # Try to find the lemma first
-    db_lemma = get_lemma(db, lemma_data=lemma_data)
-
-    if db_lemma:
+    try:
+        db_lemma = get_lemma(db, lemma_data=lemma_data)
+    except:
+        logging.debug("no entry found")
+    if db_lemma: # type:ignore
         return db_lemma
 
     # If not found, create a new one
@@ -58,13 +60,13 @@ def get_lemma(db: Session, lemma_data: schemas.LemmasRecord):
     """
     Finds a lemma by its text and POS. If it doesn't exist, it creates it.
     """
-    print("type of db", type(db))
+    #print("type of db", type(db))
     # Try to find the lemma first
     db_lemma = db.query(models.Lemma).filter(
-        models.Lemma.lemma_text == lemma_data.lemma_text,
-        models.Lemma.part_of_speech == lemma_data.part_of_speech
+        models.Lemma.lem_text == lemma_data.clean_lemma,
+        models.Lemma.pos == lemma_data.pos
     ).first()
-
+    
     if db_lemma:
         return db_lemma
 

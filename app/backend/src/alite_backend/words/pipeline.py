@@ -61,10 +61,12 @@ def feed_data(word_s: list[str]):
             # b. PROCESS: Pass the raw dictionary to the processor
             processed_payload = processor.process(raw_data_dict)
             if processed_payload:
+                #logger.debug("type: %s", type(processed_payload))
                 logger.debug("Successfully processed data for '%s':\n%s\n", word_lemma, processed_payload)
-                # c. LOAD: Pass the clean, final payload to CRUD
-                session = Session()
-                word_crud.create_lemma(session, processed_payload)
+                # c. LOAD: Pass the processed payload to CRUD
+                #session = Session()
+                #lemmas = processed_payload.lemmas
+                #word_crud.create_lemma(session, processed_payload.lemmas)
 
         except Exception as e:
             logger.error("Failed to process an item from the lookup stream: %s", e, exc_info=True)
