@@ -31,15 +31,7 @@ load_dotenv()
 
 # instantiate logger
 logger = logging.getLogger(__name__)
-logger.info("funcs.py")
-
-db_user = os.getenv("DB_USER")
-db_pw = os.getenv("DB_PW")
-db_host = os.getenv("DB_HOST")
-db_name = os.getenv("DB_NAME")
-db_port = 5432
-
-db_url = f"postgresql://{db_user}:{db_pw}@{db_host}:{db_port}/{db_name}"
+#logger.info("funcs.py")
 
 pos = [
     "adjective",
@@ -174,47 +166,6 @@ def clean_dict_values(d):
         return {k: strip_non_alpha_start(v) for k, v in d.items()}
     return d
 
-
-def execute_sql_from_file(SQL_FILE_PATH, engine):
-    """
-    Executes SQL commands from a file using a SQLAlchemy engine.
-
-    Args:
-        filepath (str): The path to the .sql file.
-        engine: A SQLAlchemy engine instance.
-    """
-    print("--- Step 1: Initializing database schema ---")
-    try:
-        with open(SQL_FILE_PATH, "r", encoding="utf-8") as f:
-            sql_commands = [cmd.strip() for cmd in f.read().split(";") if cmd.strip()]
-
-        with engine.connect() as connection:
-            with connection.begin():  # Start a transaction
-                for command in sql_commands:
-                    connection.execute(text(command))
-        print("Schema created successfully from init_db.sql.")
-
-    except FileNotFoundError:
-        print(f"❌ Error: The file '{SQL_FILE_PATH}' was not found.")
-    except Exception as e:
-        # The specific exception type will depend on the database driver (e.g., psycopg2.Error)
-        print(f"❌ An error occurred: {e}")
-
-
-def create_table(engine, jsonLoc, name=""):
-    try:
-        # --- Write the users_df to a table named 'users' ---
-        # if_exists='replace': Drops the table before creating a new one.
-        # Other options: 'fail' (raises an error if table exists), 'append' (adds data to existing table)
-        jsonLoc.to_sql(name, engine, if_exists="replace", index=False)
-        print(f"Successfully wrote DataFrame to {name} table.")
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-    finally:
-        engine.dispose()
-
 def validate_word_list(word_list):
     # check if word_list is indeed a list of words
     # or at least a single word that can be recognized
@@ -226,25 +177,3 @@ def validate_word_list(word_list):
             word_list.isalpha()
         except:
             raise TypeError("not alpha")
-
-
-# def load_to_db(payload: ProcessedPayload, session: Session):
-#     """
-#     Takes a payload and loads its contents into the database
-#     within a single transaction.
-#     """
-#     try:
-#         # Add the single WordRecord instance
-#         session.add(payload.word)
-
-#         # Use add_all() for the lists of records
-#         session.add_all(payload.definitions)
-#         session.add_all(payload.synonyms)
-
-#         # This commits all the above changes at once.
-#         # If any step fails, the whole transaction is rolled back.
-#         session.commit()
-#         print(f"Successfully loaded data for '{payload.word.term}'.")
-#     except Exception as e:
-#         session.rollback()
-#         print(f"Error loading data for '{payload.word.term}': {e}")

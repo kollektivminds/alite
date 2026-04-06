@@ -27,46 +27,39 @@ save_dir_loc = os.getenv("APP_DIR")
 logger = logging.getLogger(__name__)
 logger.info("Starting run")
 
-def feed_data(word_s: list[str]):
+def feed_data(db: Session, word_s: list[str]):
     """_summary_
 
     Args:
-        word_s (list[str]): _description_
-
-    Returns:
-        _type_: _description_
+        db (Session): The active SQLAlchemy session passed in from the router or script.
+        word_s (list[str]): The list of words to look up.
     """
     logger.info("Starting session for %s", word_s)
-
-    # TODO DB session loader
-    #loader = ldb(db_session=db_session)
-    #, db_session: Session
 
     validate_word_list(word_s)
     # init lookup class
     fetcher = lfa()
     # init processor class
     processor = rlp()
-    # init loader class
-    #loader = ldb()
+    
     logger.info("Starting pull of %s", word_s)
     results_stream = fetcher.get(word_s)
+    
     # The API call for each word happens as this loop runs.
     for raw_data_dict in results_stream:
         try:
-            # a. GET: Grab the raw dictionary data
+            # GET: Grab the raw dictionary data
             word_lemma = raw_data_dict.get('word', 'unknown')
             #logger.debug("Successfully looked up data for '%s':\n%s\n", word_lemma, raw_data_dict)
             
-            # b. PROCESS: Pass the raw dictionary to the processor
+            # PROCESS: Pass the raw dictionary to the processor
             processed_payload = processor.process(raw_data_dict)
+            
             if processed_payload:
-                #logger.debug("type: %s", type(processed_payload))
                 logger.debug("Successfully processed data for '%s':\n%s\n", word_lemma, processed_payload)
-                # c. LOAD: Pass the processed payload to CRUD
-                #session = Session()
-                #lemmas = processed_payload.lemmas
-                #word_crud.create_lemma(session, processed_payload.lemmas)
+                
+                # LOAD: Pass the processed payload to the Loader
+                
 
         except Exception as e:
             logger.error("Failed to process an item from the lookup stream: %s", e, exc_info=True)

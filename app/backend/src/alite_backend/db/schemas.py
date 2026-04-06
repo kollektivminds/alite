@@ -75,8 +75,7 @@ class FDAPIreturn(BaseModel):
 
 
 # --- Post-Processing Schemas ---
-# These models define the clean, structured data that your
-# 'Processor' will output, ready for the 'Loader'.
+# These models define the clean, structured data
 
 class LemmasRecord(BaseModel):
     """Schema for an entry in the Lemmas table."""
@@ -102,10 +101,10 @@ class DefinitionsRecord(BaseModel):
     def_text: str
     tags: List[str]
 
-class DefSentencesRecord(BaseModel):
+class DefExamplesRecord(BaseModel):
     """Schema for a single definition entry."""
     temp_def_id: UUID4
-    def_sentence: str
+    def_example: str
 
 class PronunciationsRecord(BaseModel):
     """Schema for a single definition entry."""
@@ -130,7 +129,7 @@ class ProcessedPayload(BaseModel):
     lexicon: List[LexiconRecord]
     # A word can have multiple definitions
     definitions: List[DefinitionsRecord]
-    def_sentences: List[DefSentencesRecord]
+    def_examples: List[DefExamplesRecord]
     pronunciations: List[PronunciationsRecord]
     verb_pairs: List[VerbPairsRecord]
 

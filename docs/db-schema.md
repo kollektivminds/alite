@@ -17,8 +17,8 @@
     - [07. sentence\_lexemes](#07-sentence_lexemes)
   - [Paragraph Tables](#paragraph-tables)
     - [08. definitions](#08-definitions)
-    - [09. def\_sentences](#09-def_sentences)
-    - [10. defs\_in\_sents](#10-defs_in_sents)
+    - [09. def\_examples](#09-def_examples)
+    - [10. def\_sents](#10-def_sents)
     - [11. lemma\_defs](#11-lemma_defs)
     - [12. verb\_pairs](#12-verb_pairs)
   - [Vocab Organization](#vocab-organization)
@@ -97,11 +97,11 @@ Grammar property combinations of lemmas
 | id               | SERIAL     | PRIMARY KEY  |                                     |
 | verb_aspect      | INT        | *controlled* | verb aspect                         |
 | verb_conj        | VARCHAR(4) |              | verb conjugation (Zalizniak)        |
-| verb_conj_type   | INT        | *controlled* | verb conjugation type (I/II/irreg)  |
+| verb_type   | INT        | *controlled* | verb conjugation type (I/II/irreg)  |
 | verb_infinitive  | BOOLEAN    |              |                                     |
 | verb_mood        | INT        | *controlled* |                                     |
 | verb_trans_refl  | INT        | *controlled* | transitivity, reflexivity of a verb |
-| verb_conj_person | INT        | *controlled* | x-person verb conjugation           |
+| verb_person | INT        | *controlled* | x-person verb conjugation           |
 | part_type        | INT        | *controlled* | type of participle                  |
 | part_voice       | INT        | *controlled* | voice of participle                 |
 | part_parent_verb | INT        | <lemmas(id)> | participle's parent (verb) id       |
@@ -110,7 +110,7 @@ Grammar property combinations of lemmas
 | adjv_short       | BOOLEAN    |              | short adjectives                    |
 | gram_gender      | INT        | *controlled* | grammatical gender                  |
 | gram_number      | INT        | *controlled* | grammatical number                  |
-| gram_past        | BOOLEAN    |              | past tense                          |
+| gram_tense        | INT    |              | past tense                          |
 | noun_dimun       | BOOLEAN    |              | dimunitive nouns                    |
 | adjv_comp_type   | INT        | *controlled* | adjectival comparative types        |
 
@@ -222,7 +222,7 @@ Definitions of lemmas
 | id       | SERIAL | PRIMARY KEY     |                                                 |
 | def_text | TEXT   | NOT NULL UNIQUE | text of definition given for one or more lemmas |
 
-### 09. def_sentences
+### 09. def_examples
 
 Example sentences from definitions
 
@@ -231,14 +231,14 @@ Example sentences from definitions
 | id        | SERIAL | PRIMARY KEY     |                                             |
 | sent_text | TEXT   | NOT NULL UNIQUE | text of sentence associated with definition |
 
-### 10. defs_in_sents
+### 10. def_sents
 
 Joins definitions, definition_sentences
 
 | name    | type | constraints                | description |
 | ------- | ---- | -------------------------- | ----------- |
 | def_id  | INT  | NOT NULL definitions(id)   |             |
-| sent_id | INT  | NOT NULL def_sentences(id) |             |
+| sent_id | INT  | NOT NULL def_examples(id) |             |
 
 ### 11. lemma_defs
 

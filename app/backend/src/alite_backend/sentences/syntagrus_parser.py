@@ -61,7 +61,7 @@ feat_def_dict = {
         "НЕСОВ": 0,
         "СОВ": 1
         },
-    "verb_conj_person" : {
+    "verb_person" : {
         "1-Л": 1,
         "2-Л": 2,
         "3-Л": 3

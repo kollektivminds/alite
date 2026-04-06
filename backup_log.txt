@@ -1,1 +1,17 @@
 --- Starting Git Operations ---
+Committing changes...
+[main 567c31b] Auto backup: 2026-04-06 07:11:49
+ 17 files changed, 2579 insertions(+), 571 deletions(-)
+ create mode 100644 app/backend/src/alite_backend/sentences/data/bodyLibDf.json
+ create mode 100644 app/backend/src/alite_backend/sentences/data/bodyTextDf.json
+Pushing to origin/main...
+remote: error: Trace: 7f2feff76b84a84c6fc97c04e8bbede57b7d4f9931f5811414e2a61fc960e6ba        
+remote: error: See https://gh.io/lfs for more information.        
+remote: error: File app/backend/src/alite_backend/sentences/data/bodyTextDf.json is 477.99 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: File app/backend/src/alite_backend/sentences/data/bodyLibDf.json is 330.51 MB; this exceeds GitHub's file size limit of 100.00 MB        
+remote: error: GH001: Large files detected. You may want to try Git Large File Storage - https://git-lfs.github.com.        
+To https://github.com/kollektivminds/alite.git
+ ! [remote rejected] main -> main (pre-receive hook declined)
+error: failed to push some refs to 'https://github.com/kollektivminds/alite.git'
+✅ Success! Backup committed and pushed.
+--- Finished Script: Mon Apr  6 07:12:29 PDT 2026 ---

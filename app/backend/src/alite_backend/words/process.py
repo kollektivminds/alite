@@ -24,6 +24,7 @@ from pydantic import ValidationError
 from alite_backend.config import settings
 from ..db.schemas import FDAPIreturn, ProcessedPayload
 from .funcs import pos_dict, sop_dict, remove_accents
+from alite_backend.db.schemas import Quote
 
 logger = logging.getLogger(__name__)
 fixed_tags = {"canonical", "romanization", "table-tags"}
@@ -82,7 +83,7 @@ class ReturnedLemmaProcessor:
             "gram_props": [],
             "lexicon": [],
             "definitions": [],
-            "def_sentences": [],
+            "def_examples": [],
             "pronunciations": [],
             "verb_pairs": [],
         }
@@ -141,7 +142,7 @@ class ReturnedLemmaProcessor:
                     canonical_form = [
                         x.word for x in entry.forms if x.tags[0] == "canonical"
                     ][0]
-                logger.debug("canonical form: %s", canonical_form)
+                #logger.debug("canonical form: %s", canonical_form)
             except:
                 canonical_form = None
                 logger.error("No canonical form found for %s", clean_lemma)
@@ -245,12 +246,13 @@ class ReturnedLemmaProcessor:
                 all_examples = sense.examples + sense.quotes
                 for ex in all_examples:
                     # 'text' is the key for quotes
-                    sentence_text = ex.text if "text" in ex else ex
-                    if sentence_text:
-                        sorted_data["def_sentences"].append(
+                    #logger.debug(type(ex), ex)
+                    ex_text = ex.text if isinstance(ex, Quote) else ex
+                    if ex_text and ex_text != '':
+                        sorted_data["def_examples"].append(
                             {
                                 "temp_def_id": temp_def_id,  # For load.py to find definition_id
-                                "def_sentence": sentence_text,
+                                "def_example": ex_text,
                             }
                         )
             entry_index += 1
@@ -278,7 +280,7 @@ class ReturnedLemmaProcessor:
             sorted_entries_dict = self._sort_entries(
                 this_word, unprocessed_word.entries
             )
-            logger.debug(sorted_entries_dict)
+            #logger.debug(sorted_entries_dict)
             sorted_entries_dict = ProcessedPayload(**sorted_entries_dict)
 
             return sorted_entries_dict
