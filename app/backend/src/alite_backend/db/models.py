@@ -51,6 +51,7 @@ class Lemma(Base):
         foreign_keys="[LemmaRelation.target_id]",
         back_populates="target_lemma",
     )
+    in_lesslist = relationship("LemmaInLessonList", back_populates="lemma_in")
     # Relationships for study results
     # lemma_crws = relationship(
     #     "ConjugationResultWordStudied", back_populates="crws_lemma"
@@ -60,7 +61,6 @@ class Lemma(Base):
     # )
     # Unique pair of "lem_text" and "pos" to prevent duplicates
     __table_args__ = (UniqueConstraint("id", "entry_key", name="unique_lemma"),)
-    in_lesslist = relationship("LemmaInLessonList", back_populates="word_in")
 
 
 class Lexeme(Base):
@@ -69,7 +69,8 @@ class Lexeme(Base):
     __tablename__ = "lexicon"
 
     id = Column(Integer, primary_key=True)
-    word_text = Column(String(50), nullable=False, unique=True)
+    lex_text = Column(String(50), nullable=False, unique=True)
+    lex_text_clean = Column(String(50), nullable=False)
 
     lexeme_word_form = relationship("WordForm", back_populates="word_form_lexicon")
 
@@ -91,6 +92,7 @@ class GramProp(Base):
     verb_mood = Column(Integer)
     verb_trans_refl = Column(Integer)
     verb_person = Column(Integer)
+    verb_infinitive = Column(Boolean)
     # Participles
     part_type = Column(Integer)
     part_voice = Column(Integer)
@@ -143,7 +145,7 @@ class WordForm(Base):
     word_form_lemma = relationship("Lemma", back_populates="lemma_word_form")
     word_form_lexicon = relationship("Lexeme", back_populates="lexeme_word_form")
     word_form_gram = relationship(
-        "GrammaticalProperty", back_populates="gram_word_form"
+        "GramProp", back_populates="gram_word_form"
     )
 
 
@@ -178,7 +180,8 @@ class Pronunciation(Base):
 
     id = Column(Integer, primary_key=True)
     pron_text = Column(String, unique=True, nullable=False)
-    pron_tags = Column(String)
+    pron_tags = Column(String, nullable=True)
+    pron_type = Column(Integer, nullable=False)
 
 
 # --- Word Junction Tables ---
@@ -256,7 +259,7 @@ class LessonList(Base):
     is_type = Column(Integer, nullable=False)
 
     in_module = relationship("LessonListInModule", back_populates="lesslist_in")
-    has_lemma = relationship("WordInLesson", back_populates="in_lesson")
+    has_lemma = relationship("LemmaInLessonList", back_populates="in_lesslist")
 
 
 # --- Secondary Organization Tables ---
@@ -267,7 +270,7 @@ class LessonListInModule(Base):
 
     __tablename__ = "lesslists_in_modules"
 
-    lesslist_id = Column(Integer, ForeignKey("less_lists.id"), primary_key=True)
+    lesslist_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
     module_id = Column(Integer, ForeignKey("modules.id"), primary_key=True)
 
     lesslist_in = relationship("LessonList", back_populates="in_module")
@@ -278,10 +281,10 @@ class LemmaInLessonList(Base):
     __tablename__ = "lems_in_lesslists"
 
     lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
-    lesslist_id = Column(Integer, ForeignKey("less_lists.id"), primary_key=True)
+    lesslist_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
 
-    lemma_in = relationship("LemmaList", back_populates="in_lesslist")
-    in_lesson = relationship("Lesson", back_populates="has_lemma")
+    lemma_in = relationship("Lemma", back_populates="in_lesslist")
+    in_lesslist = relationship("LessonList", back_populates="has_lemma")
 
 
 # --- Users ---

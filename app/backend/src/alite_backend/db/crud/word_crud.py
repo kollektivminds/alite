@@ -1,3 +1,4 @@
+import logging
 from typing import List, Optional
 from uuid import UUID
 from sqlalchemy.orm import Session
@@ -13,10 +14,29 @@ from alite_backend.db.schemas import (
     VerbPairsRecord,
     ProcessedPayload,
 )
-import logging
+from alite_backend.words.funcs import remove_accents
 
 # O
 # H
+
+complete_props = {
+    "verb_aspect": None,
+    "verb_conj": None,
+    "verb_type": None,
+    "verb_mood": None,
+    "verb_trans_refl": None,
+    "verb_person": None,
+    "verb_infinitive": None,
+    "part_type": None,
+    "subst_case": None,
+    "subst_animacy": None,
+    "adjv_short": None,
+    "diminutive": None,
+    "gram_gender": None,
+    "gram_number": None,
+    "gram_tense": None,
+    "irregular": None,
+}
 
 
 def _map_lemma(lemma_record: LemmasRecord):
@@ -37,76 +57,14 @@ def _map_lemma(lemma_record: LemmasRecord):
     return mapped_lemma
 
 
-grammar_tag_map = {
-    # verb_aspect
-    "imperfective": {"verb_aspect": 0},
-    "perfective": {"verb_aspect": 0},
-    "imperfective": {"verb_aspect": 0},
-    # verb_conj
-    # verb_type
-    # verb_mood
-    # verb_trans_refl
-    # verb_person
-    "first-person": {"verb_person": 1},
-    "second-person": {"verb_person": 2},
-    "third-person": {"verb_person": 3},
-    # part_type
-    # part_voice
-    "active": {"part_voice": 0},
-    "passive": {"part_voice": 1},
-    # subst_case
-    "nominative": {"subst_case": 0},
-    "genitive": {"subst_case": 1},
-    "accusative": {"subst_case": 2},
-    "dative": {"subst_case": 3},
-    "instrumental": {"subst_case": 4},
-    "prepositional": {"subst_case": 5},
-    "vocative": {"subst_case": 6},
-    "locative": {"subst_case": 7},
-    "partitive": {"subst_case": 8},
-    # subst_animacy
-    "animate": {"subst_animacy": True},
-    "inanimate": {"subst_animacy": False},
-    # adjv_short
-    "short-form": {"adjv_short": True},
-    # diminutive
-    # gram_gender
-    "masculine": {"gram_gender": 0},
-    "neuter": {"gram_gender": 1},
-    "feminine": {"gram_gender": 2},
-    "dual": {"gram_gender": 3},
-    # gram_number
-    "singular": {"gram_gender": 0},
-    "plural": {"gram_gender": 1},
-    "dual": {"gram_gender": 2},
-    # gram_tense
-    "past": {"gram_tense": 0},
-    "present": {"gram_tense": 1},
-    "future": {"gram_tense": 2},
-}
-
-
-def _parse_grammar_tags(payload_tags: list[str]) -> dict:
-
-    props = {}
-
-    for tag in payload_tags:
-        # tag = tag.lower()
-
-        if tag in grammar_tag_map:
-            props.update(grammar_tag_map[tag])
-
-    return props
-
-
 #
 # C
 #
 
-# cog = create or get
+# goc = get or create
 
 
-def cog_lemma(db: Session, lemma_record: LemmasRecord) -> Lemma:
+def goc_lemma(db: Session, lemma_record: LemmasRecord) -> Lemma:
     """create_lemma _summary_
 
     Args:
@@ -116,56 +74,65 @@ def cog_lemma(db: Session, lemma_record: LemmasRecord) -> Lemma:
     Returns:
         _type_: _description_
     """
-    sql_lemma = _map_lemma(lemma_record=lemma_record)
+    entry_key, clean_lemma, accent_lemma, pos = (
+        lemma_record.entry_key,
+        lemma_record.clean_lemma,
+        lemma_record.accent_lemma,
+        lemma_record.pos,
+    )
+    existing_lem = get_lemmas(
+        db=db,
+        entry_key=entry_key,
+        clean_lemma=clean_lemma,
+        accent_lemma=accent_lemma,
+        pos=pos,
+    )
+    if existing_lem:
+        return existing_lem
+    else:
+        sql_lemma = _map_lemma(lemma_record=lemma_record)
+        db.add(sql_lemma)
+        db.flush()
+        db.refresh(sql_lemma)
 
-    db.add(sql_lemma)
-    db.flush()
-    db.refresh(sql_lemma)
-
-    return sql_lemma
+        return sql_lemma
 
 
-def cog_lexeme(db: Session, word_form: str) -> Lexeme:
+def goc_lexeme(db: Session, word_form: str) -> Lexeme:
     """
     Creates a new lexeme entry and links it to its lemma.
     """
-    db_lexeme = Lexeme(word_text=word_form)
-    db.add(db_lexeme)
-    db.flush()
-    db.refresh(db_lexeme)
-    return db_lexeme
+    lex_search_stmt = select(Lexeme).where(Lexeme.lex_text == word_form)
+    existing_lex = db.scalars(statement=lex_search_stmt).one_or_none()
+    # logging.debug("lexeme search_results: %s", search_results)
+    if existing_lex:
+        return existing_lex
+    else:
+        # logging.debug("making LexemRecord for %s", word_form)
+        db_lexeme = Lexeme(lex_text=word_form, lex_text_clean=remove_accents(word_form))
+        db.add(db_lexeme)
+        db.flush()
+        db.refresh(db_lexeme)
+        return db_lexeme
 
 
-def cog_gram_prop(
-    db: Session,
-    verb_aspect: Optional[int] = None,
-    verb_conj: Optional[str] = None,
-    verb_type: Optional[int] = None,
-    verb_mood: Optional[int] = None,
-    verb_trans_refl: Optional[int] = None,
-    verb_person: Optional[int] = None,
-    part_type: Optional[int] = None,
-    subst_case: Optional[int] = None,
-    subst_animacy: Optional[bool] = None,
-    adjv_short: Optional[bool] = None,
-    diminutive: Optional[bool] = None,
-    gram_gender: Optional[int] = None,
-    gram_number: Optional[int] = None,
-    gram_tense: Optional[int] = None,
-    irregular: Optional[bool] = None,
-) -> GramProp:
-    prop_cols = locals()
-    prop_cols = prop_cols.pop("db", None)
-    db_gram_prop = GramProp(prop_cols)
-    db.add(db_gram_prop)
-    db.flush()
-    db.refresh(db_gram_prop)
-    return db_gram_prop
+def goc_gram_prop(db: Session, incoming_props: dict) -> GramProp:
+    existing_gramprop = get_gramprop(db, incoming_props)
+    if existing_gramprop:
+        logging.debug("This prop exists")
+        return existing_gramprop
+    else:
+        logging.debug("This prop doesn't exist")
+        these_props = complete_props | incoming_props
+        new_gram_prop = GramProp(**these_props)
+        db.add(new_gram_prop)
+        db.flush()
+        db.refresh(new_gram_prop)
+        return new_gram_prop
 
 
-def cog_word_form(db: Session, lem_id: int, lex_id: int, gram_id: int) -> WordForm:
+def goc_word_form(db: Session, lem_id: int, lex_id: int, gram_id: int) -> WordForm:
     form_cols = locals()
-    form_cols = form_cols.pop("db", None)
     db_word_form = WordForm(form_cols)
     db.add(db_word_form)
     db.flush()
@@ -185,7 +152,7 @@ def get_lemmas(
     clean_lemma: Optional[str] = None,
     accent_lemma: Optional[str] = None,
     pos: Optional[int] = None,
-) -> List[Lemma] | Lemma:  # type: ignore
+) -> Lemma:  # type: ignore
     """get_lemmas _summary_
 
     Args:
@@ -205,11 +172,11 @@ def get_lemmas(
     # get immediately by entry_key or id
     if entry_key is not None:
         stmt = stmt.where(Lemma.entry_key == entry_key)
-        return db.scalar(statement=stmt)
+        return db.scalars(statement=stmt).one_or_none()
 
     if id is not None:
         stmt = stmt.where(Lemma.id == id)
-        return db.scalar(statement=stmt)
+        return db.scalars(statement=stmt).one_or_none()
 
     # dynamic chaining for casting a wider net
     if clean_lemma is not None:
@@ -218,8 +185,37 @@ def get_lemmas(
         stmt = stmt.where(Lemma.lem_canon == accent_lemma)
     if pos is not None:
         stmt = stmt.where(Lemma.pos == pos)
-    logging.debug(stmt)
+    # logging.debug(stmt)
     return list(db.scalars(statement=stmt).all())
+
+
+def get_lexemes(db: Session, lex_text: str) -> List[Lexeme]:
+    stmt = select(Lexeme).where(Lexeme.lex_text == lex_text)
+    return list(db.scalars(statement=stmt).all())
+
+
+def get_gramprop(db: Session, incoming_props: dict) -> GramProp:
+    #logging.debug("get_gramprop complete_props: %s", complete_props)
+    these_props = complete_props | incoming_props
+    logging.debug("get_gramprop these_props: %s", these_props)
+    stmt = select(GramProp).filter_by(**these_props)
+    existing_gramprop = db.scalars(stmt).first()
+    return existing_gramprop
+
+
+def get_wordform(db: Session, lem_id: int, lex_id: int, props: int) -> WordForm:
+    stmt = select(WordForm)
+
+    if lem_id is not None:
+        stmt = stmt.where(WordForm.lem_id == lem_id)
+    if lex_id is not None:
+        stmt = stmt.where(WordForm.lex_id == lex_id)
+    if props is not None:
+        stmt = stmt.where(WordForm.gram_id == props)
+
+    existing_wordform = db.scalars(stmt).first()
+
+    return existing_wordform
 
 
 # creating definitions, gram_props and linking them together in join tables

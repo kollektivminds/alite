@@ -10,6 +10,7 @@ from .funcs import validate_word_list
 from .logging_config import setup_logging
 from .lookup import LookupFDAPI as lfa
 from .process import ReturnedLemmaProcessor as rlp
+from .load import Loader
 from alite_backend.db.crud import word_crud
 #from .load import LoadDB as ldb
 
@@ -41,7 +42,8 @@ def feed_data(db: Session, word_s: list[str]):
     fetcher = lfa()
     # init processor class
     processor = rlp()
-    
+    # init loader class
+    loader = Loader(db_session=db)
     logger.info("Starting pull of %s", word_s)
     results_stream = fetcher.get(word_s)
     
@@ -59,7 +61,7 @@ def feed_data(db: Session, word_s: list[str]):
                 logger.debug("Successfully processed data for '%s':\n%s\n", word_lemma, processed_payload)
                 
                 # LOAD: Pass the processed payload to the Loader
-                
+                loader.load_payload(payload=processed_payload)
 
         except Exception as e:
             logger.error("Failed to process an item from the lookup stream: %s", e, exc_info=True)

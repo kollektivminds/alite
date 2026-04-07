@@ -109,9 +109,9 @@ class DefExamplesRecord(BaseModel):
 class PronunciationsRecord(BaseModel):
     """Schema for a single definition entry."""
     entry_key: UUID5
-    text: str
-    type: str
-    tags: List[str]
+    pron_text: str
+    pron_type: int
+    pron_tags: Optional[List[str]|str]
 
 class VerbPairsRecord(BaseModel):
     """Schema for a single definition entry."""

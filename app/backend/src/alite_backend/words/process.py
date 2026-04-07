@@ -23,7 +23,7 @@ from typing import List, Dict, Any, Tuple
 from pydantic import ValidationError
 from alite_backend.config import settings
 from ..db.schemas import FDAPIreturn, ProcessedPayload
-from .funcs import pos_dict, sop_dict, remove_accents
+from .funcs import pos_dict, sop_dict, remove_accents, is_cyrillic
 from alite_backend.db.schemas import Quote
 
 logger = logging.getLogger(__name__)
@@ -159,34 +159,76 @@ class ReturnedLemmaProcessor:
                 "entry_key": entry_key
             }
             sorted_data["lemmas"].append(lemma_dict)
+            
+            canon_form_temp_id = str(uuid.uuid4())
+            canon_lex = {
+                "temp_form_id": canon_form_temp_id,
+                "entry_key": entry_key,
+                "form": canonical_form
+            }
+            sorted_data["lexicon"].append(canon_lex)
 
             # lexicon and gram_props
             for form in entry.forms:
                 form_word = form.word
                 if not form_word or form_word == "-":
                     continue
-
-                # Create a temp ID for this specific word form
-                temp_form_id = str(uuid.uuid4())
-
-                sorted_data["lexicon"].append(
-                    {
-                        "temp_form_id": temp_form_id,
-                        "entry_key": entry_key,  # To link to the lexicon entry
-                        "form": form_word,
-                    }
-                )
-
-                # link all its tags as grammatical properties
-                tags = form.tags
-                # logger.debug("tags: %s", tags)
-                for tag in tags:
-                    sorted_data["gram_props"].append(
-                        {
-                            "temp_form_id": temp_form_id,  # For load.py to find word_form_id
-                            "prop_name": tag,  # load.py will get-or-create this property
-                        }
-                    )
+                else:
+                    if not is_cyrillic(form_word):
+                        #logger.debug("non-cyrillic form: %s (%s)", form_word, form.tags)
+                        if "romanization" in form.tags:
+                            sorted_data["pronunciations"].append(
+                                {
+                                "entry_key": entry_key,
+                                "pron_text": form_word,
+                                "pron_type": 1,
+                                "pron_tags": ""                             
+                                }
+                            )
+                        elif "class" in form.tags and pos == "verb":
+                            form_word_list = form_word.split()
+                            for w in form_word_list:
+                                sorted_data["gram_props"].append(
+                                    {
+                                        "temp_form_id": canon_form_temp_id,
+                                        "prop_name": w
+                                    }
+                                )
+                    else:
+                        # link all its tags as grammatical properties
+                        tags = form.tags
+                        tags_to_boot = [
+                            "dated", "alternative", "dialectical"
+                        ]
+                        # logger.debug("tags: %s", tags)
+                        if set(tags).isdisjoint(tags_to_boot):
+                            if "canonical" in tags or "infinitive" in tags:
+                                for tag in tags:
+                                    sorted_data["gram_props"].append(
+                                        {
+                                            "temp_form_id": canon_form_temp_id,
+                                            "prop_name": tag
+                                        }
+                                    )
+                            else:
+                                # Create a temp ID for this specific word form
+                                temp_form_id = str(uuid.uuid4())
+                                
+                                sorted_data["lexicon"].append(
+                                    {
+                                        "temp_form_id": temp_form_id,
+                                        "entry_key": entry_key,  # To link to the lexicon entry
+                                        "form": form_word,
+                                    }
+                                )
+                                
+                                for tag in tags:
+                                    sorted_data["gram_props"].append(
+                                        {
+                                            "temp_form_id": temp_form_id,  # For load.py to find word_form_id
+                                            "prop_name": tag,  # load.py will get-or-create this property
+                                        }
+                                    )
 
             # 6. Verb Pairs (Special case while looping forms)
             if pos == "verb":
@@ -222,9 +264,9 @@ class ReturnedLemmaProcessor:
                 sorted_data["pronunciations"].append(
                     {
                         "entry_key": entry_key,  # For load.py to find lexicon_id
-                        "text": pron.text,
-                        "type": pron.type,
-                        "tags": pron.tags,
+                        "pron_text": pron.text,
+                        "pron_type": 0 if pron.type == 'ipa' else None,
+                        "pron_tags": pron.tags if len(pron.tags) > 0 else None,
                     }
                 )
 
@@ -280,7 +322,7 @@ class ReturnedLemmaProcessor:
             sorted_entries_dict = self._sort_entries(
                 this_word, unprocessed_word.entries
             )
-            #logger.debug(sorted_entries_dict)
+            #logger.debug("sorted_entries_dict: %s", sorted_entries_dict)
             sorted_entries_dict = ProcessedPayload(**sorted_entries_dict)
 
             return sorted_entries_dict

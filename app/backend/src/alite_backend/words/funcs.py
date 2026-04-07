@@ -21,7 +21,7 @@ import json
 import logging
 import os
 import unicodedata
-
+import re
 import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
@@ -40,7 +40,7 @@ pos = [
     "conjunction",
     "interjection",
     "noun",
-    "number",
+    "numeral",
     "participle",
     "particle",
     "preposition",
@@ -177,3 +177,6 @@ def validate_word_list(word_list):
             word_list.isalpha()
         except:
             raise TypeError("not alpha")
+        
+def is_cyrillic(text: str) -> bool:
+    return bool(re.search(r'[А-Яа-яËё]', text))

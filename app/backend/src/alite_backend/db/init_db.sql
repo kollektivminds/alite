@@ -1,22 +1,15 @@
 -- Drop tables in the correct reverse order of dependency to avoid errors
 -- First, drop all junction tables and tables with foreign keys
-DROP TABLE IF EXISTS user_experiments;
-DROP TABLE IF EXISTS student_skill_mastery;
-DROP TABLE IF EXISTS skills_in_word_questions;
-DROP TABLE IF EXISTS student_decisions;
-DROP TABLE IF EXISTS student_responses;
-DROP TABLE IF EXISTS question_sessions;
-DROP TABLE IF EXISTS users_in_groups;
+DROP TABLE IF EXISTS lem_rels;
 DROP TABLE IF EXISTS lesslists_in_modules;
 DROP TABLE IF EXISTS words_in_lesslists;
--- remove
 DROP TABLE IF EXISTS lems_in_lesslists;
 DROP TABLE IF EXISTS sent_docs;
 DROP TABLE IF EXISTS verb_pairs;
 DROP TABLE IF EXISTS lemma_defs;
--- remove
 DROP TABLE IF EXISTS lem_defs;
 DROP TABLE IF EXISTS def_sents;
+DROP TABLE IF EXISTS def_exs;
 DROP TABLE IF EXISTS word_forms;
 -- Next, drop the primary tables that are referenced by the ones above
 DROP TABLE IF EXISTS skills;
@@ -25,14 +18,9 @@ DROP TABLE IF EXISTS users;
 DROP TABLE IF EXISTS lessons_lists;
 DROP TABLE IF EXISTS modules;
 DROP TABLE IF EXISTS pronunciations;
-DROP TABLE IF EXISTS def_examples;
--- remove
-DROP TABLE IF EXISTS def_exs;
+DROP TABLE IF EXISTS examples;
 DROP TABLE IF EXISTS definitions;
 DROP TABLE IF EXISTS gram_props;
-DROP TABLE IF EXISTS questions;
--- remove
-DROP TABLE IF EXISTS items;
 DROP TABLE IF EXISTS word_questions;
 DROP TABLE IF EXISTS lexicon;
 DROP TABLE IF EXISTS lemmas;
@@ -46,7 +34,9 @@ CREATE TABLE lemmas (
     id SERIAL PRIMARY KEY,
     lem_text VARCHAR(50) NOT NULL,
     lem_canon VARCHAR(50),
-    -- 0 = adjective, 1 = adverb, 2 = noun, 3 = number, 4 = participle, 5 = pronoun, 6 = verb
+    -- 0 = adjective, 1 = adverb, 2 = com, 3 = interjection,
+    -- 4 = noun, 5 = numeral, 6 = participle, 7 = particle,
+    -- 8 = preposition, 9 = pronoun, 10 = verb, 11 = unknown
     pos INT NOT NULL,
     entry_key UUID NOT NULL UNIQUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -57,7 +47,7 @@ CREATE TABLE lemmas (
 CREATE TABLE lexicon (
     id SERIAL PRIMARY KEY,
     lex_text VARCHAR(50) NOT NULL UNIQUE,
-    lex_text_clean VARCHAR(50) NOT NULL UNIQUE,
+    lex_text_clean VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 -- PRIMARY TABLE for all grammatical combinations
@@ -78,6 +68,8 @@ CREATE TABLE gram_props (
     verb_trans_refl INT,
     -- 1 = first, 2 = second, 3 = third
     verb_person INT,
+    -- FALSE, TRUE
+    verb_infinitive BOOLEAN,
     -- 0 = adjectival, 1 = adverbial
     part_type INT,
     -- 0 = active, 1 = passive
@@ -98,8 +90,7 @@ CREATE TABLE gram_props (
     gram_number INT,
     -- 0 = past, 1 = present, 2 = future
     gram_tense INT,
-    -- False, True
-    -- not included in unique constraint?
+    -- False, True - not included in unique constraint?
     irregular BOOLEAN,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_grammar UNIQUE (
@@ -109,6 +100,7 @@ CREATE TABLE gram_props (
         verb_mood,
         verb_trans_refl,
         verb_person,
+        verb_infinitive,
         part_type,
         part_voice,
         subst_case,
@@ -151,7 +143,9 @@ CREATE TABLE examples (
 CREATE TABLE pronunciations (
     id SERIAL PRIMARY KEY,
     pron_text TEXT NOT NULL,
-    pron_type TEXT NOT NULL,
+    pron_tags TEXT,
+    -- 0 = ipa, 1 = romanization
+    pron_type INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 --
@@ -231,139 +225,3 @@ CREATE TABLE lems_in_lesslists (
     CONSTRAINT lemma FOREIGN KEY (lem_id) REFERENCES lemmas(id) ON DELETE CASCADE,
     CONSTRAINT lessons_lists FOREIGN KEY (lesslist_id) REFERENCES lessons_lists(id) ON DELETE CASCADE
 );
---
--- USERS
---
-
--- PRIMARY TABLE for users
--- RELS INCL 
--- CREATE TABLE users (
---     id SERIAL PRIMARY KEY,
---     username VARCHAR(50) UNIQUE,
---     privileged BOOLEAN DEFAULT FALSE,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
--- PRIMARY TABLE for user groups
--- RELS INCL 
--- CREATE TABLE user_groups (
---     id SERIAL PRIMARY KEY,
---     group_name VARCHAR(50) UNIQUE
--- );
--- SECONDARY TABLE for users' belonging to groups
--- RELS INCL 
--- CREATE TABLE users_in_groups (
---     user_id INT NOT NULL,
---     group_id INT NOT NULL,
---     PRIMARY KEY (user_id, group_id),
---     CONSTRAINT group_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
---     CONSTRAINT user_group FOREIGN KEY (group_id) REFERENCES user_groups(id) ON DELETE CASCADE
--- );
---
--- ITEMS
---
-
--- CREATE TABLE items (
---     id SERIAL PRIMARY KEY,
---     item_type VARCHAR(50) NOT NULL,
---     item_text TEXT NOT NULL,
---     choices JSONB NOT NULL,
---     -- For multiple choice options
---     correct_answer TEXT NOT NULL,
---     lem_id INT,
---     -- Optional link to a specific word
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     difficulty FLOAT,
---     -- IRT 'b' parameter
---     discrimination FLOAT,
---     -- IRT 'a' parameter
---     guess_probability FLOAT,
---     -- IRT 'c' parameter
---     CONSTRAINT fk_lemma FOREIGN KEY (lem_id) REFERENCES lemmas(id) ON DELETE CASCADE
--- );
---
--- SESSIONS
---
-
--- CREATE TABLE question_sessions (
---     id SERIAL PRIMARY KEY,
---     user_id INT NOT NULL,
---     session_start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     session_end_time TIMESTAMP,
---     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
--- );
---
--- STUDENT RESPONSES
---
-
--- CREATE TABLE student_responses (
---     id SERIAL PRIMARY KEY,
---     session_id INT NOT NULL,
---     question_id INT NOT NULL,
---     student_answer TEXT,
---     is_correct BOOLEAN,
---     response_time_ms INT,
---     submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     CONSTRAINT fk_session FOREIGN KEY (session_id) REFERENCES question_sessions(id) ON DELETE CASCADE,
---     CONSTRAINT fk_question FOREIGN KEY (question_id) REFERENCES word_questions(id) ON DELETE CASCADE
--- );
---
--- STUDENT DECISIONS
---
-
--- CREATE TABLE student_decisions (
---     id SERIAL PRIMARY KEY,
---     user_id INT NOT NULL,
---     decision_type VARCHAR(100) NOT NULL,
---     -- E.g., 'selected_topic', 'chose_question_format'
---     decision_value TEXT NOT NULL,
---     made_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
--- );
---
--- SKILLS
---
-
--- CREATE TABLE skills (
---     id SERIAL PRIMARY KEY,
---     skill_name VARCHAR(255) NOT NULL UNIQUE,
---     skill_description TEXT,
---     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
--- CREATE TABLE skills_in_word_questions (
---     question_id INT NOT NULL,
---     skill_id INT NOT NULL,
---     PRIMARY KEY (question_id, skill_id),
---     CONSTRAINT fk_question FOREIGN KEY (question_id) REFERENCES word_questions(id) ON DELETE CASCADE,
---     CONSTRAINT fk_skill FOREIGN KEY (skill_id) REFERENCES skills(id) ON DELETE CASCADE
--- );
--- CREATE TABLE student_skill_mastery (
---     id SERIAL PRIMARY KEY,
---     user_id INT NOT NULL,
---     skill_id INT NOT NULL,
---     mastery_level FLOAT DEFAULT 0.0,
---     p_learn FLOAT,
---     -- BKT: Probability of learning
---     p_guess FLOAT,
---     -- BKT: Probability of guessing
---     p_slip FLOAT,
---     -- BKT: Probability of slipping
---     last_seen_at TIMESTAMP,
---     next_review_at TIMESTAMP,
---     -- For spaced repetition
---     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
---     CONSTRAINT fk_skill FOREIGN KEY (skill_id) REFERENCES skills(id) ON DELETE CASCADE,
---     UNIQUE (user_id, skill_id)
--- );
---
--- EXPERIMENTS
---
-
--- CREATE TABLE user_experiments (
---     id SERIAL PRIMARY KEY,
---     user_id INT NOT NULL,
---     experiment_name VARCHAR(255) NOT NULL,
---     variant_name VARCHAR(255) NOT NULL,
---     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
---     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
---     UNIQUE (user_id, experiment_name)
--- );
