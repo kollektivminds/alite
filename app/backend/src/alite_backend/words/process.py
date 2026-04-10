@@ -19,6 +19,7 @@ Example:
 # coding: utf-8
 import logging
 import uuid
+import re
 from typing import List, Dict, Any, Tuple
 from pydantic import ValidationError
 from alite_backend.config import settings
@@ -93,12 +94,13 @@ class ReturnedLemmaProcessor:
             # gather basic data
             # logger.debug(entry)
             language = entry.language
+            #logger.debug("entry senses tags: %s", [x.tags for x in entry.senses][0])
             if language.code != lang_code:
-                logger.error("%s is %s!!!", entry["word"], language.name)
+                logger.error("%s is %s!!!", clean_lemma, language.name)
                 # TODO keep these?
                 continue
-            elif "form of" in [x.tags for x in entry.senses]:
-                logger.error("This word form was found but is not canonical (a lemma)")
+            elif "form of" in [x.tags for x in entry.senses][0]:
+                logger.error("This word form (%s) was found but is not canonical (a lemma)", clean_lemma)
                 # TODO catch these to put back in the queue if not already
                 continue
 
@@ -106,50 +108,63 @@ class ReturnedLemmaProcessor:
             pos = entry.partOfSpeech
             if not pos:
                 continue
+            entry_name = f"{clean_lemma}_{pos}_{entry_index}"
+            entry_key = uuid.uuid5(APP_NAMESPACE, entry_name)
+            # logger.debug("entry: %s", entry_key)
+            
             try:
                 # logger.debug("forms items: %s", [x.word for x in entry.forms if x.tags[0] == 'canonical'][0])
                 canonical_form = None
                 verbal_aspect = None
                 canonical_forms = ["canonical", "infinitive"]
-                if pos == "verb":
-                    canonical_form_object = [
-                        x
-                        for x in entry.forms
-                        if any(item in canonical_forms for item in x.tags)
-                    ]
-                    # logger.debug("can form obj: %s", canonical_form_object)
-                    for form in canonical_form_object:
-                        tags = form.tags
-                        # logger.debug("tags: %s", form.tags)
-                        # logger.debug("word: %s", form.word)
-                        if (len(tags) == 2) & ("infinitive" in tags):
-                            for tag in tags:
-                                # logger.debug("tag: %s", tag)
-                                if tag != "infinitive":
-                                    verbal_aspect = tag
-                            # logger.debug("form word: %s", form.word)
+                if pos == "verb":                    
+                        verb_infin_temp_id = str(uuid.uuid4())
+                        verb_infin_form_object = [
+                            x
+                            for x in entry.forms
+                            if any(item == "infinitive" for item in x.tags)
+                        ]
+                        logger.debug("verb infin form obj: %s", verb_infin_form_object)
+                        for form in verb_infin_form_object:
+                            tags = form.tags
+                            # logger.debug("tags: %s", form.tags)
+                            # logger.debug("word: %s", form.word)
+                            if len(tags) == 2:
+                                for tag in tags:
+                                    # logger.debug("tag: %s", tag)
+                                    if tag != "infinitive":
+                                        verbal_aspect = tag
+                                # logger.debug("form word: %s", form.word)
                             canonical_form = form.word
                             # logger.debug("first can form: %s", canonical_form)
-                    if not canonical_form:
-                        canonical_form = [
-                            x.word for x in entry.forms if x.tags[0] == "canonical"
-                        ][0]
-                    # if verbal_aspect:
-                    # logger.debug("verbal aspect: %s", verbal_aspect)
-                    # pass
-                    # logger.debug("verb canonical: %s", canonical_form)
+                        verb_infin_lex_entry = {
+                            "temp_form_id": verb_infin_temp_id,
+                            "entry_key": entry_key,
+                        }
+                        logger.debug("verb_infin_lex_entry: %s", verb_infin_lex_entry)
+                        sorted_data["lexicon"].append(verb_infin_lex_entry)
+                        sorted_data["gram_props"].append(
+                            {
+                                "temp_form_id": verb_infin_temp_id,
+                                "verb_aspect": verbal_aspect
+                            }
+                        )
+                        #if not canonical_form:
+                        #    canonical_form = [
+                        #        x.word for x in entry.forms if x.tags[0] == "canonical"
+                        #    ][0]
+                        # if verbal_aspect:
+                        # logger.debug("verbal aspect: %s", verbal_aspect)
+                        # pass
+                        # logger.debug("verb canonical: %s", canonical_form)
                 else:
                     canonical_form = [
-                        x.word for x in entry.forms if x.tags[0] == "canonical"
+                        x.word for x in entry.forms if "canonical" in x.tags
                     ][0]
-                #logger.debug("canonical form: %s", canonical_form)
+                logger.debug("canonical form: %s", canonical_form)
             except:
                 canonical_form = None
                 logger.error("No canonical form found for %s", clean_lemma)
-
-            entry_name = f"{clean_lemma}_{pos}_{entry_index}"
-            entry_key = uuid.uuid5(APP_NAMESPACE, entry_name)
-            # logger.debug("entry: %s", entry_key)
 
             # make entry's lemma dict
             lemma_dict = {
@@ -160,14 +175,6 @@ class ReturnedLemmaProcessor:
             }
             sorted_data["lemmas"].append(lemma_dict)
             
-            canon_form_temp_id = str(uuid.uuid4())
-            canon_lex = {
-                "temp_form_id": canon_form_temp_id,
-                "entry_key": entry_key,
-                "form": canonical_form
-            }
-            sorted_data["lexicon"].append(canon_lex)
-
             # lexicon and gram_props
             for form in entry.forms:
                 form_word = form.word
@@ -175,7 +182,7 @@ class ReturnedLemmaProcessor:
                     continue
                 else:
                     if not is_cyrillic(form_word):
-                        #logger.debug("non-cyrillic form: %s (%s)", form_word, form.tags)
+                        logger.debug("non-cyrillic form: %s (%s)", form_word, form.tags)
                         if "romanization" in form.tags:
                             sorted_data["pronunciations"].append(
                                 {
@@ -186,14 +193,22 @@ class ReturnedLemmaProcessor:
                                 }
                             )
                         elif "class" in form.tags and pos == "verb":
-                            form_word_list = form_word.split()
-                            for w in form_word_list:
+                            logger.debug("class & verb: %s", form_word)
+                            re_pattern = r"(?P<verb_conj>.*)\s(?P<verb_aspect>i?m?perfective)\s(?P<verb_trans_refl>i?n?transitive)"
+                            match = re.search(re_pattern, form_word)
+                            logger.debug("verb match: %s", match)
+                            #verb_info = match.group(0)
+                            #verb_conj = match.group(1)
+                            #verb_aspect = match.group(2)
+                            #verb_trans_refl = match.group(3)
+                            for group_name, group_val in match.groupdict().items():
+                                logger.debug("verb class matching: %s = %s", group_name, group_val)
                                 sorted_data["gram_props"].append(
                                     {
-                                        "temp_form_id": canon_form_temp_id,
-                                        "prop_name": w
+                                        "temp_form_id": verb_infin_temp_id,
+                                        group_name: group_val
                                     }
-                                )
+                            )
                     else:
                         # link all its tags as grammatical properties
                         tags = form.tags
@@ -202,33 +217,27 @@ class ReturnedLemmaProcessor:
                         ]
                         # logger.debug("tags: %s", tags)
                         if set(tags).isdisjoint(tags_to_boot):
-                            if "canonical" in tags or "infinitive" in tags:
-                                for tag in tags:
-                                    sorted_data["gram_props"].append(
-                                        {
-                                            "temp_form_id": canon_form_temp_id,
-                                            "prop_name": tag
-                                        }
-                                    )
-                            else:
-                                # Create a temp ID for this specific word form
-                                temp_form_id = str(uuid.uuid4())
-                                
-                                sorted_data["lexicon"].append(
+                            logger.debug("acceptable tags: %s - %s", form_word, tags)
+                            temp_form_id = str(uuid.uuid4())
+                            #logger.debug("lexicon tfid, entry_key, form: %s, %s, %s", temp_form_id, entry_key, form_word)
+                            sorted_data["lexicon"].append(
+                                {
+                                    "temp_form_id": temp_form_id,
+                                    "entry_key": entry_key,  # To link to the lexicon entry
+                                    "form": form_word,
+                                }
+                            )
+                            
+                            for tag in tags:
+                                sorted_data["gram_props"].append(
                                     {
-                                        "temp_form_id": temp_form_id,
-                                        "entry_key": entry_key,  # To link to the lexicon entry
-                                        "form": form_word,
+                                        "temp_form_id": temp_form_id,  # For load.py to find word_form_id
+                                        "prop_name": tag,  # load.py will get-or-create this property
                                     }
                                 )
-                                
-                                for tag in tags:
-                                    sorted_data["gram_props"].append(
-                                        {
-                                            "temp_form_id": temp_form_id,  # For load.py to find word_form_id
-                                            "prop_name": tag,  # load.py will get-or-create this property
-                                        }
-                                    )
+                        else:
+                            logging.debug("kicking out form/tag: %s - %s", form_word, tags)
+                            continue
 
             # 6. Verb Pairs (Special case while looping forms)
             if pos == "verb":
@@ -298,7 +307,7 @@ class ReturnedLemmaProcessor:
                             }
                         )
             entry_index += 1
-
+        logger.debug("sorted_data: %s", sorted_data)
         return sorted_data
 
     def process(self, word_data):

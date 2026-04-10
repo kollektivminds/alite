@@ -21,7 +21,8 @@ dependencies = [
     "python-dotenv",
     "httpx",
     "pydantic-settings",
-    "alembic"
+    "alembic",
+    "cytoolz (>=1.1.0,<2.0.0)"
 ]
 
 [tool.poetry]

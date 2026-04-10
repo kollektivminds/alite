@@ -137,12 +137,17 @@ class Loader:
             #if len(junc_props.items()) > 0:
                 #logger.debug("junc_props: %d", len(junc_props.items()))
             if len(junc_props.items()) > 0:
-                new_gram_prop = word_crud.goc_gram_prop(db=self.db, incoming_props=junc_props)
-                v["props"] = new_gram_prop.id
+                new_gram_prop = word_crud.goc_gramprop(db=self.db, incoming_props=junc_props)
+                v["gram_id"] = new_gram_prop.id
 
-        logger.debug("gram_props mapped junction_map: %s", junction_map.values())
+        logger.debug("gram_props mapped junction_map: %s", junction_map.items())
 
         # create word_forms with link (and link them)
+        for k, v in junction_map.items():
+            del v["props"]
+            logger.debug("v: %s", v)
+            new_word_form = word_crud.goc_wordform(db=self.db, form_ids=v)
+            #logger.debug("new_word_form.id: %d", new_word_form.id)
 
         # # create definitions with link
         # create def_examples

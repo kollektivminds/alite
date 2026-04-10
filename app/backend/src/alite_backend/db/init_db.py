@@ -10,7 +10,9 @@ import os
 import random
 import logging
 import json
+from cytoolz import concat
 from alite_backend.config import settings
+from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 from alite_backend.db.db_session import engine, SessionLocal
@@ -28,27 +30,43 @@ bodyLibDfLoc = "../syntagrus/bodyLibDf.json"
 bodyTextDfLoc = "../syntagrus/bodyTextDf.json"
 infDictLoc = "../syntagrus/infDict.json"
 
+def load_org_tables(db: Session, org_data: dict):
+    for row in org_data:
+        mod_id = goc_module(db, row['module'])
+        lesslist_id = goc_lesslist(db, row['chapter'], row['topic'])
 
-def get_all_words(data):
-    """
-    This function extracts all vocabulary words from the provided JSON data.
+def get_rows(module, chapter, content):
+    # Logic for modules with simplified structures
+    if module in ["ales", "other"]:
+        return [
+            {"module": module, "chapter": chapter, "topic": None, "lemma": v}
+            for v in content
+        ]
+    
+    # Logic for standard modules
+    topic = content.get("topic")
+    vocab_section = content.get("vocab", content) if "vocab" in content else content
+    
+    # We use a nested list comprehension here, which concat will later flatten
+    return [
+        {"module": module, "chapter": chapter, "topic": topic, "lemma": word}
+        for pos, words in vocab_section.items() if pos != "topic"
+        for word in (words if isinstance(words, list) else [words])
+    ]
+    
+def get_all_words(vocab_list_loc: str = VOCAB_LIST_LOC):
+    # Load the JSON file
+    with open(vocab_list_loc, "r", encoding="utf-8") as f:  # type: ignore
+        data = json.load(f)
 
-    Args:
-        data: The loaded JSON data.
+    chapter_gen = (
+    (mod, chap, cont) 
+    for mod, chaps in data.items() 
+    for chap, cont in chaps.items()
+    )
 
-    Returns:
-        A list of all the words found in the "vocab" sections.
-    """
-    all_words = []
-    textbook = data.get("textbook", {})
-
-    for module in textbook.values():
-        for lesson in module.values():
-            vocab = lesson.get("vocab", {})
-            for pos_words in vocab.values():
-                all_words.extend(pos_words)
-
-    return all_words
+    rows = list(concat(get_rows(*item) for item in chapter_gen))
+    return [x['lemma'] for x in rows]
 
 
 def make_tables(init_db_loc: str = INIT_DB_LOC):
@@ -87,20 +105,28 @@ def make_tables(init_db_loc: str = INIT_DB_LOC):
 def init_database():
     # Create tables in db
     make_tables()
-
-    # Load the JSON file
-    with open(VOCAB_LIST_LOC, "r", encoding="utf-8") as f:  # type: ignore
-        vocab_data = json.load(f)
-
-    # Get all the words
-    words = get_all_words(vocab_data)
-
+    
+    all_words = get_all_words()
+    
+    problem_words = [
+        "день",
+        "четыре",
+        "любимый",
+        "курс",
+        "смысл",
+        "ладно",
+        "летом",
+        "граница",
+        "ухо",
+        "рыжий",
+        "англичанка"
+    ]
     print(
-        f"a total of {str(len(words))} words, of which\
-            {str(len(set(words)))} are unique"
+        f"a total of {str(len(all_words))} words, of which\
+            {str(len(set(all_words)))} are unique"
     )
 
-    rand_samp = random.sample(words, 2)
+    rand_samp = random.sample(all_words, 3)
 
     logging.debug("trying %d words: %s", len(rand_samp), rand_samp)
 

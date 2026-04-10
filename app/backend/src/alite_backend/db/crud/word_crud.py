@@ -1,9 +1,24 @@
 import logging
-from typing import List, Optional
+from typing import List, Optional, Sequence
 from uuid import UUID
 from sqlalchemy.orm import Session
 from sqlalchemy import select, update, delete
-from alite_backend.db.models import Lemma, Lexeme, GramProp, WordForm
+from alite_backend.db.models import (
+    Lemma,
+    Lexeme,
+    GramProp,
+    WordForm,
+    Definition,
+    Example,
+    DefinitionExample,
+    Pronunciation,
+    LemmaDefinition,
+    LemmaRelation,
+    LessonList,
+    LemmaInLessonList,
+    LessonListInModule,
+    Module,
+)
 from alite_backend.db.schemas import (
     LemmasRecord,
     GramPropsRecord,
@@ -64,7 +79,7 @@ def _map_lemma(lemma_record: LemmasRecord):
 # goc = get or create
 
 
-def goc_lemma(db: Session, lemma_record: LemmasRecord) -> Lemma:
+def goc_lemma(db: Session, lemma_record: LemmasRecord) -> Lemma | List[Lemma]:
     """create_lemma _summary_
 
     Args:
@@ -116,13 +131,13 @@ def goc_lexeme(db: Session, word_form: str) -> Lexeme:
         return db_lexeme
 
 
-def goc_gram_prop(db: Session, incoming_props: dict) -> GramProp:
+def goc_gramprop(db: Session, incoming_props: dict) -> GramProp:
     existing_gramprop = get_gramprop(db, incoming_props)
     if existing_gramprop:
-        logging.debug("This prop exists")
+        # logging.debug("This prop exists")
         return existing_gramprop
     else:
-        logging.debug("This prop doesn't exist")
+        # logging.debug("This prop doesn't exist")
         these_props = complete_props | incoming_props
         new_gram_prop = GramProp(**these_props)
         db.add(new_gram_prop)
@@ -131,13 +146,18 @@ def goc_gram_prop(db: Session, incoming_props: dict) -> GramProp:
         return new_gram_prop
 
 
-def goc_word_form(db: Session, lem_id: int, lex_id: int, gram_id: int) -> WordForm:
-    form_cols = locals()
-    db_word_form = WordForm(form_cols)
-    db.add(db_word_form)
-    db.flush()
-    db.refresh(db_word_form)
-    return db_word_form
+def goc_wordform(db: Session, form_ids: dict[str, int]) -> WordForm:
+    logging.debug("goc_wordform form_ids: %s", form_ids)
+    existing_wordform = get_wordform(db, **form_ids)
+    if existing_wordform:
+        logging.debug("This wordform exists")
+        return existing_wordform
+    else:
+        new_word_form = WordForm(**form_ids)
+        db.add(new_word_form)
+        db.flush()
+        db.refresh(new_word_form)
+        return new_word_form
 
 
 #
@@ -152,7 +172,7 @@ def get_lemmas(
     clean_lemma: Optional[str] = None,
     accent_lemma: Optional[str] = None,
     pos: Optional[int] = None,
-) -> Lemma:  # type: ignore
+) -> List[Lemma]:  # type: ignore
     """get_lemmas _summary_
 
     Args:
@@ -195,23 +215,23 @@ def get_lexemes(db: Session, lex_text: str) -> List[Lexeme]:
 
 
 def get_gramprop(db: Session, incoming_props: dict) -> GramProp:
-    #logging.debug("get_gramprop complete_props: %s", complete_props)
+    # logging.debug("get_gramprop complete_props: %s", complete_props)
     these_props = complete_props | incoming_props
-    logging.debug("get_gramprop these_props: %s", these_props)
+    # logging.debug("get_gramprop these_props: %s", these_props)
     stmt = select(GramProp).filter_by(**these_props)
     existing_gramprop = db.scalars(stmt).first()
     return existing_gramprop
 
 
-def get_wordform(db: Session, lem_id: int, lex_id: int, props: int) -> WordForm:
+def get_wordform(db: Session, lem_id: int, lex_id: int, gram_id: int) -> WordForm:
     stmt = select(WordForm)
 
     if lem_id is not None:
         stmt = stmt.where(WordForm.lem_id == lem_id)
     if lex_id is not None:
         stmt = stmt.where(WordForm.lex_id == lex_id)
-    if props is not None:
-        stmt = stmt.where(WordForm.gram_id == props)
+    if gram_id is not None:
+        stmt = stmt.where(WordForm.gram_id == gram_id)
 
     existing_wordform = db.scalars(stmt).first()
 
@@ -219,6 +239,14 @@ def get_wordform(db: Session, lem_id: int, lex_id: int, props: int) -> WordForm:
 
 
 # creating definitions, gram_props and linking them together in join tables
+
+
+def get_definitions(db: Session, def_id: Optional[int], def_text: Optional[str]) -> Definition | Sequence[Definition]:
+    stmt = select(Definition)
+    
+    existing_definition = db.scalars(stmt).all()
+    
+    return existing_definition
 
 #
 # U
