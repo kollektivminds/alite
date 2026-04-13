@@ -3,6 +3,21 @@ import logging
 from collections import defaultdict
 from sqlalchemy.orm import Session
 from alite_backend.db import schemas
+from alite_backend.db.models import (
+    EnumAdjectiveType,
+    EnumConjGender,
+    EnumConjPerson,
+    EnumGramNumber,
+    EnumGramTense,
+    EnumParticipleType,
+    EnumParticipleVoice,
+    EnumPartOfSpeech,
+    EnumSubstCase,
+    EnumVerbAspect,
+    EnumVerbMood,
+    EnumVerbTransRefl,
+    EnumVerbType
+)
 from alite_backend.db.crud import word_crud
 from psycopg2.errors import UniqueViolation
 
@@ -19,60 +34,62 @@ class Loader:
 
         grammar_tag_map = {
             # verb_aspect
-            "imperfective": {"verb_aspect": 0},
-            "perfective": {"verb_aspect": 1},
+            "imperfective": {"verb_aspect": EnumVerbAspect},
+            "perfective": {"verb_aspect": EnumVerbAspect},
             # verb_conj - taking as string
             # verb_type
-            "type-I": {"verb_type": 1},
-            "type-II": {"verb_type": 2},
+            "type-I": {"verb_type": EnumVerbType},
+            "type-II": {"verb_type": EnumVerbType},
             # verb_mood
-            "indicative": {"verb_mood": 0},
-            "imperative": {"verb_mood": 1},
+            "indicative": {"verb_mood": EnumVerbMood},
+            "imperative": {"verb_mood": EnumVerbMood},
             # verb_trans_refl
-            "transitive": {"verb_trans_refl": 0},
-            "reflexive": {"verb_trans_refl": 1},
-            "neither-tnr": {"verb_trans_refl": 2},  # not in data
-            # verb_person
-            "first-person": {"verb_person": 1},
-            "second-person": {"verb_person": 2},
-            "third-person": {"verb_person": 3},
+            "transitive": {"verb_trans_refl": EnumVerbTransRefl},
+            "reflexive": {"verb_trans_refl": EnumVerbTransRefl},
+            "neither-tnr": {"verb_trans_refl": EnumVerbTransRefl},  # not in data
+            # conj_person
+            "first-person": {"conj_person": EnumConjPerson},
+            "second-person": {"conj_person": EnumConjPerson},
+            "third-person": {"conj_person": EnumConjPerson},
             # verb_infinitive
             "infinitive": {"verb_infinitive": True},
             # part_type
-            "adjectival": {"part_type": 0},  # not in data
-            "adverbial": {"part_type": 1},
+            "adjectival": {"part_type": EnumParticipleType},  # not in data
+            "adverbial": {"part_type": EnumParticipleType},
             # part_voice
-            "active": {"part_voice": 0},
-            "passive": {"part_voice": 1},
+            "active": {"part_voice": EnumParticipleVoice},
+            "passive": {"part_voice": EnumParticipleVoice},
             # subst_case
-            "nominative": {"subst_case": 0},
-            "genitive": {"subst_case": 1},
-            "accusative": {"subst_case": 2},
-            "dative": {"subst_case": 3},
-            "instrumental": {"subst_case": 4},
-            "prepositional": {"subst_case": 5},
-            "vocative": {"subst_case": 6},
-            "locative": {"subst_case": 7},
-            "partitive": {"subst_case": 8},
+            "nominative": {"subst_case": EnumSubstCase},
+            "genitive": {"subst_case": EnumSubstCase},
+            "accusative": {"subst_case": EnumSubstCase},
+            "dative": {"subst_case": EnumSubstCase},
+            "instrumental": {"subst_case": EnumSubstCase},
+            "prepositional": {"subst_case": EnumSubstCase},
+            "vocative": {"subst_case": EnumSubstCase},
+            "locative": {"subst_case": EnumSubstCase},
+            "partitive": {"subst_case": EnumSubstCase},
             # subst_animacy
             "animate": {"subst_animacy": True},
+            # adjv_comp_type
+            "comparative": {"adjv_comp_type": EnumAdjectiveType},
+            "superlative": {"adjv_comp_type": EnumAdjectiveType},
             # adjv_short
             "short-form": {"adjv_short": True},
             # diminutive - also in definitions
             "diminutive": {"diminutive": True},
-            # gram_gender
-            "masculine": {"gram_gender": 0},
-            "neuter": {"gram_gender": 1},
-            "feminine": {"gram_gender": 2},
-            "dual": {"gram_gender": 3},
+            # conj_gender
+            "masculine": {"conj_gender": EnumConjGender},
+            "neuter": {"conj_gender": EnumConjGender},
+            "feminine": {"conj_gender": EnumConjGender},
             # gram_number
-            "singular": {"gram_number": 0},
-            "plural": {"gram_number": 1},
-            "dual": {"gram_number": 2},
+            "singular": {"gram_number": EnumGramNumber},
+            "plural": {"gram_number": EnumGramNumber},
+            "dual": {"gram_number": EnumGramNumber},
             # gram_tense
-            "past": {"gram_tense": 0},
-            "present": {"gram_tense": 1},
-            "future": {"gram_tense": 2},
+            "past": {"gram_tense": EnumGramTense},
+            "present": {"gram_tense": EnumGramTense},
+            "future": {"gram_tense": EnumGramTense},
             # irregular
             "irregular": {"irregular": True},
         }

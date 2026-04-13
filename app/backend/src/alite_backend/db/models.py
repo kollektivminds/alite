@@ -1,3 +1,4 @@
+import enum
 from sqlalchemy import (
     Column,
     Integer,
@@ -10,6 +11,7 @@ from sqlalchemy import (
     UniqueConstraint,
     JSON,
     UUID,
+    Enum
 )
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
@@ -17,6 +19,80 @@ from sqlalchemy.sql import func
 # This is the base class which our ORM models will inherit from
 Base = declarative_base()
 
+class EnumAdjectiveType(enum.Enum):
+    COMPARATIVE = "comparative"
+    SUPERLATIVE = "superlative"
+    
+class EnumConjGender(enum.Enum):
+    MASCULINE = "masculine"
+    NEUTER = "neuter"
+    FEMININE = "feminine"
+    PLURAL = "plural"
+
+class EnumConjPerson(enum.Enum):
+    FIRST = "first-person"
+    SECOND = "second-person"
+    THIRD = "third-person"
+    
+class EnumGramNumber(enum.Enum):
+    SINGULAR = "singular"
+    PLURAL = "plural"
+    DUAL = "dual"
+    
+class EnumGramTense(enum.Enum):
+    PAST = "past"
+    PRESENT = "present"
+    FUTURE = "future"
+
+class EnumPartOfSpeech(str, enum.Enum):
+    ADJECTIVE = "adjective"
+    ADVERB = "adverb"
+    COM = "com"
+    INTERJECTION = "interjection"
+    NOUN = "noun"
+    PARTICIPLE = "participle"
+    PARTICLE = "particle"
+    PREPOSITION = "preposition"
+    PRONOUN = "pronoun"
+    VERB = "verb"
+    UNKNOWN = "unknown"
+    
+class EnumParticipleType(str, enum.Enum):
+    ADJECTIVAL = "adjectival"
+    ADVERBIAL = "adverbial"
+    
+class EnumParticipleVoice(str, enum.Enum):
+    ACTIVE = "active"
+    PASSIVE = "passive"
+
+class EnumSubstCase(str, enum.Enum):
+    NOMINATIVE = "nominative"
+    GENITIVE = "genitive"
+    ACCUSATIVE = "accusative"
+    DATIVE = "dative"
+    INSTRUMENTAL = "instrumental"
+    PREPOSITIONAL = "prepositional"
+    VOCATIVE = "vocative"
+    LOCATIVE = "locative"
+    PARTITIVE = "partitive"
+    
+class EnumVerbType(str, enum.Enum):
+    TYPE_I = "type-I"
+    TYPE_II = "type-II"
+    
+class EnumVerbMood(str, enum.Enum):
+    INDICATIVE = "indicative"
+    IMPERATIVE = "imperative"
+    
+class EnumVerbAspect(str, enum.Enum):
+    IMPERFECTVE = "imperfective"
+    PERFECTIVE = "perfective"
+    DUAL = "dual"
+    
+class EnumVerbTransRefl(str, enum.Enum):
+    INTRANSITIVE = "intransitive"    
+    TRANSITIVE = "transitive"
+    REFLEXIVE = "reflexive"
 
 # --- Word Primary Tables ---
 class Lemma(Base):
@@ -30,9 +106,19 @@ class Lemma(Base):
     # canonical of the lemma
     lem_canon = Column(String(50), nullable=True)
     # part of speech of the lemma
-    pos = Column(Integer, nullable=False)
+    pos = Column(Enum(EnumPartOfSpeech), nullable=False)
     # UUID5 entry key
     entry_key = Column(UUID, nullable=False)
+    # substantive animacy
+    subst_animacy = Column(Boolean)
+    # verb aspect
+    verb_aspect = Column(String(50))
+    # verb conj (Zalizniak's)
+    verb_conj = Column(String(8))
+    # verb type
+    verb_type = Column(String(50))
+    # verb transivity/reflexivity
+    verb_trans_refl = Column(String(50))
 
     # A single lemma has many inflected word forms
     lemma_word_form = relationship("WordForm", back_populates="word_form_lemma")
@@ -86,44 +172,35 @@ class GramProp(Base):
     # though table will be largely sparse
 
     # Verbs
-    verb_aspect = Column(Integer)
-    verb_conj = Column(String(4))
-    verb_type = Column(Integer)
-    verb_mood = Column(Integer)
-    verb_trans_refl = Column(Integer)
-    verb_person = Column(Integer)
-    verb_infinitive = Column(Boolean)
+    conj_gender = Column(Enum(EnumConjGender))
+    conj_person = Column(Enum(EnumConjPerson))
+    verb_mood = Column(Enum(EnumVerbMood))
     # Participles
-    part_type = Column(Integer)
-    part_voice = Column(Integer)
+    part_type = Column(Enum(EnumParticipleType))
+    part_voice = Column(Enum(EnumParticipleVoice))
     # Substantives (nouns, adjectives, numerals, participles)
-    subst_case = Column(Integer)
-    subst_animacy = Column(Boolean)
+    subst_case = Column(Enum(EnumSubstCase))
+    adjv_type = Column(Enum(EnumAdjectiveType))
     adjv_short = Column(Boolean)
     diminutive = Column(Boolean)
     # general grammar
-    gram_gender = Column(Integer)
     gram_number = Column(Integer)
-    gram_tense = Column(Integer)
+    gram_tense = Column(Enum(EnumGramTense))
     irregular = Column(Boolean)
     # Relationship for a word form's grammatical properties
     gram_word_form = relationship("WordForm", back_populates="word_form_gram")
     # Unique set of grammatical properties to prevent duplicates
     __table_args__ = (
         UniqueConstraint(
-            "verb_aspect",
-            "verb_conj",
-            "verb_type",
+            "conj_gender",
+            "conj_person",
             "verb_mood",
-            "verb_trans_refl",
-            "verb_person",
             "part_type",
             "part_voice",
             "subst_case",
-            "subst_animacy",
+            "adjv_type",
             "adjv_short",
             "diminutive",
-            "gram_gender",
             "gram_number",
             "gram_tense",
             name="unique_grammar",

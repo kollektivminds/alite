@@ -110,16 +110,11 @@ def init_database():
     
     problem_words = [
         "день",
-        "четыре",
-        "любимый",
-        "курс",
-        "смысл",
         "ладно",
         "летом",
         "граница",
         "ухо",
-        "рыжий",
-        "англичанка"
+        "рыжий"
     ]
     print(
         f"a total of {str(len(all_words))} words, of which\

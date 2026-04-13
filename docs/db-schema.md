@@ -101,14 +101,14 @@ Grammar property combinations of lemmas
 | verb_infinitive  | BOOLEAN    |              |                                     |
 | verb_mood        | INT        | *controlled* |                                     |
 | verb_trans_refl  | INT        | *controlled* | transitivity, reflexivity of a verb |
-| verb_person | INT        | *controlled* | x-person verb conjugation           |
+| conj_person | INT        | *controlled* | x-person verb conjugation           |
 | part_type        | INT        | *controlled* | type of participle                  |
 | part_voice       | INT        | *controlled* | voice of participle                 |
 | part_parent_verb | INT        | <lemmas(id)> | participle's parent (verb) id       |
 | subst_case       | INT        | *controlled* | grammatical case                    |
 | subst_animacy    | BOOLEAN    |              | animate nouns                       |
 | adjv_short       | BOOLEAN    |              | short adjectives                    |
-| gram_gender      | INT        | *controlled* | grammatical gender                  |
+| conj_gender      | INT        | *controlled* | grammatical gender                  |
 | gram_number      | INT        | *controlled* | grammatical number                  |
 | gram_tense        | INT    |              | past tense                          |
 | noun_dimun       | BOOLEAN    |              | dimunitive nouns                    |
@@ -144,7 +144,7 @@ Grammar property combinations of lemmas
 |                  | 6     | vocative      |
 |                  | 7     | locative      |
 |                  | 8     | partitive     |
-| gram_gender      | 0     | masculine     |
+| conj_gender      | 0     | masculine     |
 |                  | 1     | feminine      |
 |                  | 2     | neuter        |
 |                  | 3     | dual M/F      |

@@ -33,7 +33,7 @@ load_dotenv()
 logger = logging.getLogger(__name__)
 #logger.info("funcs.py")
 
-pos = [
+pos_list = [
     "adjective",
     "adverb",
     "com",
@@ -49,7 +49,7 @@ pos = [
     "unknown"
 ]
 
-pos_dict = dict(enumerate(pos))
+pos_dict = dict(enumerate(pos_list))
 
 sop_dict = {v: k for k, v in pos_dict.items()}
 

@@ -2,7 +2,20 @@
 # Pydantic models for API data validation and response shaping.
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
-
+from .models import (
+    EnumAdjectiveType,
+    EnumConjGender,
+    EnumConjPerson,
+    EnumGramTense,
+    EnumParticipleType,
+    EnumParticipleVoice,
+    EnumPartOfSpeech,
+    EnumSubstCase,
+    EnumVerbAspect,
+    EnumVerbMood,
+    EnumVerbTransRefl,
+    EnumVerbType
+)
 from pydantic import BaseModel, Field, HttpUrl, UUID4, UUID5
 
 #
@@ -81,7 +94,7 @@ class LemmasRecord(BaseModel):
     """Schema for an entry in the Lemmas table."""
     clean_lemma: str
     accent_lemma: Optional[str] = None
-    pos: int
+    pos: EnumPartOfSpeech
     entry_key: UUID5
 
 class GramPropsRecord(BaseModel):
@@ -111,13 +124,14 @@ class PronunciationsRecord(BaseModel):
     entry_key: UUID5
     pron_text: str
     pron_type: int
-    pron_tags: Optional[List[str]|str]
+    pron_tags: Optional[List[str]|str] = None
 
-class VerbPairsRecord(BaseModel):
+class RelatedLemmaRecord(BaseModel):
     """Schema for a single definition entry."""
     entry_key: UUID5
     pair_form: str
-    pair_aspect: int
+    rel_type: int
+    pair_aspect: Optional[int] = None
 
 class ProcessedPayload(BaseModel):
     """
@@ -131,7 +145,7 @@ class ProcessedPayload(BaseModel):
     definitions: List[DefinitionsRecord]
     def_examples: List[DefExamplesRecord]
     pronunciations: List[PronunciationsRecord]
-    verb_pairs: List[VerbPairsRecord]
+    rel_lems: List[RelatedLemmaRecord]
 
 # --- Wiki Pre-Processing Schema ---
 

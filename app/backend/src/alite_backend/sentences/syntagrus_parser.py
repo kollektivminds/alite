@@ -29,7 +29,7 @@ feat_def_dict = {
         "ОД": True,
         "НЕОД": False
         },
-    "gram_gender" : {
+    "conj_gender" : {
         "МУЖ": 0,
         "ЖЕН": 1,
         "СРЕД": 2
@@ -61,7 +61,7 @@ feat_def_dict = {
         "НЕСОВ": 0,
         "СОВ": 1
         },
-    "verb_person" : {
+    "conj_person" : {
         "1-Л": 1,
         "2-Л": 2,
         "3-Л": 3
