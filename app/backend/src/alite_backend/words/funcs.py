@@ -26,12 +26,12 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import text
+from alite_backend.db.schemas import EnumVerbType
 
 load_dotenv()
 
 # instantiate logger
 logger = logging.getLogger(__name__)
-#logger.info("funcs.py")
 
 pos_list = [
     "adjective",
@@ -180,3 +180,11 @@ def validate_word_list(word_list):
         
 def is_cyrillic(text: str) -> bool:
     return bool(re.search(r'[А-Яа-яËё]', text))
+
+def zalizniak_to_type(z_type: str) -> EnumVerbType:
+    t2_pattern = r"^4"
+    match = re.match(t2_pattern, z_type)
+    if match:
+        return EnumVerbType.TYPE_II
+    else:
+        return EnumVerbType.TYPE_I

@@ -3,8 +3,9 @@
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 from .models import (
-    EnumAdjectiveType,
-    EnumConjGender,
+    EnumAltAdjvType,
+    EnumAltNounType,
+    EnumGender,
     EnumConjPerson,
     EnumGramTense,
     EnumParticipleType,
@@ -16,10 +17,10 @@ from .models import (
     EnumVerbTransRefl,
     EnumVerbType
 )
-from pydantic import BaseModel, Field, HttpUrl, UUID4, UUID5
+from pydantic import BaseModel, Field, HttpUrl, UUID4, UUID5, ConfigDict, model_validator
 
 #
-# --- Data Processing Schmae ---
+# --- Data Processing Schemas ---
 #
 
 # --- FDAPI models ---
@@ -96,6 +97,12 @@ class LemmasRecord(BaseModel):
     accent_lemma: Optional[str] = None
     pos: EnumPartOfSpeech
     entry_key: UUID5
+    noun_gender: Optional[EnumGender]
+    subst_animacy: Optional[bool]
+    verb_aspect: Optional[EnumVerbAspect]
+    verb_conj: Optional[str]
+    verb_type: Optional[EnumVerbType]
+    verb_trans_refl: Optional[EnumVerbTransRefl]
 
 class GramPropsRecord(BaseModel):
     temp_form_id: UUID4
@@ -185,32 +192,171 @@ class RawWikiLemma(BaseModel):
 
 
 #
-# --- Database Schema ---
+# --- CRUD Schema ---
 #
 
-# --- User Schemas ---
+# Lemmas
 
+# shared properties
+class LemmaBase(BaseModel):
+    clean_lemma: str
+    accent_lemma: Optional[str] = None
+    
+# lemma shared grammar properties
+class LemmaProps(BaseModel):
+    pos: Optional[EnumPartOfSpeech] = None
+    noun_gender: Optional[EnumGender] = None
+    subst_animacy: Optional[bool] = None
+    verb_aspect: Optional[EnumVerbAspect] = None
+    verb_conj: Optional[str] = None
+    verb_type: Optional[EnumVerbType] = None
+    verb_trans_refl: Optional[EnumVerbTransRefl] = None
+    
+# properties to receive on creation
+class LemmaCreate(LemmaBase, LemmaProps):
+    entry_key: UUID5
 
-class UserBase(BaseModel):
-    """Base schema for user data, used for sharing common attributes."""
-
-    username: str
-
-
-class UserInDB(UserBase):
-    """Schema for representing a user as stored in the database."""
-
+# properties to receive on update
+class LemmaUpdate(LemmaBase, LemmaProps):
+    pass
+    
+# properties to return to the frontend (API response) for general use
+class LemmaExerciseReturn(LemmaBase):
     id: int
-    privileged: bool
-    created_at: datetime
+    
+    # read data even if it's not a dict
+    model_config = ConfigDict(from_attributes=True)
+    
+# properties to return to the frontend for detailed view
+class LemmaDetailsReturn(LemmaBase, LemmaProps):
+    id: int
+    
+    # read data even if it's not a dict
+    model_config = ConfigDict(from_attributes=True)
 
-    class Config:  # Pydantic v1 style config. For v2, use model_config
-        from_attributes = True  # This is the v2 equivalent of orm_mode=True
-        # For Pydantic v2:
-        # model_config = {'from_attributes': True}
-        # or just:
-        # model_config = ConfigDict(from_attributes=True)
+# for pydantic validation of searches
+class LemmaSearchParams(BaseModel):
+    clean_lemma: Optional[str] = None
+    accent_lemma: Optional[str] = None
+    pos: Optional[EnumPartOfSpeech] = None
+    entry_key: Optional[UUID5] = None
+    noun_gender: Optional[EnumGender] = None
+    subst_animacy: Optional[bool] = None
+    verb_aspect: Optional[EnumVerbAspect] = None
+    verb_conj: Optional[str] = None
+    verb_type: Optional[EnumVerbType] = None
+    verb_trans_refl: Optional[EnumVerbTransRefl] = None
+    
+    @model_validator(mode="after")
+    def check_at_least_one_param(self):
+        # check if all are None
+        if not self.model_dump(exclude_unset=True):
+            raise ValueError('You must provide at least one search parameter.')
+        return self
+
+# Lexicon
+
+# shared properties
+class LexiconBase(BaseModel):
+    lex_text: str
+    
+# create lexeme
+class LexemeCreate(LexiconBase):
+    lex_text_clean: str
+    
+class LexemeUpdate(LexiconBase):
+    id: int
+
+# lexeme return
+class LexemeReturn(LexiconBase):
+    id: int
+    
+    # read data even if it's not a dict
+    model_config = ConfigDict(from_attributes=True)
+
+# Gram Props
+
+class GramPropBase(BaseModel):
+    irregular: bool
+    
+class GramPropCreate(GramPropBase):
+    gram_tense: Optional[str] = None
+    gram_num: Optional[str] = None
+    conj_gender: Optional[str] = None
+    conj_person: Optional[str] = None
+    verb_mood: Optional[str] = None
+    subst_case: Optional[str] = None
+    alt_adjv_type: Optional[str] = None
+    alt_noun_type: Optional[str] = None
+    part_type: Optional[str] = None
+    part_voice: Optional[str] = None
+
+class GramPropUpdate(GramPropBase):
+    id: int
+    
+class GramPropReturn(GramPropCreate, GramPropUpdate):
+    model_config = ConfigDict(from_attributes=True)
+
+# Word Forms
+
+class WordFormBase(BaseModel):
+    pass
+
+class WordFormCreate(WordFormBase):
+    lem_id: int
+    lex_id: int
+    gram_id: int
+    
+class WordFormUpdate(WordFormBase):
+    id: int
+    
+class WordFormReturn(WordFormCreate, WordFormUpdate):
+    model_config = ConfigDict(from_attributes=True)
+
+# Definitions
+
+class DefinitionBase(BaseModel):
+    def_text: str
+    
+class DefinitionCreate(DefinitionBase):
+    tags: List[str]
+
+class DefinitionUpdate(DefinitionBase):
+    id: int
+    
+class DefinitionReturn(DefinitionUpdate):
+    pass
+
+# Examples
+
+class ExampleBase(BaseModel):
+    def_text: str
+    
+class ExampleCreate(ExampleBase):
+    pass
+
+class ExampleUpdate(ExampleBase):
+    id: int
+    
+class ExampleReturn(ExampleUpdate):
+    pass
+
+# Pronunciations
+
+class PronunciationBase(BaseModel):
+    pron_text: str
+    
+class PronunciationCreate(PronunciationBase):
+    pron_tags: str
+    pron_type: str
+
+class PronunciationUpdate(PronunciationBase):
+    id: int
+    
+class PronunciationReturn(PronunciationUpdate):
+    pass
 
 
-# --- Token Schemas for Authentication ---
-# (Any token schemas would go here)
+#
+# --- Database Schema ---
+#

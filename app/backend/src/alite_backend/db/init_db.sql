@@ -45,22 +45,22 @@ DROP TABLE IF EXISTS lexicon;
 
 DROP TABLE IF EXISTS lemmas;
 
--- DROP TYPE IF EXISTS adjective_type_enum;
--- DROP TYPE IF EXISTS conj_gender_enum;
--- DROP TYPE IF EXISTS conj_person_enum;
--- DROP TYPE IF EXISTS gram_tense_enum;
--- DROP TYPE IF EXISTS pos_enum;
--- DROP TYPE IF EXISTS part_type_enum;
--- DROP TYPE IF EXISTS part_voice_enum;
--- DROP TYPE IF EXISTS subst_case_enum;
--- DROP TYPE IF EXISTS verb_type_enum;
--- DROP TYPE IF EXISTS verb_mood_enum;
--- DROP TYPE IF EXISTS verb_aspect_enum;
--- DROP TYPE IF EXISTS verb_trans_refl_enum;
--- CREATE TYPE adjective_type_enum AS ENUM ('comparative', 'superlative');
--- CREATE TYPE conj_gender_enum AS ENUM ('masculine', 'neuter', 'feminine', 'plural');
--- CREATE TYPE conj_person_enum AS ENUM ('first-person', 'second-person', 'third-person');
--- CREATE TYPE gram_tense_enum AS ENUM ('past', 'present', 'future');
+-- DROP TYPE IF EXISTS adjective_type_enum
+-- DROP TYPE IF EXISTS conj_gender_enum
+-- DROP TYPE IF EXISTS conj_person_enum
+-- DROP TYPE IF EXISTS gram_tense_enum
+-- DROP TYPE IF EXISTS pos_enum
+-- DROP TYPE IF EXISTS part_type_enum
+-- DROP TYPE IF EXISTS part_voice_enum
+-- DROP TYPE IF EXISTS subst_case_enum
+-- DROP TYPE IF EXISTS verb_type_enum
+-- DROP TYPE IF EXISTS verb_mood_enum
+-- DROP TYPE IF EXISTS verb_aspect_enum
+-- DROP TYPE IF EXISTS verb_trans_refl_enum
+-- CREATE TYPE adjective_type_enum AS ENUM ('comparative', 'superlative')
+-- CREATE TYPE conj_gender_enum AS ENUM ('masculine', 'neuter', 'feminine', 'plural')
+-- CREATE TYPE conj_person_enum AS ENUM ('first-person', 'second-person', 'third-person')
+-- CREATE TYPE gram_tense_enum AS ENUM ('past', 'present', 'future')
 -- CREATE TYPE pos_enum AS ENUM (
 --     'adjective',
 --     'adverb',
@@ -73,9 +73,9 @@ DROP TABLE IF EXISTS lemmas;
 --     'pronoun',
 --     'verb',
 --     'unknown'
--- );
--- CREATE TYPE part_type_enum AS ENUM ('adjectival', 'adverbial');
--- CREATE TYPE part_voice_enum AS ENUM ('active', 'passive');
+-- )
+-- CREATE TYPE part_type_enum AS ENUM ('adjectival', 'adverbial')
+-- CREATE TYPE part_voice_enum AS ENUM ('active', 'passive')
 -- CREATE TYPE subst_case_enum AS ENUM (
 --     'nominative',
 --     'genitive',
@@ -86,11 +86,11 @@ DROP TABLE IF EXISTS lemmas;
 --     'locative',
 --     'vocative',
 --     'partitive'
--- );
--- CREATE TYPE verb_type_enum AS ENUM ('type-I', 'type-II');
--- CREATE TYPE verb_mood_enum AS ENUM ('indicative', 'imperative');
--- CREATE TYPE verb_aspect_enum AS ENUM ('imperfective', 'perfective', 'dual');
--- CREATE TYPE verb_trans_refl_enum AS ENUM ('intransitive', 'transitive', 'reflexive');
+-- )
+-- CREATE TYPE verb_type_enum AS ENUM ('type-I', 'type-II')
+-- CREATE TYPE verb_mood_enum AS ENUM ('indicative', 'imperative')
+-- CREATE TYPE verb_aspect_enum AS ENUM ('imperfective', 'perfective', 'dual')
+-- CREATE TYPE verb_trans_refl_enum AS ENUM ('intransitive', 'transitive', 'reflexive')
 --
 -- WORDS
 --
@@ -98,15 +98,18 @@ DROP TABLE IF EXISTS lemmas;
 -- RELS INCL 
 CREATE TABLE
     lemmas (
+        -- ALL / MOST WILL HAVE
         id SERIAL PRIMARY KEY,
+        entry_key UUID NOT NULL UNIQUE,
         lem_text VARCHAR(50) NOT NULL,
         lem_canon VARCHAR(50),
         pos VARCHAR(50) NOT NULL,
-        entry_key UUID NOT NULL UNIQUE,
+        -- SPARSE
+        noun_gender VARCHAR(50),
         subst_animacy BOOLEAN,
         verb_aspect VARCHAR(50),
-        verb_conj VARCHAR(8), -- Zalizniak's classification string
-        verb_type VARCHAR(50),
+        verb_conj VARCHAR(8), -- ZALIZNIAK'S CLASSIFICATION
+        verb_type VARCHAR(8), -- TYPE-I / TYPE-II FROM verb_conj
         verb_trans_refl VARCHAR(50),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT unique_lemma UNIQUE (id, entry_key)
@@ -122,36 +125,39 @@ CREATE TABLE
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
--- PRIMARY TABLE for all grammatical combinations
+-- PRIMARY TABLE for all grammatical combinations (NOT COVERED IN LEMMA)
 -- RELS INCL 
 CREATE TABLE
     gram_props (
-        -- id number
         id SERIAL PRIMARY KEY,
+        -- GENERAL GRAMMAR
+        gram_tense VARCHAR(50),
+        irregular BOOLEAN,
+        gram_num VARCHAR(50),
+        -- VERBS
         conj_gender VARCHAR(50),
         conj_person VARCHAR(50),
         verb_mood VARCHAR(50),
+        -- SUBSTANTIVES (NOUNS, ADJECTIVES, NUMERALS, PARTICIPLES)
+        subst_case VARCHAR(50),
+        alt_adjv_type VARCHAR(50),
+        alt_noun_type VARCHAR(50),
+        -- PARTICIPLES
         part_type VARCHAR(50),
         part_voice VARCHAR(50),
-        subst_case VARCHAR(50),
-        adjv_type VARCHAR(50),
-        adjv_short BOOLEAN,
-        diminutive BOOLEAN,
-        gram_number INT,
-        gram_tense INT,
-        irregular BOOLEAN,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT unique_grammar UNIQUE (
+            gram_tense,
+            gram_num,
             conj_gender,
             conj_person,
             verb_mood,
-            part_type,
-            part_voice,
             subst_case,
+            alt_adjv_type,
             adjv_short,
             diminutive,
-            gram_number,
-            gram_tense
+            part_type,
+            part_voice
         )
     );
 
@@ -175,7 +181,7 @@ CREATE TABLE
     definitions (
         id SERIAL PRIMARY KEY,
         def_text TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP UNIQUE
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
 -- PRIMARY TABLE for word definition example sentences

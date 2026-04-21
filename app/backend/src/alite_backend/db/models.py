@@ -19,27 +19,33 @@ from sqlalchemy.sql import func
 # This is the base class which our ORM models will inherit from
 Base = declarative_base()
 
-class EnumAdjectiveType(enum.Enum):
+class EnumAltNounType(str, enum.Enum):
+    DIMINUTIVE = "diminutive"
+    AUGMENTATIVE = "augmentative"
+    COLLECTIVE = "collective"
+    PAUCAL = "paucal"
+    PEJORATIVE = "pejorative"
+
+class EnumAltAdjvType(str, enum.Enum):
     COMPARATIVE = "comparative"
     SUPERLATIVE = "superlative"
+    SHORT = "short"
     
-class EnumConjGender(enum.Enum):
+class EnumGender(str, enum.Enum):
     MASCULINE = "masculine"
     NEUTER = "neuter"
     FEMININE = "feminine"
+    
+class EnumGramNum(str, enum.Enum):
+    SINGULAR = "singular"
     PLURAL = "plural"
 
-class EnumConjPerson(enum.Enum):
+class EnumConjPerson(str, enum.Enum):
     FIRST = "first-person"
     SECOND = "second-person"
     THIRD = "third-person"
     
-class EnumGramNumber(enum.Enum):
-    SINGULAR = "singular"
-    PLURAL = "plural"
-    DUAL = "dual"
-    
-class EnumGramTense(enum.Enum):
+class EnumGramTense(str, enum.Enum):
     PAST = "past"
     PRESENT = "present"
     FUTURE = "future"
@@ -50,6 +56,7 @@ class EnumPartOfSpeech(str, enum.Enum):
     COM = "com"
     INTERJECTION = "interjection"
     NOUN = "noun"
+    NUMERAL = "numeral"
     PARTICIPLE = "participle"
     PARTICLE = "particle"
     PREPOSITION = "preposition"
@@ -93,6 +100,13 @@ class EnumVerbTransRefl(str, enum.Enum):
     INTRANSITIVE = "intransitive"    
     TRANSITIVE = "transitive"
     REFLEXIVE = "reflexive"
+    
+class EnumPronType(str, enum.Enum):
+    ADJECTIVE = "adjective"
+    ABSTRACT_NOUN = "abstract-noun"
+    ADVERB = "adverb"
+    REL_ADJV = "relational-adjective"
+    NOUN_FROM_VERB = "noun-from-verb"
 
 # --- Word Primary Tables ---
 class Lemma(Base):
@@ -101,24 +115,26 @@ class Lemma(Base):
     __tablename__ = "lemmas"
 
     id = Column(Integer, primary_key=True)
+    # UUID5 entry key
+    entry_key = Column(UUID, nullable=False)
     # text of the lemma
     lem_text = Column(String(50), nullable=False)
     # canonical of the lemma
     lem_canon = Column(String(50), nullable=True)
     # part of speech of the lemma
     pos = Column(Enum(EnumPartOfSpeech), nullable=False)
-    # UUID5 entry key
-    entry_key = Column(UUID, nullable=False)
+    # nominal gender
+    noun_gender = Column(Enum(EnumGender), nullable=True)
     # substantive animacy
-    subst_animacy = Column(Boolean)
+    subst_animacy = Column(Boolean, nullable=True)
     # verb aspect
-    verb_aspect = Column(String(50))
+    verb_aspect = Column(Enum(EnumVerbAspect), nullable=True)
     # verb conj (Zalizniak's)
-    verb_conj = Column(String(8))
+    verb_conj = Column(String(8), nullable=True)
     # verb type
-    verb_type = Column(String(50))
+    verb_type = Column(Enum(EnumVerbType), nullable=True)
     # verb transivity/reflexivity
-    verb_trans_refl = Column(String(50))
+    verb_trans_refl = Column(Enum(EnumVerbTransRefl), nullable=True)
 
     # A single lemma has many inflected word forms
     lemma_word_form = relationship("WordForm", back_populates="word_form_lemma")
@@ -171,38 +187,36 @@ class GramProp(Base):
     # Various grammatical properties that can potentially apply,
     # though table will be largely sparse
 
+    # non-specific grammar
+    gram_tense = Column(Enum(EnumGramTense), nullable=True)
+    irregular = Column(Boolean, default=False)
+    gram_num = Column(Enum(EnumGramNum), nullable=True)
     # Verbs
-    conj_gender = Column(Enum(EnumConjGender))
-    conj_person = Column(Enum(EnumConjPerson))
-    verb_mood = Column(Enum(EnumVerbMood))
-    # Participles
-    part_type = Column(Enum(EnumParticipleType))
-    part_voice = Column(Enum(EnumParticipleVoice))
+    conj_gender = Column(Enum(EnumGender), nullable=True)
+    conj_person = Column(Enum(EnumConjPerson), nullable=True)
+    verb_mood = Column(Enum(EnumVerbMood), nullable=True)
     # Substantives (nouns, adjectives, numerals, participles)
-    subst_case = Column(Enum(EnumSubstCase))
-    adjv_type = Column(Enum(EnumAdjectiveType))
-    adjv_short = Column(Boolean)
-    diminutive = Column(Boolean)
-    # general grammar
-    gram_number = Column(Integer)
-    gram_tense = Column(Enum(EnumGramTense))
-    irregular = Column(Boolean)
+    subst_case = Column(Enum(EnumSubstCase), nullable=True)
+    alt_adjv_type = Column(Enum(EnumAltAdjvType), nullable=True)
+    alt_noun_type = Column(Enum(EnumAltNounType), nullable=True)
+    # Participles
+    part_type = Column(Enum(EnumParticipleType), nullable=True)
+    part_voice = Column(Enum(EnumParticipleVoice), nullable=True)
     # Relationship for a word form's grammatical properties
     gram_word_form = relationship("WordForm", back_populates="word_form_gram")
     # Unique set of grammatical properties to prevent duplicates
     __table_args__ = (
         UniqueConstraint(
+            "gram_tense",
+            "gram_num",
             "conj_gender",
             "conj_person",
             "verb_mood",
+            "subst_case",
+            "alt_adjv_type",
+            "alt_noun_type",
             "part_type",
             "part_voice",
-            "subst_case",
-            "adjv_type",
-            "adjv_short",
-            "diminutive",
-            "gram_number",
-            "gram_tense",
             name="unique_grammar",
         ),
     )
@@ -258,7 +272,7 @@ class Pronunciation(Base):
     id = Column(Integer, primary_key=True)
     pron_text = Column(String, unique=True, nullable=False)
     pron_tags = Column(String, nullable=True)
-    pron_type = Column(Integer, nullable=False)
+    pron_type = Column(Enum(EnumPronType), nullable=False)
 
 
 # --- Word Junction Tables ---

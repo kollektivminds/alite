@@ -3,7 +3,7 @@ from typing import Any, Dict, Iterator, List
 import os
 import json
 import time
-
+from alite_backend.db.schemas import FDAPIreturn
 import requests
 from dotenv import load_dotenv
 
@@ -11,9 +11,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 logger = logging.getLogger(__name__)
-
-# cache file for init vocab to reduce API calls
-init_vocab_loc = os.getenv("APP_DIR")+'backend/db/init_vocab.json' #type:ignore
+app_dir = os.getenv("APP_DIR")
+cache_loc = app_dir+"backend/src/alite_backend/words/data/word_cache.json" #type: ignore
 
 class LookupFDAPI:
     """
@@ -47,18 +46,22 @@ class LookupFDAPI:
             logger.error("Error fetching '%s': %s", word, e)
             return None
 
-    def _check_local(self, word: str, cache_loc: str = init_vocab_loc) -> Dict[str, Any] | None:
+    def _check_local(self, word: str, cache_loc: str = cache_loc) -> Dict[str, Any] | None:
         # Check if the cache file exists and is not empty
-        if os.path.exists(cache_loc) and os.path.getsize(cache_loc) > 0:
-            with open(cache_loc, 'r') as f:
-                data = json.load(f)
-            if word in data:
-                #print(f"'{word}' found in cache.")
-                return data[word]
+        # cache file for init vocab to reduce API calls
+        if os.path.exists(cache_loc):
+            #logger.debug("Cache loc: %s", cache_loc)
+            if os.path.getsize(cache_loc) > 0:
+                with open(cache_loc, 'r') as f:
+                    data = json.load(f)
+                logger.debug("words in cache: %d", len(data))
+                if word in data:
+                    #print(f"'{word}' found in cache.")
+                    return data[word]
             
-    def _update_cache(self, word: str, data: dict, cache_loc: str = init_vocab_loc):
+    def _update_cache(self, word: str, data: FDAPIreturn, cache_loc: str = cache_loc):
         # Read existing data
-        if os.path.exists(cache_loc) and os.path.getsize(cache_loc) > 0:
+        if os.path.exists(cache_loc):
             with open(cache_loc, 'r') as f:
                 cache_data = json.load(f)
         else:
@@ -82,23 +85,27 @@ class LookupFDAPI:
         """
         logger.info("Starting API lookup for %d words.", len(word_list))
         for word in word_list:
-            # 1. Check for word in local cache
-            addendum = self._check_local(word)
-            # 2. Check if the request was successful (i.e., not None).
-            if addendum:
-                # 3. If successful, yield the result to the pipeline.
-                logger.debug("%s was found in the database", word)
-                yield addendum
-            else:
-                # 3. If unsuccessful, make the request for the current word.
-                logger.debug("need to fetch %s from FDAPI", word)
-                lemma_return = self._make_request(word)
-                # 4. Check if the request was successful (i.e., not None).
-                if lemma_return:
-                    # 5. If successful, add to local cache
-                    #self._update_cache(word, lemma_return)
-                    # 6. If successful, yield the result to the pipeline.
-                    yield lemma_return
+            try:
+                # 1. Check for word in local cache
+                addendum = self._check_local(word)
+                # 2. Check if the request was successful (i.e., not None).
+                if addendum:
+                    # 3. If successful, yield the result to the pipeline.
+                    logger.debug("%s was found in the database", word)
+                    yield addendum
                 else:
-                    logger.error("failed to get %s", word)
-            time.sleep(0.5)
+                    # 3. If unsuccessful, make the request for the current word.
+                    logger.debug("need to fetch %s from FDAPI", word)
+                    lemma_return = self._make_request(word)
+                    # 4. Check if the request was successful (i.e., not None).
+                    if lemma_return:
+                        # 5. If successful, add to local cache
+                        self._update_cache(word, lemma_return)
+                        # 6. If successful, yield the result to the pipeline.
+                        yield lemma_return
+                    else:
+                        logger.error("failed to get %s", word)
+                time.sleep(0.5)
+            except Exception as e:
+                logger.error("There was an error looking up %s: %s", word, e)
+                continue
