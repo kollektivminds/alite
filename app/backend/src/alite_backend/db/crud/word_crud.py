@@ -4,7 +4,14 @@ from uuid import UUID
 from functools import wraps
 from sqlalchemy import select, update, delete
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError, IntegrityError, ProgrammingError, DBAPIError, NoResultFound, StatementError
+from sqlalchemy.exc import (
+    SQLAlchemyError,
+    IntegrityError,
+    ProgrammingError,
+    DBAPIError,
+    NoResultFound,
+    StatementError,
+)
 from fastapi import HTTPException, status
 from alite_backend.db.models import (
     EnumAltAdjvType,
@@ -30,6 +37,7 @@ from alite_backend.db.models import (
     Pronunciation,
     LemmaDefinition,
     LemmaRelation,
+    LookupQueue,
     LessonList,
     LemmaInLessonList,
     LessonListInModule,
@@ -61,6 +69,30 @@ from alite_backend.db.schemas import (
     PronunciationCreate,
     PronunciationUpdate,
     PronunciationReturn,
+    LemRelCreate,
+    LemRelUpdate,
+    LemRelReturn,
+    LookupQueueCreate,
+    LookupQueueUpdate,
+    LookupQueueReturn,
+    LemDefCreate,
+    LemDefUpdate,
+    LemDefReturn,
+    DefExCreate,
+    DefExUpdate,
+    DefExReturn,
+    ModuleCreate,
+    ModuleUpdate,
+    ModuleReturn,
+    LessonListCreate,
+    LessonListUpdate,
+    LessonListReturn,
+    LessListInModCreate,
+    LessListInModUpdate,
+    LessListInModReturn,
+    LemInLessListCreate,
+    LemInLessListUpdate,
+    LemInLessListReturn,
     DefExamplesRecord,
     PronunciationsRecord,
     RelatedLemmaRecord,
@@ -68,9 +100,8 @@ from alite_backend.db.schemas import (
 )
 from alite_backend.words.funcs import remove_accents
 from alite_backend.db.crud.crud_base import CRUDBase
-from alite_backend.logging_config import setup_logging
 
-setup_logging()
+logger = logging.getLogger(__name__)
 
 # O
 # H
@@ -102,8 +133,8 @@ def _map_lemma(lemma_record: LemmasRecord):
     """
     mapped_lemma = Lemma(
         entry_key=lemma_record.entry_key,
-        lem_text=lemma_record.clean_lemma,
-        lem_canon=lemma_record.accent_lemma,
+        lem_text=lemma_record.lem_text,
+        lem_canon=lemma_record.lem_canon,
         pos=lemma_record.pos,
     )
     return mapped_lemma
@@ -143,80 +174,195 @@ def at_least_one_of(*search_keys):
 
     return decorator
 
+
 #
 # LEMMAS
-# 
+#
+
 
 class CRUDLemmas(CRUDBase[Lemma, LemmaCreate, LemmaUpdate]):
-    
+
     def search(self, db: Session, params: LemmaSearchParams) -> list[Lemma]:
         # convert to dictionary (and drop instances of None)
         search_kwargs = params.model_dump(exclude_none=True)
-        
+
         # base query
         query = db.query(self.model)
-        
+
         # dyanmically chained filter() statements
         for key, value in search_kwargs.items():
             query = query.filter(getattr(self.model, key) == value)
-            
-        return query.all()            
+
+        return query.all()
+
 
 crud_lemma = CRUDLemmas(Lemma)
 
 #
 # LEXEMES
-# 
+#
+
 
 class CRUDLexicon(CRUDBase[Lexeme, LexemeCreate, LexemeUpdate]):
     pass
+
 
 crud_lexicon = CRUDLexicon(Lexeme)
 
 #
 # GRAM_PROPS
-# 
+#
+
 
 class CRUDGramProps(CRUDBase[GramProp, GramPropCreate, GramPropUpdate]):
     pass
+
 
 crud_gram_prop = CRUDGramProps(GramProp)
 
 #
 # WORD_FORMS
-# 
+#
+
 
 class CRUDWordForm(CRUDBase[WordForm, WordFormCreate, WordFormUpdate]):
     pass
+
 
 crud_word_form = CRUDWordForm(WordForm)
 
 #
 # DEFINITIONS
-# 
+#
+
 
 class CRUDDefinition(CRUDBase[Definition, DefinitionCreate, DefinitionUpdate]):
     pass
+
 
 crud_definition = CRUDDefinition(Definition)
 
 #
 # EXAMPLES
-# 
+#
+
 
 class CRUDExample(CRUDBase[Example, ExampleCreate, ExampleUpdate]):
     pass
+
 
 crud_example = CRUDExample(Example)
 
 #
 # PRONUNCIATIONS
-# 
+#
 
-class CRUDPronunciation(CRUDBase[Pronunciation, PronunciationCreate, PronunciationUpdate]):
+
+class CRUDPronunciation(
+    CRUDBase[Pronunciation, PronunciationCreate, PronunciationUpdate]
+):
     pass
 
+
 crud_pronunciation = CRUDPronunciation(Pronunciation)
+
+
+#
+# LEMMA-LEMMA RELATIONSHIPS
+#
+
+
+class CRUDLemRel(CRUDBase[LemmaRelation, LemRelCreate, LemRelUpdate]):
+    pass
+
+
+crud_lem_rel = CRUDLemRel(LemmaRelation)
+
+#
+# LOOKUP QUEUE
+#
+
+
+class CRUDLookupQueue(CRUDBase[LemmaRelation, LemRelCreate, LemRelUpdate]):
+    pass
+
+
+crud_lookup_queue = CRUDLookupQueue(LookupQueue)
+
+
+#
+# LEMMA-DEFINITION RELATIONSHIPS
+#
+
+
+class CRUDLemDef(CRUDBase[LemmaDefinition, LemDefCreate, LemDefUpdate]):
+    pass
+
+
+crud_lem_def = CRUDLemDef(LemmaDefinition)
+
+
+#
+# DEFINITION-EXAMPLE RELATIONSHIPS
+#
+
+
+class CRUDDefEx(CRUDBase[DefinitionExample, DefExCreate, DefExUpdate]):
+    pass
+
+
+crud_def_ex = CRUDDefEx(DefinitionExample)
+
+
+#
+# MODULES
+#
+
+
+class CRUDModule(CRUDBase[Module, ModuleCreate, ModuleUpdate]):
+    pass
+
+
+crud_module = CRUDModule(Module)
+
+
+#
+# LESSONS & LISTS
+#
+
+
+class CRUDLessList(CRUDBase[LessonList, LessonListCreate, LessonListUpdate]):
+    pass
+
+
+crud_less_list = CRUDLessList(LessonList)
+
+
+#
+# LESSONS & LISTS IN MODULES
+#
+
+
+class CRUDLessListInMod(
+    CRUDBase[LessonListInModule, LessListInModCreate, LessListInModUpdate]
+):
+    pass
+
+
+crud_less_list_in_mod = CRUDLessListInMod(LessonListInModule)
+
+#
+# LEMMAS IN LESSONS & LISTS
+#
+
+
+class CRUDLemInLessList(
+    CRUDBase[LemmaInLessonList, LemInLessListCreate, LemInLessListUpdate]
+):
+    pass
+
+
+crud_lem_in_less_list = CRUDLemInLessList(LemmaInLessonList)
 
 #
 # C
@@ -236,17 +382,17 @@ def goc_lemma(db: Session, lemma_record: LemmasRecord) -> Lemma | List[Lemma] | 
         _type_: _description_
     """
     try:
-        entry_key, clean_lemma, accent_lemma, pos = (
+        entry_key, lem_text, lem_canon, pos = (
             lemma_record.entry_key,
-            lemma_record.clean_lemma,
-            lemma_record.accent_lemma,
+            lemma_record.lem_text,
+            lemma_record.lem_canon,
             lemma_record.pos,
         )
         existing_lem = get_lemmas(
             db=db,
             entry_key=entry_key,
-            clean_lemma=clean_lemma,
-            accent_lemma=accent_lemma,
+            lem_text=lem_text,
+            lem_canon=lem_canon,
             pos=pos,
         )
         if existing_lem:
@@ -261,21 +407,21 @@ def goc_lemma(db: Session, lemma_record: LemmasRecord) -> Lemma | List[Lemma] | 
             db.refresh(sql_lemma)
 
             return sql_lemma
-        
+
         except IntegrityError as e:
             db.rollback()
             logger.exception(f"IntegrityError creating lemma: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="That lemma already exists"
+                detail="That lemma already exists",
             )
-            
+
         except SQLAlchemyError as e:
             db.rollback()
             logger.exception(f"IntegrityError creating lemma: {str(e)}")
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An unexpected database error occurred"
+                detail="An unexpected database error occurred",
             )
 
 
@@ -341,8 +487,8 @@ def goc_definition(db: Session, definitions: List[DefinitionsRecord]):
 @at_least_one_of(
     "id",
     "entry_key",
-    "clean_lemma",
-    "accent_lemma",
+    "lem_text",
+    "lem_canon",
     "pos",
     "verb_aspect",
     "verb_conj",
@@ -353,8 +499,8 @@ def get_lemmas(
     db: Session,
     id: Optional[int] = None,
     entry_key: Optional[UUID] = None,
-    clean_lemma: Optional[str] = None,
-    accent_lemma: Optional[str] = None,
+    lem_text: Optional[str] = None,
+    lem_canon: Optional[str] = None,
     pos: Optional[EnumPartOfSpeech] = None,
     verb_aspect: Optional[EnumVerbAspect] = None,
     verb_conj: Optional[str] = None,
@@ -374,10 +520,10 @@ def get_lemmas(
         return db.scalars(statement=stmt).one_or_none()
 
     # dynamic chaining for casting a wider net
-    if clean_lemma is not None:
-        stmt = stmt.where(Lemma.lem_text == clean_lemma)
-    if accent_lemma is not None:
-        stmt = stmt.where(Lemma.lem_canon == accent_lemma)
+    if lem_text is not None:
+        stmt = stmt.where(Lemma.lem_text == lem_text)
+    if lem_canon is not None:
+        stmt = stmt.where(Lemma.lem_canon == lem_canon)
     if pos is not None:
         stmt = stmt.where(Lemma.pos == pos)
     # logging.debug(stmt)
@@ -398,7 +544,9 @@ def get_gramprop(db: Session, incoming_props: dict) -> GramProp:
     return existing_gramprop
 
 
-def get_wordform(db: Session, lem_id: int, lex_id: int, gram_id: int) -> WordForm | None:
+def get_wordform(
+    db: Session, lem_id: int, lex_id: int, gram_id: int
+) -> WordForm | None:
     stmt = select(WordForm)
 
     if lem_id is not None:
@@ -415,10 +563,11 @@ def get_wordform(db: Session, lem_id: int, lex_id: int, gram_id: int) -> WordFor
 
 # creating definitions, gram_props and linking them together in join tables
 
+
 @at_least_one_of("def_id", "def_text")
 def get_definitions(
     db: Session, def_id: Optional[int], def_text: Optional[str]
-) -> Definition | Sequence[Definition]| None:
+) -> Definition | Sequence[Definition] | None:
     stmt = select(Definition)
 
     # search precisely by id
@@ -429,6 +578,7 @@ def get_definitions(
             return existing_definition
 
     # search all by text contents
+
 
 #
 # U

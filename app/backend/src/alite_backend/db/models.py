@@ -11,13 +11,15 @@ from sqlalchemy import (
     UniqueConstraint,
     JSON,
     UUID,
-    Enum
+    Enum,
 )
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
+from sqlalchemy.dialects.postgresql import ARRAY
 
 # This is the base class which our ORM models will inherit from
 Base = declarative_base()
+
 
 class EnumAltNounType(str, enum.Enum):
     DIMINUTIVE = "diminutive"
@@ -26,29 +28,35 @@ class EnumAltNounType(str, enum.Enum):
     PAUCAL = "paucal"
     PEJORATIVE = "pejorative"
 
+
 class EnumAltAdjvType(str, enum.Enum):
     COMPARATIVE = "comparative"
     SUPERLATIVE = "superlative"
     SHORT = "short"
-    
+
+
 class EnumGender(str, enum.Enum):
     MASCULINE = "masculine"
     NEUTER = "neuter"
     FEMININE = "feminine"
-    
+
+
 class EnumGramNum(str, enum.Enum):
     SINGULAR = "singular"
     PLURAL = "plural"
+
 
 class EnumConjPerson(str, enum.Enum):
     FIRST = "first-person"
     SECOND = "second-person"
     THIRD = "third-person"
-    
+
+
 class EnumGramTense(str, enum.Enum):
     PAST = "past"
     PRESENT = "present"
     FUTURE = "future"
+
 
 class EnumPartOfSpeech(str, enum.Enum):
     ADJECTIVE = "adjective"
@@ -63,14 +71,17 @@ class EnumPartOfSpeech(str, enum.Enum):
     PRONOUN = "pronoun"
     VERB = "verb"
     UNKNOWN = "unknown"
-    
+
+
 class EnumParticipleType(str, enum.Enum):
     ADJECTIVAL = "adjectival"
     ADVERBIAL = "adverbial"
-    
+
+
 class EnumParticipleVoice(str, enum.Enum):
     ACTIVE = "active"
     PASSIVE = "passive"
+
 
 class EnumSubstCase(str, enum.Enum):
     NOMINATIVE = "nominative"
@@ -82,31 +93,54 @@ class EnumSubstCase(str, enum.Enum):
     VOCATIVE = "vocative"
     LOCATIVE = "locative"
     PARTITIVE = "partitive"
-    
+
+
 class EnumVerbType(str, enum.Enum):
     TYPE_I = "type-I"
     TYPE_II = "type-II"
-    
+
+
 class EnumVerbMood(str, enum.Enum):
     INDICATIVE = "indicative"
     IMPERATIVE = "imperative"
-    
+
+
 class EnumVerbAspect(str, enum.Enum):
     IMPERFECTVE = "imperfective"
     PERFECTIVE = "perfective"
     DUAL = "dual"
-    
+
+
 class EnumVerbTransRefl(str, enum.Enum):
-    INTRANSITIVE = "intransitive"    
+    INTRANSITIVE = "intransitive"
     TRANSITIVE = "transitive"
     REFLEXIVE = "reflexive"
-    
+
+
+class EnumRelLemType(str, enum.Enum):
+    ADJECTIVE_OF = "adjective_of"
+    ABSTRACT_NOUN_OF = "abstract-noun_of"
+    ADVERB_OF = "adverb_of"
+    REL_ADJV_OF = "relational-adjective_of"
+    NOUN_FROM_VERB_OF = "noun-from-verb_of"
+    PERFECTIVE_PAIR_OF = "perfective-pair_of"
+    IMPERFECTIVE_PAIR_OF = "imperfective-pair_of"
+    SYNONYM_OF = "synonym_of"
+    ANTONYM_OF = "antonym_of"
+
+
 class EnumPronType(str, enum.Enum):
-    ADJECTIVE = "adjective"
-    ABSTRACT_NOUN = "abstract-noun"
-    ADVERB = "adverb"
-    REL_ADJV = "relational-adjective"
-    NOUN_FROM_VERB = "noun-from-verb"
+    IPA = "ipa"
+    ROMANIZATION = "romanization"
+
+
+class EnumLessListType(str, enum.Enum):
+    COURSE = "course"
+    USER = "user"
+
+class EnumUserRole(str, enum.Enum):
+    INSTRUCTOR = "instructor"
+    STUDENT = "student"
 
 # --- Word Primary Tables ---
 class Lemma(Base):
@@ -135,7 +169,8 @@ class Lemma(Base):
     verb_type = Column(Enum(EnumVerbType), nullable=True)
     # verb transivity/reflexivity
     verb_trans_refl = Column(Enum(EnumVerbTransRefl), nullable=True)
-
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
     # A single lemma has many inflected word forms
     lemma_word_form = relationship("WordForm", back_populates="word_form_lemma")
     # Relationship for lemma defintion
@@ -153,7 +188,7 @@ class Lemma(Base):
         foreign_keys="[LemmaRelation.target_id]",
         back_populates="target_lemma",
     )
-    in_lesslist = relationship("LemmaInLessonList", back_populates="lemma_in")
+    in_less_list = relationship("LemmaInLessonList", back_populates="lemma_in")
     # Relationships for study results
     # lemma_crws = relationship(
     #     "ConjugationResultWordStudied", back_populates="crws_lemma"
@@ -173,7 +208,8 @@ class Lexeme(Base):
     id = Column(Integer, primary_key=True)
     lex_text = Column(String(50), nullable=False, unique=True)
     lex_text_clean = Column(String(50), nullable=False)
-
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
     lexeme_word_form = relationship("WordForm", back_populates="word_form_lexicon")
 
 
@@ -202,6 +238,8 @@ class GramProp(Base):
     # Participles
     part_type = Column(Enum(EnumParticipleType), nullable=True)
     part_voice = Column(Enum(EnumParticipleVoice), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
     # Relationship for a word form's grammatical properties
     gram_word_form = relationship("WordForm", back_populates="word_form_gram")
     # Unique set of grammatical properties to prevent duplicates
@@ -232,12 +270,11 @@ class WordForm(Base):
     lem_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
     lex_id = Column(Integer, ForeignKey("lexicon.id"), nullable=False)
     gram_id = Column(Integer, ForeignKey("gram_props.id"), nullable=False)
-
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
     word_form_lemma = relationship("Lemma", back_populates="lemma_word_form")
     word_form_lexicon = relationship("Lexeme", back_populates="lexeme_word_form")
-    word_form_gram = relationship(
-        "GramProp", back_populates="gram_word_form"
-    )
+    word_form_gram = relationship("GramProp", back_populates="gram_word_form")
 
 
 class Definition(Base):
@@ -245,11 +282,12 @@ class Definition(Base):
 
     id = Column(Integer, primary_key=True)
     def_text = Column(String, unique=True, nullable=False)
+    def_tags = Column(ARRAY(String), nullable=True)
 
     definition_lemma = relationship(
         "LemmaDefinition", back_populates="definition_lemma"
     )
-    
+
     definition_example = relationship(
         "DefinitionExample", back_populates="definition_example"
     )
@@ -260,6 +298,7 @@ class Example(Base):
 
     id = Column(Integer, primary_key=True)
     ex_text = Column(String, unique=True, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
     
     example_definition = relationship(
         "DefinitionExample", back_populates="example_definition"
@@ -271,8 +310,9 @@ class Pronunciation(Base):
 
     id = Column(Integer, primary_key=True)
     pron_text = Column(String, unique=True, nullable=False)
-    pron_tags = Column(String, nullable=True)
+    pron_tags = Column(ARRAY(String), nullable=True)
     pron_type = Column(Enum(EnumPronType), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 # --- Word Junction Tables ---
@@ -286,8 +326,8 @@ class LemmaRelation(Base):
     id = Column(Integer, primary_key=True, index=True)
     source_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
     target_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
-
-    rel_type = Column(Integer, nullable=False)
+    rel_type = Column(Enum(EnumRelLemType), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     source_lemma = relationship(
         "Lemma", foreign_keys=[source_id], back_populates="related_to"
@@ -296,6 +336,15 @@ class LemmaRelation(Base):
         "Lemma", foreign_keys=[target_id], back_populates="related_from"
     )
 
+class LookupQueue(Base):
+    
+    __tablename__ = "lookup_queue"
+
+    id = Column(Integer, primary_key=True, index=True)
+    target_word = Column(String(50), ForeignKey("lemmas.id"), nullable=False)
+    source_lem_rel_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
+    rel_type = Column(Enum(EnumRelLemType), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class LemmaDefinition(Base):
     """Junction table for lemma definitions."""
@@ -304,6 +353,7 @@ class LemmaDefinition(Base):
 
     lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
     def_id = Column(Integer, ForeignKey("definitions.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     lemma_definition = relationship(
         "Lemma", foreign_keys=[lem_id], back_populates="lemma_definition"
@@ -320,6 +370,7 @@ class DefinitionExample(Base):
 
     def_id = Column(Integer, ForeignKey("definitions.id"), primary_key=True)
     ex_id = Column(Integer, ForeignKey("examples.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     definition_example = relationship(
         "Definition", foreign_keys=[def_id], back_populates="definition_example"
@@ -335,22 +386,24 @@ class DefinitionExample(Base):
 class Module(Base):
     __tablename__ = "modules"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     module_name = Column(String(10), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    has_lesslist = relationship("LessonListInModule", back_populates="in_module")
+    has_less_list = relationship("LessonListInModule", back_populates="in_module")
 
 
 class LessonList(Base):
     __tablename__ = "lessons_lists"
 
-    id = Column(Integer, primary_key=True)
-    title = Column(String(50), nullable=False)
-    topic = Column(String, nullable=False)
-    is_type = Column(Integer, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(50), nullable=False, unique=True)
+    topic = Column(String, nullable=True)
+    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    in_module = relationship("LessonListInModule", back_populates="lesslist_in")
-    has_lemma = relationship("LemmaInLessonList", back_populates="in_lesslist")
+    in_module = relationship("LessonListInModule", back_populates="less_list_in")
+    has_lemma = relationship("LemmaInLessonList", back_populates="in_less_list")
 
 
 # --- Secondary Organization Tables ---
@@ -359,23 +412,25 @@ class LessonList(Base):
 class LessonListInModule(Base):
     """Junction table for lessons and modules"""
 
-    __tablename__ = "lesslists_in_modules"
+    __tablename__ = "less_lists_in_mods"
 
-    lesslist_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
-    module_id = Column(Integer, ForeignKey("modules.id"), primary_key=True)
+    less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
+    mod_id = Column(Integer, ForeignKey("modules.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    lesslist_in = relationship("LessonList", back_populates="in_module")
-    in_module = relationship("Module", back_populates="has_lesslist")
+    less_list_in = relationship("LessonList", back_populates="in_module")
+    in_module = relationship("Module", back_populates="has_less_list")
 
 
 class LemmaInLessonList(Base):
-    __tablename__ = "lems_in_lesslists"
+    __tablename__ = "lems_in_less_lists"
 
     lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
-    lesslist_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
+    less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    lemma_in = relationship("Lemma", back_populates="in_lesslist")
-    in_lesslist = relationship("LessonList", back_populates="has_lemma")
+    lemma_in = relationship("Lemma", back_populates="in_less_list")
+    in_less_list = relationship("LessonList", back_populates="has_lemma")
 
 
 # --- Users ---
@@ -384,9 +439,10 @@ class LemmaInLessonList(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True)
-    username = Column(String(50), unique=True, nullable=True)  # Added username
-    privileged = Column(Boolean, default=False)
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String(50), unique=True, nullable=True)
+    alias = Column(String(25), unique=False, nullable=True)
+    user_role = Column(Enum(EnumUserRole))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     in_group = relationship("UserInGroup", back_populates="group_user")
@@ -395,8 +451,9 @@ class User(Base):
 class UserGroup(Base):
     __tablename__ = "user_groups"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     group_name = Column(String(50), unique=True, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     users = relationship("UserInGroup", back_populates="user_group")
 
@@ -406,13 +463,14 @@ class UserInGroup(Base):
 
     user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
     group_id = Column(Integer, ForeignKey("user_groups.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     group_user = relationship("User", back_populates="in_group")
     user_group = relationship("UserGroup", back_populates="users")
 
-
+"""
 # --- Questions, Sessions, and Responses ---
-""" 
+
 
 class Item(Base):
     __tablename__ = "items"

@@ -87,7 +87,7 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 if hasattr(db_obj, field):
                     setattr(db_obj, field, value)
 
-            # save changes
+            # save changesƒ
             db.add(db_obj)
             db.flush()
             db.refresh(db_obj)

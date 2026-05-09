@@ -12,7 +12,8 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 app_dir = os.getenv("APP_DIR")
-cache_loc = app_dir+"backend/src/alite_backend/words/data/word_cache.json" #type: ignore
+cache_loc = app_dir + "backend/src/alite_backend/words/data/word_cache.json"  # type: ignore
+
 
 class LookupFDAPI:
     """
@@ -37,8 +38,7 @@ class LookupFDAPI:
         """
         try:
             r = requests.get(
-                f"https://freedictionaryapi.com/api/v1/entries/{lang}/{word}",
-                timeout=5
+                f"https://freedictionaryapi.com/api/v1/entries/{lang}/{word}", timeout=5
             )
             r.raise_for_status()
             return r.json()
@@ -46,32 +46,34 @@ class LookupFDAPI:
             logger.error("Error fetching '%s': %s", word, e)
             return None
 
-    def _check_local(self, word: str, cache_loc: str = cache_loc) -> Dict[str, Any] | None:
+    def _check_local(
+        self, word: str, cache_loc: str = cache_loc
+    ) -> Dict[str, Any] | None:
         # Check if the cache file exists and is not empty
         # cache file for init vocab to reduce API calls
         if os.path.exists(cache_loc):
-            #logger.debug("Cache loc: %s", cache_loc)
+            # logger.debug("Cache loc: %s", cache_loc)
             if os.path.getsize(cache_loc) > 0:
-                with open(cache_loc, 'r') as f:
+                with open(cache_loc, "r") as f:
                     data = json.load(f)
                 logger.debug("words in cache: %d", len(data))
                 if word in data:
-                    #print(f"'{word}' found in cache.")
+                    # print(f"'{word}' found in cache.")
                     return data[word]
-            
+
     def _update_cache(self, word: str, data: FDAPIreturn, cache_loc: str = cache_loc):
         # Read existing data
         if os.path.exists(cache_loc):
-            with open(cache_loc, 'r') as f:
+            with open(cache_loc, "r") as f:
                 cache_data = json.load(f)
         else:
             raise KeyError
 
         # Add new data and write back to the file
         cache_data[word] = data
-        with open(cache_loc, 'w') as f:
+        with open(cache_loc, "w") as f:
             json.dump(cache_data, f, indent=4)
-    
+
     def get(self, word_list: List[str]) -> Iterator[Dict[str, Any]]:
         """
         Looks up a list of words and yields the result for each one.

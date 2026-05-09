@@ -24,8 +24,23 @@ from typing import List, Dict, Any, Tuple
 from pydantic import ValidationError
 from alite_backend.config import settings
 from alite_backend.db.schemas import FDAPIreturn, ProcessedPayload
-from alite_backend.db.models import EnumPartOfSpeech, EnumGender, EnumVerbAspect, EnumVerbTransRefl, EnumGramNum
-from alite_backend.words.funcs import pos_dict, sop_dict, remove_accents, is_cyrillic, pos_list, zalizniak_to_type
+from alite_backend.db.models import (
+    EnumPartOfSpeech,
+    EnumGender,
+    EnumVerbAspect,
+    EnumVerbTransRefl,
+    EnumGramNum,
+    EnumPronType,
+    EnumRelLemType,
+)
+from alite_backend.words.funcs import (
+    pos_dict,
+    sop_dict,
+    remove_accents,
+    is_cyrillic,
+    pos_list,
+    zalizniak_to_type,
+)
 from alite_backend.db.schemas import Quote
 
 logger = logging.getLogger(__name__)
@@ -63,9 +78,9 @@ class ReturnedLemmaProcessor:
             # verb_trans_refl
             "transitive": {"verb_trans_refl": EnumVerbTransRefl.TRANSITIVE},
             "intransitive": {"verb_trans_refl": EnumVerbTransRefl.INTRANSITIVE},
-            "reflexive": {"verb_trans_refl": EnumVerbTransRefl.REFLEXIVE}
+            "reflexive": {"verb_trans_refl": EnumVerbTransRefl.REFLEXIVE},
         }
-        
+
         for char in chars:
             if pos == "verb":
                 if char in verb_chars_map:
@@ -75,7 +90,7 @@ class ReturnedLemmaProcessor:
                     lemma_chars_dict.update(noun_chars_map[char])
         return lemma_chars_dict
 
-    def _sort_entries(self, clean_lemma, entries):
+    def _sort_entries(self, lem_text, entries):
         sorted_data = {
             "lemmas": [],
             "gram_props": [],
@@ -93,12 +108,15 @@ class ReturnedLemmaProcessor:
             language = entry.language
             # logger.debug("entry senses tags: %s", [x.tags for x in entry.senses][0])
             if language.code != lang_code:
-                logger.error("%s is %s!!!", clean_lemma, language.name)
+                logger.error("%s is %s!!!", lem_text, language.name)
                 continue
-            elif "form of" in [x.tags for x in entry.senses][0]:
+            elif (
+                len(entry.senses) == 1
+                and "form of" in [x.tags for x in entry.senses][0]
+            ):
                 logger.error(
                     "This word form (%s) was found but is not canonical (a lemma)",
-                    clean_lemma,
+                    lem_text,
                 )
                 # TODO catch these to put back in the queue if not already
                 continue
@@ -107,14 +125,14 @@ class ReturnedLemmaProcessor:
             pos = entry.partOfSpeech
             if not pos or pos not in pos_list:
                 continue
-            entry_name = f"{clean_lemma}_{pos}_{entry_index}"
+            entry_name = f"{lem_text}_{pos}_{entry_index}"
             entry_key = uuid.uuid5(APP_NAMESPACE, entry_name)
             # logger.debug("entry: %s", entry_key)
             # base_form_temp_id = str(uuid.uuid4())
             # make entry's lemma dict
             lemma_dict = {
-                "clean_lemma": clean_lemma,
-                "accent_lemma": None,
+                "lem_text": lem_text,
+                "lem_canon": None,
                 "pos": pos,
                 "entry_key": entry_key,
                 # TO BE FILLED IN AS NEEDED
@@ -155,7 +173,7 @@ class ReturnedLemmaProcessor:
                     canonical_object = [
                         x for x in entry.forms if "canonical" in x.tags
                     ][0]
-                    logger.debug("canonical object: %s", canonical_object)
+                    # logger.debug("canonical object: %s", canonical_object)
                     canonical_form = canonical_object.word
                     if pos == "noun":
                         # logger.debug("noun base form lex entry: %s", noun_base_lex_entry)
@@ -163,17 +181,17 @@ class ReturnedLemmaProcessor:
                         if len(canon_tags) > 1:
                             for prop in canon_tags:
                                 if prop != "canonical":
-                                    logger.debug(
-                                        "other canonical noun gram prop: %s", prop
-                                    )
+                                    # logger.debug(
+                                    #     "other canonical noun gram prop: %s", prop
+                                    # )
                                     lemma_dict_tags.append(prop)
 
-                logger.debug("canonical form: %s", canonical_form)
-                lemma_dict["accent_lemma"] = canonical_form
+                # logger.debug("canonical form: %s", canonical_form)
+                lemma_dict["lem_canon"] = canonical_form
             except Exception as e:
                 canonical_form = None
                 logger.error(
-                    "No canonical form found for %s because of %s", clean_lemma, e
+                    "No canonical form found for %s because of %s", lem_text, e
                 )
 
             # lexicon and gram_props
@@ -190,7 +208,7 @@ class ReturnedLemmaProcessor:
                                 {
                                     "entry_key": entry_key,
                                     "pron_text": form_word,
-                                    "pron_type": 1,
+                                    "pron_type": EnumPronType.ROMANIZATION,
                                     "pron_tags": [],
                                 }
                             )
@@ -207,9 +225,11 @@ class ReturnedLemmaProcessor:
                                     #     group_val,
                                     # )
                                     lemma_dict[group_name] = group_val
-                                lemma_dict["verb_type"] = zalizniak_to_type(match.group("verb_conj"))
+                                lemma_dict["verb_type"] = zalizniak_to_type(
+                                    match.group("verb_conj")
+                                )
                             else:
-                                logger.debug("no class found for %s", clean_lemma)
+                                logger.debug("no class found for %s", lem_text)
                         elif "table-tags" in form.tags and pos == "verb":
                             re_pattern = r"^(?P<verb_aspect>imperfective|perfective)\s(?P<verb_trans_refl>intransitive|transitive|reflexive)$"
                             match = re.search(re_pattern, form_word)
@@ -223,7 +243,7 @@ class ReturnedLemmaProcessor:
                                     # )
                                     lemma_dict[group_name] = group_val
                             else:
-                                logger.debug("no table-tags found for %s", clean_lemma)
+                                logger.debug("no table-tags found for %s", lem_text)
 
                     else:
                         # link all its tags as grammatical properties
@@ -232,7 +252,7 @@ class ReturnedLemmaProcessor:
                             "alternative",
                             "dialectical",
                             "canonical",
-                            "class"
+                            "class",
                         ]
                         related_lemma_tags = [
                             "relational",
@@ -255,8 +275,8 @@ class ReturnedLemmaProcessor:
                                 ):
                                     rel_adj_dict = {
                                         "entry_key": entry_key,
-                                        "pair_form": form_word,
-                                        "rel_type": 2,
+                                        "rel_form": form_word,
+                                        "rel_type": EnumRelLemType.ABSTRACT_NOUN_OF,
                                     }
                                     sorted_data["rel_lems"].append(rel_adj_dict)
                                 elif (
@@ -265,15 +285,15 @@ class ReturnedLemmaProcessor:
                                 ):
                                     deverb_noun_dict = {
                                         "entry_key": entry_key,
-                                        "pair_form": form_word,
-                                        "rel_type": 3,
+                                        "rel_form": form_word,
+                                        "rel_type": EnumRelLemType.NOUN_FROM_VERB_OF,
                                     }
                                     sorted_data["rel_lems"].append(deverb_noun_dict)
                                 elif len(form_tags) == 1 and form_tags[0] == "adverb":
                                     adverb_dict = {
                                         "entry_key": entry_key,
-                                        "pair_form": form_word,
-                                        "rel_type": 4,
+                                        "rel_form": form_word,
+                                        "rel_type": EnumRelLemType.ADVERB_OF,
                                     }
                                     sorted_data["rel_lems"].append(adverb_dict)
                                 elif (
@@ -282,8 +302,8 @@ class ReturnedLemmaProcessor:
                                 ):
                                     abstract_noun_dict = {
                                         "entry_key": entry_key,
-                                        "pair_form": form_word,
-                                        "rel_type": 5,
+                                        "rel_form": form_word,
+                                        "rel_type": EnumRelLemType.ABSTRACT_NOUN_OF,
                                     }
                                     sorted_data["rel_lems"].append(abstract_noun_dict)
                             # verb pair
@@ -295,9 +315,8 @@ class ReturnedLemmaProcessor:
                                 # logger.debug("verb pair tags: %s", form_tags)
                                 verb_pair_dict = {
                                     "entry_key": entry_key,
-                                    "pair_form": None,
+                                    "rel_form": None,
                                     "rel_type": None,
-                                    "pair_aspect": None,
                                 }
                                 if verbal_aspect == "perfective":  # type:ignore
                                     imperfective_form = [
@@ -306,9 +325,10 @@ class ReturnedLemmaProcessor:
                                         if len(x.tags) == 1
                                         and x.tags[0] == "imperfective"
                                     ][0]
-                                    verb_pair_dict["pair_form"] = imperfective_form
-                                    verb_pair_dict["rel_type"] = 0
-                                    verb_pair_dict["pair_aspect"] = 0
+                                    verb_pair_dict["rel_form"] = imperfective_form
+                                    verb_pair_dict["rel_type"] = (
+                                        EnumRelLemType.IMPERFECTIVE_PAIR_OF
+                                    )
                                     sorted_data["rel_lems"].append(verb_pair_dict)
                                 elif verbal_aspect == "imperfective":  # type:ignore
                                     perfective_form = [
@@ -317,14 +337,13 @@ class ReturnedLemmaProcessor:
                                         if len(x.tags) == 1
                                         and x.tags[0] == "perfective"
                                     ][0]
-                                    verb_pair_dict["pair_form"] = perfective_form
-                                    verb_pair_dict["rel_type"] = 1
-                                    verb_pair_dict["pair_aspect"] = 1
+                                    verb_pair_dict["rel_form"] = perfective_form
+                                    verb_pair_dict["rel_type"] = (
+                                        EnumRelLemType.PERFECTIVE_PAIR_OF
+                                    )
                                     sorted_data["rel_lems"].append(verb_pair_dict)
                                 else:
-                                    logger.info(
-                                        "No verb pair found for %s", clean_lemma
-                                    )
+                                    logger.info("No verb pair found for %s", lem_text)
                             else:
                                 temp_form_id = str(uuid.uuid4())
                                 # logger.debug("lexicon tfid, entry_key, form: %s, %s, %s", temp_form_id, entry_key, form_word)
@@ -332,7 +351,7 @@ class ReturnedLemmaProcessor:
                                     {
                                         "temp_form_id": temp_form_id,
                                         "entry_key": entry_key,  # To link to the lexicon entry
-                                        "form": form_word,
+                                        "lex_text": form_word,
                                     }
                                 )
                                 for tag in form_tags:
@@ -347,7 +366,7 @@ class ReturnedLemmaProcessor:
                             #     "kicking out form/tag: %s - %s", form_word, form_tags
                             # )
                             continue
-            
+
             # pronunciations
             # these link directly to the lexicon entry
             for pron in entry.pronunciations:
@@ -355,7 +374,7 @@ class ReturnedLemmaProcessor:
                     {
                         "entry_key": entry_key,  # For load.py to find lexicon_id
                         "pron_text": pron.text,
-                        "pron_type": 0 if pron.type == "ipa" else None,
+                        "pron_type": EnumPronType.IPA if pron.type == "ipa" else None,
                         "pron_tags": pron.tags if len(pron.tags) > 0 else None,
                     }
                 )
@@ -367,7 +386,7 @@ class ReturnedLemmaProcessor:
 
                 # check for global noun gram props in tags
                 if pos == "noun" and len(sense.tags) > 0:
-                    logger.debug("sense tags: %s", sense.tags)
+                    # logger.debug("sense tags: %s", sense.tags)
                     noun_sense_tag_set = {
                         "masculine",
                         "neuter",
@@ -379,7 +398,7 @@ class ReturnedLemmaProcessor:
                     sense_tags_isxn = noun_sense_tag_set & set(sense.tags)
                     if sense_tags_isxn:
                         for tag in sense_tags_isxn:
-                            logger.debug("Noun sense tag: %s", tag)
+                            # logger.debug("Noun sense tag: %s", tag)
                             lemma_dict_tags.append(tag)
 
                 sorted_data["definitions"].append(
@@ -387,7 +406,7 @@ class ReturnedLemmaProcessor:
                         "temp_def_id": temp_def_id,
                         "entry_key": entry_key,  # To link to the lexicon entry
                         "def_text": sense.definition,
-                        "tags": sense.tags,
+                        "def_tags": sense.tags,
                     }
                 )
 
@@ -401,36 +420,43 @@ class ReturnedLemmaProcessor:
                         sorted_data["def_examples"].append(
                             {
                                 "temp_def_id": temp_def_id,  # For load.py to find definition_id
-                                "def_example": ex_text,
+                                "ex_text": ex_text,
                             }
                         )
 
             # Get rest of related words
             synonyms = entry.synonyms
             antonyms = entry.antonyms
-            all_nyms = synonyms + antonyms
+            # all_nyms = synonyms + antonyms
             # logger.debug("%d *nyms: %s", len(all_nyms), all_nyms)
             if len(synonyms) > 0:
                 for s in synonyms:
                     sorted_data["rel_lems"].append(
-                        {"entry_key": entry_key, "pair_form": s, "rel_type": 6}
+                        {
+                            "entry_key": entry_key,
+                            "rel_form": s,
+                            "rel_type": EnumRelLemType.SYNONYM_OF,
+                        }
                     )
             if len(antonyms) > 0:
                 for a in antonyms:
                     sorted_data["rel_lems"].append(
-                        {"entry_key": entry_key, "pair_form": a, "rel_type": 7}
+                        {
+                            "entry_key": entry_key,
+                            "rel_form": a,
+                            "rel_type": EnumRelLemType.ANTONYM_OF,
+                        }
                     )
             # load up everything collected into lemma_dict
-            #logger.debug("lemma_dict_tags: %s", lemma_dict_tags)
-            lemma_dict_chars = self._map_lem_chars(pos, lemma_dict_tags) #type: ignore
-            #logger.debug("lemma_dict_chars: %s", lemma_dict_chars)
+            # logger.debug("lemma_dict_tags: %s", lemma_dict_tags)
+            lemma_dict_chars = self._map_lem_chars(pos, lemma_dict_tags)  # type: ignore
+            # logger.debug("lemma_dict_chars: %s", lemma_dict_chars)
             lemma_dict = lemma_dict | lemma_dict_chars
             logger.debug("lemma_dict: %s", lemma_dict)
-            
-            #
+
             # add lemma_dict to the data
             sorted_data["lemmas"].append(lemma_dict)
-            
+
             # aug entry_index assignment
             entry_index += 1
         # logger.debug("sorted_data: %s", sorted_data)

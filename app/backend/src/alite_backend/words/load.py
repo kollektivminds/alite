@@ -3,6 +3,7 @@ import logging
 from collections import defaultdict
 from sqlalchemy.orm import Session
 from psycopg2.errors import UniqueViolation
+from alite_backend.words.funcs import remove_accents
 from alite_backend.db import schemas
 from alite_backend.db.models import (
     EnumAltAdjvType,
@@ -18,7 +19,7 @@ from alite_backend.db.models import (
     EnumVerbAspect,
     EnumVerbMood,
     EnumVerbTransRefl,
-    EnumVerbType,≠
+    EnumVerbType,
 )
 import alite_backend.db.crud.word_crud as word_crud
 from alite_backend.db.crud.word_crud import (
@@ -29,6 +30,9 @@ from alite_backend.db.crud.word_crud import (
     crud_definition,
     crud_example,
     crud_pronunciation,
+    crud_lem_rel,
+    crud_lem_def,
+    crud_def_ex,
 )
 
 logger = logging.getLogger(__name__)
@@ -111,22 +115,19 @@ class Loader:
         gram_prop_groups = defaultdict(list)
         junction_map = {}
         lem_def_map = {}
-        current_run_lexemes = {}
         form_list = []
 
         # create lemma
         for lem in payload.lemmas:  # type: ignore
             # logger.debug(lem.entry_key)
-            
+
             # validate
-            lem_in = schemas.LemmaCreate(**lem)
-            #new_lemma = word_crud.goc_lemma(db=self.db, lemma_record=lem)
+            lemma_in = schemas.LemmaCreate(**lem.model_dump())
+            # new_lemma = word_crud.goc_lemma(db=self.db, lemma_record=lem)
             new_lemma = crud_lemma.get_or_create(
-                db=self.db,
-                obj_in=lem_in,
-                filter_kwargs=lem
+                db=self.db, obj_in=lemma_in, filter_kwargs=lem.model_dump()
             )
-            # confirm_lemma = word_crud.get_lemmas(db=db, clean_lemma=word_lemma)
+            # confirm_lemma = word_crud.get_lemmas(db=db, lem_text=word_lemma)
             # logger.debug([(x.id, x.lem_canon) for x in confirm_lemma])
             lemma_id_map[lem.entry_key] = new_lemma.id  # type: ignore
 
@@ -135,14 +136,15 @@ class Loader:
 
             # get parent id from map
             lemma_db_id = lemma_id_map[lex.entry_key]
-
-            lex_in = schemas.LexemeCreate(**lex)
+            new_lex_in = {
+                "lex_text": lex.lex_text,
+                "lex_text_clean": remove_accents(lex.lex_text),
+            }
+            lex_in = schemas.LexemeCreate(**new_lex_in)
             # create lexicon row
-            #new_lexeme = word_crud.goc_lexeme(db=self.db, word_form=lex.form)
+            # new_lexeme = word_crud.goc_lexeme(db=self.db, word_form=lex.form)
             new_lex = word_crud.crud_lexicon.get_or_create(
-                db=self.db,
-                obj_in=lex_in,
-                filter_kwargs=lex
+                db=self.db, obj_in=lex_in, filter_kwargs=new_lex_in
             )
             # create link between lemma and lexeme
             junction_map[lex.temp_form_id] = {
@@ -173,15 +175,13 @@ class Loader:
                 # new_gram_prop = word_crud.goc_gramprop(
                 #     db=self.db, incoming_props=junc_props
                 # )
-                
+
                 new_gram_prop = crud_gram_prop.get_or_create(
-                    db = self.db,
-                    obj_in=gram_prop_in,
-                    filter_kwargs=junc_props
+                    db=self.db, obj_in=gram_prop_in, filter_kwargs=junc_props
                 )
                 v["gram_id"] = new_gram_prop.id
 
-        logger.debug("gram_props mapped junction_map: %s", junction_map.items())
+        # logger.debug("gram_props mapped junction_map: %s", junction_map.items())
 
         # create word_forms with link (and link them)
         for k, v in junction_map.items():
@@ -189,84 +189,97 @@ class Loader:
             # logger.debug("v: %s", v)
             # validate
             word_form_in = schemas.WordFormCreate(**v)
-            #new_word_form = word_crud.goc_wordform(db=self.db, form_ids=v)
+            # new_word_form = word_crud.goc_wordform(db=self.db, form_ids=v)
             new_word_form = crud_word_form.get_or_create(
-                db=self.db,
-                obj_in=word_form_in,
-                filter_kwargs=v
+                db=self.db, obj_in=word_form_in, filter_kwargs=v
             )
-            #logger.debug("new_word_form.id: %d", new_word_form.id)
+            # logger.debug("new_word_form.id: %d", new_word_form.id)
 
         # create definitions with link
         for definition in payload.definitions:
-            logger.debug("Load definition: %s", definition)
-            def_in = schemas.DefinitionCreate(**definition)
+            # logger.debug("Load definition: %s", definition)
 
-            filters = {
-                "def_text": definition.def_text,
-                "tags": definition.tags
-            }
-            
+            filters = {"def_text": definition.def_text, "def_tags": definition.def_tags}
+
+            def_in = schemas.DefinitionCreate(**filters)
+
             new_def = crud_definition.get_or_create(
                 db=self.db,
                 obj_in=def_in,
-                filter_kwargs=filters
+                filter_kwargs={"def_text": definition.def_text},
             )
             lem_def_map[definition.temp_def_id] = {
                 "def_id": new_def.id,
-                "lem_id": definition.entry_key
+                "lem_id": lemma_id_map[definition.entry_key],
+                "ex_ids": [],
             }
+
+        # logger.debug("After definition Lem_def_map: %s", lem_def_map)
 
         # create def_examples
         for example in payload.def_examples:
-            logger.debug("Load examples: %s", example)
-            
-            example_in = schemas.ExampleCreate(**example)
-            
+            # logger.debug("Load examples: %s", example)
+
             # Examples are unique based on their text and the definition they belong to
-            filters = {
-                "definition_id": example_in.definition_id,
-                "text": example_in.text
-            }
-            
-            crud_example.get_or_create(
-                db=self.db,
-                obj_in=example_in,
-                filter_kwargs=filters
+            filters = {"ex_text": example.ex_text}
+
+            example_in = schemas.ExampleCreate(**filters)
+
+            new_ex = crud_example.get_or_create(
+                db=self.db, obj_in=example_in, filter_kwargs=filters
             )
+            # logger.debug("New example id: %d", new_ex.id)
+            lem_def_map[example.temp_def_id]["ex_ids"].append(new_ex.id)
+
+        # logger.debug("After examples Lem_def_map: %s", lem_def_map)
+
+        for temp_def_id, rels in lem_def_map.items():
+            lem_def = {"lem_id": rels["lem_id"], "def_id": rels["def_id"]}
+            lem_def_in = schemas.LemDefCreate(**lem_def)
+            new_lem_def = crud_lem_def.get_or_create(
+                db=self.db, obj_in=lem_def_in, filter_kwargs=lem_def
+            )
+            # logger.debug("new_lem_def id: (%d, %d)", new_lem_def.lem_id, new_lem_def.def_id)
+            if len(rels["ex_ids"]) > 0:
+                for ex_id in rels["ex_ids"]:
+                    def_ex = {"def_id": rels["def_id"], "ex_id": ex_id}
+                    def_ex_in = schemas.DefExCreate(**def_ex)
+                    new_def_ex = crud_def_ex.get_or_create(
+                        db=self.db, obj_in=def_ex_in, filter_kwargs=def_ex
+                    )
+                    # logger.debug("new_def_ex id: (%d, %d)", new_def_ex.def_id, new_def_ex.ex_id)
 
         # create pronunciations
         for pron in payload.pronunciations:
-            logger.debug("Load pronunciation: %s", pron)
-            
-            pron_in = schemas.PronunciationCreate(**pron)
-            
-            # Pronunciations are unique to a lemma and their audio_url/file
-            filters = {
-                "lemma_id": pron_in.lemma_id,
-                "audio_url": pron_in.audio_url # Or whatever column stores the audio path
-            }
-            
-            crud_pronunciation.get_or_create(
-                db=self.db,
-                obj_in=pron_in,
-                filter_kwargs=filters
+            # logger.debug("Load pronunciation: %s", pron)
+            pron_in = schemas.PronunciationCreate(**pron.model_dump())
+
+            filters = {"pron_text": pron_in.pron_text, "pron_type": pron_in.pron_type}
+
+            new_pron = crud_pronunciation.get_or_create(
+                db=self.db, obj_in=pron_in, filter_kwargs=filters
             )
-            
+
+            # logger.debug("New pron id: %d", new_pron.id)
+
         # create related lemmas
-        for relation in payload.related_lemmas:
-            # relation might look like: {"lemma_id": 5, "related_lemma_id": 12, "relation_type": "synonym"}
-            
-            relation_in = schemas.LemmaRelationCreate(**relation)
-            
-            filters = {
-                "lemma_id": relation_in.lemma_id,
-                "related_lemma_id": relation_in.related_lemma_id,
-                "relation_type": relation_in.relation_type
-            }
-            
-            crud_lemma_relation.get_or_create(
-                db=self.db,
-                obj_in=relation_in,
-                filter_kwargs=filters
-            )
+        # for relation in payload.rel_lems:
+        #     logger.debug("related lem: %s", relation)
+
+        #     other_rel_params = {"lem_text": relation.rel_form}
+
+        #     other_rel_params = schemas.LemmaSearchParams(**other_rel_params)
+
+        #     other_rel = crud_lemma.search(db=self.db, params=other_rel_params)
+        #     logger.debug("other rel: %s", other_rel)
+        #     relation_in = schemas.LemRelCreate(**relation.model_dump())
+
+        #     filters = {
+        #         "source_id": relation_in.source_id,
+        #         "target_id": relation_in.target_id,
+        #         "rel_type": relation_in.rel_type,
+        #     }
+
+        #     new_lem_rel = crud_lem_rel.get_or_create(
+        #         db=self.db, obj_in=relation_in, filter_kwargs=filters
+        #     )

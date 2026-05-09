@@ -26,6 +26,7 @@ import numpy as np
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import text
+import alite_backend.db.schemas as schemas
 from alite_backend.db.schemas import EnumVerbType
 
 load_dotenv()
@@ -46,7 +47,7 @@ pos_list = [
     "preposition",
     "pronoun",
     "verb",
-    "unknown"
+    "unknown",
 ]
 
 pos_dict = dict(enumerate(pos_list))
@@ -92,7 +93,7 @@ def load_json(file_path):
         dict or list: The deserialized JSON data as a Python object, or None if an error occurs.
     """
     try:
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             data = json.load(file)
             return data
     except FileNotFoundError:
@@ -166,6 +167,7 @@ def clean_dict_values(d):
         return {k: strip_non_alpha_start(v) for k, v in d.items()}
     return d
 
+
 def validate_word_list(word_list):
     # check if word_list is indeed a list of words
     # or at least a single word that can be recognized
@@ -177,9 +179,11 @@ def validate_word_list(word_list):
             word_list.isalpha()
         except:
             raise TypeError("not alpha")
-        
+
+
 def is_cyrillic(text: str) -> bool:
-    return bool(re.search(r'[А-Яа-яËё]', text))
+    return bool(re.search(r"[А-Яа-яËё]", text))
+
 
 def zalizniak_to_type(z_type: str) -> EnumVerbType:
     t2_pattern = r"^4"
