@@ -1,9 +1,12 @@
 # load.py
+import os
+import json
 import logging
 from collections import defaultdict
+from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from psycopg2.errors import UniqueViolation
-from alite_backend.words.funcs import remove_accents
+from alite_backend.words.funcs import remove_accents, load_json
 from alite_backend.db import schemas
 from alite_backend.db.models import (
     EnumAltAdjvType,
@@ -21,7 +24,6 @@ from alite_backend.db.models import (
     EnumVerbTransRefl,
     EnumVerbType,
 )
-import alite_backend.db.crud.word_crud as word_crud
 from alite_backend.db.crud.word_crud import (
     crud_lemma,
     crud_lexicon,
@@ -31,13 +33,69 @@ from alite_backend.db.crud.word_crud import (
     crud_example,
     crud_pronunciation,
     crud_lem_rel,
+    crud_lookup_queue,
     crud_lem_def,
     crud_def_ex,
 )
+from alite_backend.db.crud.orgi_crud import crud_less_list, crud_lem_in_less_list
 
 logger = logging.getLogger(__name__)
 
+load_dotenv()
 
+# make lemma-in-lesson lookup item
+_CURRICULUM_CACHE = None
+
+
+def _get_curriculum_cache(db: Session) -> dict:
+    """Builds the curriculum map in memory exactly ONCE."""
+    global _CURRICULUM_CACHE
+
+    if _CURRICULUM_CACHE is not None:
+        return _CURRICULUM_CACHE  # Instant return!
+
+    logger.info("First lookup detected! Building curriculum cache in memory...")
+    lems_in_lists = defaultdict(list)
+
+    try:
+        VOCAB_LIST_LOC = os.getenv("VOCAB_LIST_LOC")
+        data = load_json(VOCAB_LIST_LOC)
+        # logger.debug("data: %s", data)
+        for mod in data:  # type: ignore
+            # logger.debug("mod: %s", mod)
+            for less_list in data[mod]:  # type: ignore
+                # logger.debug("less_list: %s", less_list)
+                if mod in ["ales", "other"]:
+                    # list of ales or "other" words
+                    list_lems = [x for x in data[mod][less_list]]  # type: ignore
+                else:
+                    list_vocab = data[mod][less_list]["vocab"]  # type: ignore
+                    # logger.debug("List vocab: %s", list_vocab)
+                    list_lems = [lem for pos, lems in list_vocab.items() for lem in lems]  # type: ignore
+                    # logger.debug("list_lems: %s", list_lems)
+
+                less_list_id = crud_less_list.get_id_by_name(
+                    db=db, less_list_name=less_list
+                )
+                if less_list_id:
+                    for word in list_lems:
+                        lems_in_lists[word].append(less_list_id)
+        # Save it to the global variable
+        _CURRICULUM_CACHE = dict(lems_in_lists)
+        logger.info("Curriculum cache successfully built!")
+
+    except FileNotFoundError:
+        logger.error(
+            "curriculum.json not found! Creating empty cache to prevent retries."
+        )
+        _CURRICULUM_CACHE = {}
+
+    return _CURRICULUM_CACHE
+
+
+# ==========================================
+# 2. THE LOADER CLASS
+# ==========================================
 class Loader:
     """_summary_"""
 
@@ -143,7 +201,7 @@ class Loader:
             lex_in = schemas.LexemeCreate(**new_lex_in)
             # create lexicon row
             # new_lexeme = word_crud.goc_lexeme(db=self.db, word_form=lex.form)
-            new_lex = word_crud.crud_lexicon.get_or_create(
+            new_lex = crud_lexicon.get_or_create(
                 db=self.db, obj_in=lex_in, filter_kwargs=new_lex_in
             )
             # create link between lemma and lexeme
@@ -263,23 +321,68 @@ class Loader:
             # logger.debug("New pron id: %d", new_pron.id)
 
         # create related lemmas
-        # for relation in payload.rel_lems:
-        #     logger.debug("related lem: %s", relation)
+        for relation in payload.rel_lems:
+            logger.debug("related lem: %s", relation)
+            rel_form = relation.rel_form
+            # logger.debug("rel form: %s", rel_form)
+            # relation source id
+            source_id = lemma_id_map[relation.entry_key]
+            # logger.debug("related lemma source id: %d", source_id)
 
-        #     other_rel_params = {"lem_text": relation.rel_form}
+            # new relation
+            target_rel_params = {"lem_text": rel_form}
+            target_rel_params = schemas.LemmaSearchParams(**target_rel_params) # type: ignore
+            target_rel = crud_lemma.search(db=self.db, params=target_rel_params)
+            logger.debug("target rel: %s", target_rel)
+            filters = {
+                "rel_type": relation.rel_type,
+                "source_id": source_id
+            }
+            
+            if target_rel:
+                # logger.debug("target rel found: %s", target_rel)
 
-        #     other_rel_params = schemas.LemmaSearchParams(**other_rel_params)
+                filters["target_id"] = target_rel[0].id
+                relation_in = schemas.LemRelCreate(**filters)
+                
+                new_lem_rel = crud_lem_rel.get_or_create(
+                    db=self.db, obj_in=relation_in, filter_kwargs=filters
+                )
+                logger.debug("New lem rel id: %d", new_lem_rel.id)
+            else:
+                # logger.debug("adding related lemma to lookup queue")
+                filters["target_lem"] = rel_form
 
-        #     other_rel = crud_lemma.search(db=self.db, params=other_rel_params)
-        #     logger.debug("other rel: %s", other_rel)
-        #     relation_in = schemas.LemRelCreate(**relation.model_dump())
+                lookup_in = schemas.LookupQueueCreate(**filters)
 
-        #     filters = {
-        #         "source_id": relation_in.source_id,
-        #         "target_id": relation_in.target_id,
-        #         "rel_type": relation_in.rel_type,
-        #     }
+                new_lookup_queue = crud_lookup_queue.get_or_create(
+                    db=self.db, obj_in=lookup_in, filter_kwargs=filters
+                )
+                logger.debug("New lookup queue id: %d", new_lookup_queue.id)
 
-        #     new_lem_rel = crud_lem_rel.get_or_create(
-        #         db=self.db, obj_in=relation_in, filter_kwargs=filters
-        #     )
+        # set up Lemma-In-Lesson junction
+
+        # get the cache (will be instant for 99% of requests)
+        target_map = _get_curriculum_cache(self.db)
+
+        for lem in payload.lemmas:
+            db_lemma_id = lemma_id_map[lem.entry_key]
+
+            # Is this word in our curriculum?
+            if lem.lem_text in target_map:
+                lesson_ids = target_map[lem.lem_text]
+                # logger.debug(
+                #     "Linking newly fetched word '%s' to lessons: %s",
+                #     lem.lem_text,
+                #     lesson_ids,
+                # )
+
+                for l_id in lesson_ids:
+                    link_in = schemas.LemInLessListCreate(
+                        lem_id=db_lemma_id, less_list_id=l_id
+                    )
+                    crud_lem_in_less_list.get_or_create(
+                        db=self.db,
+                        obj_in=link_in,
+                        filter_kwargs={"less_list_id": l_id, "lem_id": db_lemma_id},
+                    )

@@ -283,7 +283,7 @@ crud_lem_rel = CRUDLemRel(LemmaRelation)
 #
 
 
-class CRUDLookupQueue(CRUDBase[LemmaRelation, LemRelCreate, LemRelUpdate]):
+class CRUDLookupQueue(CRUDBase[LookupQueue, LookupQueueCreate, LookupQueueReturn]):
     pass
 
 

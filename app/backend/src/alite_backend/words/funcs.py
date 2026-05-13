@@ -31,6 +31,8 @@ from alite_backend.db.schemas import EnumVerbType
 
 load_dotenv()
 
+VOCAB_LIST_LOC = os.getenv("VOCAB_LIST_LOC")
+
 # instantiate logger
 logger = logging.getLogger(__name__)
 

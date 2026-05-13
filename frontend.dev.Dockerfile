@@ -1,6 +1,6 @@
 # frontend.dev.Dockerfile
 
-FROM node:22.19.5
+FROM node:23.11.0
 
 WORKDIR /app
 

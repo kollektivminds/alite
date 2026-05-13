@@ -17,6 +17,7 @@ from alite_backend.db.models import (
     EnumVerbTransRefl,
     EnumVerbType,
     EnumRelLemType,
+    EnumLookupStatus,
     EnumPronType,
     EnumUserRole,
 )
@@ -313,22 +314,21 @@ class LemmaSearchParams(BaseModel):
 
 
 # shared properties
-class LexiconBase(BaseModel):
+class LexemeBase(BaseModel):
     lex_text: str
 
 
 # create lexeme
-class LexemeCreate(LexiconBase):
+class LexemeCreate(LexemeBase):
     lex_text_clean: str
 
 
-class LexemeUpdate(LexiconBase):
+class LexemeUpdate(LexemeBase):
     id: int
 
 
 # lexeme return
-class LexemeReturn(LexiconBase):
-    id: int
+class LexemeReturn(LexemeUpdate):
     created_at: datetime
 
     # read data even if it's not a dict
@@ -448,9 +448,9 @@ class PronunciationReturn(PronunciationUpdate):
 
 
 class LemRelBase(BaseModel):
-    source_id: int
     target_id: int
     rel_type: EnumRelLemType
+    source_id: int
 
 
 class LemRelCreate(LemRelBase):
@@ -469,9 +469,9 @@ class LemRelReturn(LemRelUpdate):
 
 
 class LookupQueueBase(BaseModel):
-    source_id: int
-    target_id: int
+    target_lem: str
     rel_type: EnumRelLemType
+    source_id: int
 
 
 class LookupQueueCreate(LookupQueueBase):
@@ -480,6 +480,8 @@ class LookupQueueCreate(LookupQueueBase):
 
 class LookupQueueUpdate(LookupQueueBase):
     id: int
+    target_id: int
+    lookup_status: EnumLookupStatus
 
 
 class LookupQueueReturn(LookupQueueUpdate):

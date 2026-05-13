@@ -112,7 +112,7 @@ CREATE TABLE
         noun_gender VARCHAR(50),
         subst_animacy BOOLEAN,
         verb_aspect VARCHAR(50),
-        verb_conj VARCHAR(8), -- ZALIZNIAK'S CLASSIFICATION
+        verb_conj VARCHAR(16), -- ZALIZNIAK'S CLASSIFICATION
         verb_type VARCHAR(8), -- TYPE-I / TYPE-II FROM verb_conj
         verb_trans_refl VARCHAR(50),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -229,12 +229,14 @@ CREATE TABLE
 CREATE TABLE
     lookup_queue (
         id SERIAL PRIMARY KEY,
-        target_word VARCHAR(50) NOT NULL,
-        source_lem_rel_id INT,
-        rel_type VARCHAR(16),
+        target_lem VARCHAR(50) NOT NULL,
+        target_id INT,
+        source_id INT NOT NULL,
+        rel_type VARCHAR(48) NOT NULL,
         lookup_status VARCHAR(16),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT source_lem_id FOREIGN KEY (source_lem_rel_id) REFERENCES lemmas (id) ON DELETE CASCADE
+        CONSTRAINT source_id FOREIGN KEY (source_id) REFERENCES lemmas (id) ON DELETE CASCADE,
+        CONSTRAINT target_id FOREIGN KEY (target_id) REFERENCES lemmas (id) ON DELETE CASCADE
     );
 
 -- SECONDARY TABLE for definitions (M-M)

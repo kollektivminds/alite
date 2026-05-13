@@ -49,10 +49,10 @@ class LookupFDAPI:
     def _check_local(
         self, word: str, cache_loc: str = cache_loc
     ) -> Dict[str, Any] | None:
-        # Check if the cache file exists and is not empty
+        # check if the cache file exists and is not empty
         # cache file for init vocab to reduce API calls
+        logger.debug("Cache loc: %s", cache_loc)
         if os.path.exists(cache_loc):
-            # logger.debug("Cache loc: %s", cache_loc)
             if os.path.getsize(cache_loc) > 0:
                 with open(cache_loc, "r") as f:
                     data = json.load(f)

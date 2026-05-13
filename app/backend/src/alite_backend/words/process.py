@@ -38,7 +38,6 @@ from alite_backend.words.funcs import (
     sop_dict,
     remove_accents,
     is_cyrillic,
-    pos_list,
     zalizniak_to_type,
 )
 from alite_backend.db.schemas import Quote
@@ -82,7 +81,7 @@ class ReturnedLemmaProcessor:
         }
 
         for char in chars:
-            if pos == "verb":
+            if pos == EnumPartOfSpeech.VERB:
                 if char in verb_chars_map:
                     lemma_chars_dict.update(verb_chars_map[char])
             else:
@@ -121,14 +120,13 @@ class ReturnedLemmaProcessor:
                 # TODO catch these to put back in the queue if not already
                 continue
 
-            # lemma + pos make the entry key tuple
             pos = entry.partOfSpeech
-            if not pos or pos not in pos_list:
+            if not pos or pos not in EnumPartOfSpeech._value2member_map_:
                 continue
             entry_name = f"{lem_text}_{pos}_{entry_index}"
             entry_key = uuid.uuid5(APP_NAMESPACE, entry_name)
             # logger.debug("entry: %s", entry_key)
-            # base_form_temp_id = str(uuid.uuid4())
+            pos = EnumPartOfSpeech(pos)
             # make entry's lemma dict
             lemma_dict = {
                 "lem_text": lem_text,
@@ -147,7 +145,7 @@ class ReturnedLemmaProcessor:
             canonical_forms = ["canonical", "infinitive"]
             try:
                 # logger.debug("forms items: %s", [x.word for x in entry.forms if x.tags[0] == 'canonical'][0])
-                if pos == "verb":
+                if pos == EnumPartOfSpeech.VERB:
                     verb_infin_form_object = [
                         x
                         for x in entry.forms
@@ -175,7 +173,7 @@ class ReturnedLemmaProcessor:
                     ][0]
                     # logger.debug("canonical object: %s", canonical_object)
                     canonical_form = canonical_object.word
-                    if pos == "noun":
+                    if pos == EnumPartOfSpeech.NOUN:
                         # logger.debug("noun base form lex entry: %s", noun_base_lex_entry)
                         canon_tags = canonical_object.tags
                         if len(canon_tags) > 1:
@@ -212,7 +210,7 @@ class ReturnedLemmaProcessor:
                                     "pron_tags": [],
                                 }
                             )
-                        elif "class" in form.tags and pos == "verb":
+                        elif "class" in form.tags and pos == EnumPartOfSpeech.VERB:
                             # logger.debug("class & verb: %s", form_word)
                             re_pattern = r"(?P<verb_conj>.*?)\s(?P<verb_aspect>imperfective|perfective)\s(?P<verb_trans_refl>intransitive|transitive|reflexive)$"
                             match = re.search(re_pattern, form_word)
@@ -230,7 +228,7 @@ class ReturnedLemmaProcessor:
                                 )
                             else:
                                 logger.debug("no class found for %s", lem_text)
-                        elif "table-tags" in form.tags and pos == "verb":
+                        elif "table-tags" in form.tags and pos == EnumPartOfSpeech.VERB:
                             re_pattern = r"^(?P<verb_aspect>imperfective|perfective)\s(?P<verb_trans_refl>intransitive|transitive|reflexive)$"
                             match = re.search(re_pattern, form_word)
                             if match:
@@ -253,13 +251,14 @@ class ReturnedLemmaProcessor:
                             "dialectical",
                             "canonical",
                             "class",
+                            "emphatic"
                         ]
                         related_lemma_tags = [
                             "relational",
                             "adjective",
                             "noun-from-verb",
                             "adverb",
-                            "abstract-noun",
+                            "abstract-noun"
                         ]
                         # logger.debug("tags: %s", tags)
                         if set(form_tags).isdisjoint(tags_to_boot):
@@ -308,7 +307,7 @@ class ReturnedLemmaProcessor:
                                     sorted_data["rel_lems"].append(abstract_noun_dict)
                             # verb pair
                             elif (
-                                pos == "verb"
+                                pos == EnumPartOfSpeech.VERB
                                 and len(form_tags) == 1
                                 and re.match(r"imperfective|perfective", form_tags[0])
                             ):
@@ -385,7 +384,7 @@ class ReturnedLemmaProcessor:
                 temp_def_id = str(uuid.uuid4())
 
                 # check for global noun gram props in tags
-                if pos == "noun" and len(sense.tags) > 0:
+                if pos == EnumPartOfSpeech.NOUN and len(sense.tags) > 0:
                     # logger.debug("sense tags: %s", sense.tags)
                     noun_sense_tag_set = {
                         "masculine",
@@ -449,7 +448,7 @@ class ReturnedLemmaProcessor:
                     )
             # load up everything collected into lemma_dict
             # logger.debug("lemma_dict_tags: %s", lemma_dict_tags)
-            lemma_dict_chars = self._map_lem_chars(pos, lemma_dict_tags)  # type: ignore
+            lemma_dict_chars = self._map_lem_chars(pos.value, lemma_dict_tags)  # type: ignore
             # logger.debug("lemma_dict_chars: %s", lemma_dict_chars)
             lemma_dict = lemma_dict | lemma_dict_chars
             logger.debug("lemma_dict: %s", lemma_dict)

@@ -62,6 +62,7 @@ class EnumPartOfSpeech(str, enum.Enum):
     ADJECTIVE = "adjective"
     ADVERB = "adverb"
     COM = "com"
+    CONJUNCTION = "conjunction"
     INTERJECTION = "interjection"
     NOUN = "noun"
     NUMERAL = "numeral"
@@ -141,6 +142,21 @@ class EnumLessListType(str, enum.Enum):
 class EnumUserRole(str, enum.Enum):
     INSTRUCTOR = "instructor"
     STUDENT = "student"
+    
+class EnumLookupStatus(str, enum.Enum):
+    UNLINKED = "unlinked"
+    LINKED = "linked"
+
+class LemmaInLessonList(Base):
+    __tablename__ = "lems_in_less_lists"
+
+    lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
+    less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    #lemma_in = relationship("Lemma", back_populates="in_less_list")
+    #in_less_list = relationship("LessonList", back_populates="has_lemma")
+
 
 # --- Word Primary Tables ---
 class Lemma(Base):
@@ -188,7 +204,7 @@ class Lemma(Base):
         foreign_keys="[LemmaRelation.target_id]",
         back_populates="target_lemma",
     )
-    in_less_list = relationship("LemmaInLessonList", back_populates="lemma_in")
+    in_less_list = relationship("LessonList", secondary="lems_in_less_lists", back_populates="has_lemma")
     # Relationships for study results
     # lemma_crws = relationship(
     #     "ConjugationResultWordStudied", back_populates="crws_lemma"
@@ -341,9 +357,11 @@ class LookupQueue(Base):
     __tablename__ = "lookup_queue"
 
     id = Column(Integer, primary_key=True, index=True)
-    target_word = Column(String(50), ForeignKey("lemmas.id"), nullable=False)
-    source_lem_rel_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
+    target_lem = Column(String(50), nullable=False)
+    target_id = Column(Integer, ForeignKey("lemmas.id"), nullable=True)
+    source_id = Column(Integer, ForeignKey("lemmas.id"), nullable=True)
     rel_type = Column(Enum(EnumRelLemType), nullable=False)
+    lookup_status = Column(Enum(EnumLookupStatus), nullable=False, default=EnumLookupStatus.UNLINKED)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class LemmaDefinition(Base):
@@ -403,7 +421,7 @@ class LessonList(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     in_module = relationship("LessonListInModule", back_populates="less_list_in")
-    has_lemma = relationship("LemmaInLessonList", back_populates="in_less_list")
+    has_lemma = relationship("Lemma", secondary="lems_in_less_lists", back_populates="in_less_list")
 
 
 # --- Secondary Organization Tables ---
@@ -420,17 +438,6 @@ class LessonListInModule(Base):
 
     less_list_in = relationship("LessonList", back_populates="in_module")
     in_module = relationship("Module", back_populates="has_less_list")
-
-
-class LemmaInLessonList(Base):
-    __tablename__ = "lems_in_less_lists"
-
-    lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
-    less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    lemma_in = relationship("Lemma", back_populates="in_less_list")
-    in_less_list = relationship("LessonList", back_populates="has_lemma")
 
 
 # --- Users ---

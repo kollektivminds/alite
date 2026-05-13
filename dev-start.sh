@@ -3,9 +3,9 @@
 # start_dev.sh - A script to launch the development environment for the language app.
 
 # --- Configuration ---
-BACKEND_DIR="./app/backend"
+BACKEND_DIR="./app/backend/src/alite_backend"
 FRONTEND_DIR="./app/frontend"
-BACKEND_VENV_PATH="./vocab/bin/activate"
+BACKEND_VENV_PATH="./app/backend/.venv/bin/activate"
 BACKEND_ENV_FILE="$BACKEND_DIR/.env"
 
 # --- Style and Color Definitions ---

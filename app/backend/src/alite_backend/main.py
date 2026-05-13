@@ -8,8 +8,10 @@ from sqlalchemy.exc import IntegrityError
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from alite_backend.config import settings
+from alite_backend.api.router import api_router
 
-app = FastAPI()
+app = FastAPI(title="ALITE API")
+app.include_router(api_router, prefix="/api/v1")
 
 if settings.ENV_MODE == "dev":
     app.add_middleware(
