@@ -161,7 +161,7 @@ class ReturnedLemmaProcessor:
                         for tag in tags:
                             # logger.debug("tag: %s", tag)
                             if tag in ["perfective", "imperfective"]:
-                                logger.debug("verb_aspect: %s", tag)
+                                # logger.debug("verb_aspect: %s", tag)
                                 verbal_aspect = tag
                                 lemma_dict["verb_aspect"] = verbal_aspect  # type: ignore
                         # logger.debug("form word: %s", form.word)
@@ -251,23 +251,23 @@ class ReturnedLemmaProcessor:
                             "dialectical",
                             "canonical",
                             "class",
-                            "emphatic"
+                            "emphatic",
                         ]
                         related_lemma_tags = [
                             "relational",
                             "adjective",
                             "noun-from-verb",
                             "adverb",
-                            "abstract-noun"
+                            "abstract-noun",
                         ]
                         # logger.debug("tags: %s", tags)
                         if set(form_tags).isdisjoint(tags_to_boot):
                             # logger.debug("acceptable tags: %s - %s", form_word, form_tags)
                             # related words
                             if set(form_tags).intersection(related_lemma_tags):
-                                logger.debug(
-                                    "related word tags %s: %s", form_word, form_tags
-                                )
+                                # logger.debug(
+                                #     "related word tags %s: %s", form_word, form_tags
+                                # )
                                 if (
                                     "relational" in form_tags
                                     and "adjective" in form_tags
@@ -317,7 +317,7 @@ class ReturnedLemmaProcessor:
                                     "rel_form": None,
                                     "rel_type": None,
                                 }
-                                if verbal_aspect == "perfective":  # type:ignore
+                                if verbal_aspect == "perfective":  # type: ignore
                                     imperfective_form = [
                                         x.word
                                         for x in entry.forms
@@ -329,7 +329,7 @@ class ReturnedLemmaProcessor:
                                         EnumRelLemType.IMPERFECTIVE_PAIR_OF
                                     )
                                     sorted_data["rel_lems"].append(verb_pair_dict)
-                                elif verbal_aspect == "imperfective":  # type:ignore
+                                elif verbal_aspect == "imperfective":  # type: ignore
                                     perfective_form = [
                                         x.word
                                         for x in entry.forms
@@ -451,7 +451,7 @@ class ReturnedLemmaProcessor:
             lemma_dict_chars = self._map_lem_chars(pos.value, lemma_dict_tags)  # type: ignore
             # logger.debug("lemma_dict_chars: %s", lemma_dict_chars)
             lemma_dict = lemma_dict | lemma_dict_chars
-            logger.debug("lemma_dict: %s", lemma_dict)
+            # logger.debug("lemma_dict: %s", lemma_dict)
 
             # add lemma_dict to the data
             sorted_data["lemmas"].append(lemma_dict)

@@ -35,4 +35,4 @@ class Settings(BaseSettings):
         return f"postgresql://{self.DB_USER}:{self.DB_PW.get_secret_value()}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
 # Instantiate the settings once for the entire application
-settings = Settings()
+settings = Settings() # type: ignore

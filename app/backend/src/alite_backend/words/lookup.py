@@ -51,7 +51,7 @@ class LookupFDAPI:
     ) -> Dict[str, Any] | None:
         # check if the cache file exists and is not empty
         # cache file for init vocab to reduce API calls
-        logger.debug("Cache loc: %s", cache_loc)
+        # logger.debug("Cache loc: %s", cache_loc)
         if os.path.exists(cache_loc):
             if os.path.getsize(cache_loc) > 0:
                 with open(cache_loc, "r") as f:

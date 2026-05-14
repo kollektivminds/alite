@@ -139,13 +139,21 @@ class EnumLessListType(str, enum.Enum):
     COURSE = "course"
     USER = "user"
 
+
 class EnumUserRole(str, enum.Enum):
     INSTRUCTOR = "instructor"
     STUDENT = "student"
-    
+
+
 class EnumLookupStatus(str, enum.Enum):
     UNLINKED = "unlinked"
     LINKED = "linked"
+
+class EnumExerciseType(str, enum.Enum):
+    GRAM_PROPS_ANALYZE = "gram_props_analyze"
+    GRAM_PROPS_SYNTHESIZE = "gram_props_synthesize"
+    LEMMA_RELATIONSHIP = "lemma_relationship"
+    FLASHCARD = "flashcard"
 
 class LemmaInLessonList(Base):
     __tablename__ = "lems_in_less_lists"
@@ -154,8 +162,8 @@ class LemmaInLessonList(Base):
     less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    #lemma_in = relationship("Lemma", back_populates="in_less_list")
-    #in_less_list = relationship("LessonList", back_populates="has_lemma")
+    # lemma_in = relationship("Lemma", back_populates="in_less_list")
+    # in_less_list = relationship("LessonList", back_populates="has_lemma")
 
 
 # --- Word Primary Tables ---
@@ -186,7 +194,7 @@ class Lemma(Base):
     # verb transivity/reflexivity
     verb_trans_refl = Column(Enum(EnumVerbTransRefl), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     # A single lemma has many inflected word forms
     lemma_word_form = relationship("WordForm", back_populates="word_form_lemma")
     # Relationship for lemma defintion
@@ -204,7 +212,9 @@ class Lemma(Base):
         foreign_keys="[LemmaRelation.target_id]",
         back_populates="target_lemma",
     )
-    in_less_list = relationship("LessonList", secondary="lems_in_less_lists", back_populates="has_lemma")
+    in_less_list = relationship(
+        "LessonList", secondary="lems_in_less_lists", back_populates="has_lemma"
+    )
     # Relationships for study results
     # lemma_crws = relationship(
     #     "ConjugationResultWordStudied", back_populates="crws_lemma"
@@ -225,7 +235,7 @@ class Lexeme(Base):
     lex_text = Column(String(50), nullable=False, unique=True)
     lex_text_clean = Column(String(50), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     lexeme_word_form = relationship("WordForm", back_populates="word_form_lexicon")
 
 
@@ -255,7 +265,7 @@ class GramProp(Base):
     part_type = Column(Enum(EnumParticipleType), nullable=True)
     part_voice = Column(Enum(EnumParticipleVoice), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     # Relationship for a word form's grammatical properties
     gram_word_form = relationship("WordForm", back_populates="word_form_gram")
     # Unique set of grammatical properties to prevent duplicates
@@ -287,7 +297,7 @@ class WordForm(Base):
     lex_id = Column(Integer, ForeignKey("lexicon.id"), nullable=False)
     gram_id = Column(Integer, ForeignKey("gram_props.id"), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     word_form_lemma = relationship("Lemma", back_populates="lemma_word_form")
     word_form_lexicon = relationship("Lexeme", back_populates="lexeme_word_form")
     word_form_gram = relationship("GramProp", back_populates="gram_word_form")
@@ -315,7 +325,7 @@ class Example(Base):
     id = Column(Integer, primary_key=True)
     ex_text = Column(String, unique=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     example_definition = relationship(
         "DefinitionExample", back_populates="example_definition"
     )
@@ -352,8 +362,9 @@ class LemmaRelation(Base):
         "Lemma", foreign_keys=[target_id], back_populates="related_from"
     )
 
+
 class LookupQueue(Base):
-    
+
     __tablename__ = "lookup_queue"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -361,8 +372,11 @@ class LookupQueue(Base):
     target_id = Column(Integer, ForeignKey("lemmas.id"), nullable=True)
     source_id = Column(Integer, ForeignKey("lemmas.id"), nullable=True)
     rel_type = Column(Enum(EnumRelLemType), nullable=False)
-    lookup_status = Column(Enum(EnumLookupStatus), nullable=False, default=EnumLookupStatus.UNLINKED)
+    lookup_status = Column(
+        Enum(EnumLookupStatus), nullable=False, default=EnumLookupStatus.UNLINKED
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
 
 class LemmaDefinition(Base):
     """Junction table for lemma definitions."""
@@ -421,7 +435,9 @@ class LessonList(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     in_module = relationship("LessonListInModule", back_populates="less_list_in")
-    has_lemma = relationship("Lemma", secondary="lems_in_less_lists", back_populates="in_less_list")
+    has_lemma = relationship(
+        "Lemma", secondary="lems_in_less_lists", back_populates="in_less_list"
+    )
 
 
 # --- Secondary Organization Tables ---
@@ -474,6 +490,7 @@ class UserInGroup(Base):
 
     group_user = relationship("User", back_populates="in_group")
     user_group = relationship("UserGroup", back_populates="users")
+
 
 """
 # --- Questions, Sessions, and Responses ---

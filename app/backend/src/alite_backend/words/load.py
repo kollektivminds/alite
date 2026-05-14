@@ -322,7 +322,7 @@ class Loader:
 
         # create related lemmas
         for relation in payload.rel_lems:
-            logger.debug("related lem: %s", relation)
+            # logger.debug("related lem: %s", relation)
             rel_form = relation.rel_form
             # logger.debug("rel form: %s", rel_form)
             # relation source id
@@ -331,20 +331,17 @@ class Loader:
 
             # new relation
             target_rel_params = {"lem_text": rel_form}
-            target_rel_params = schemas.LemmaSearchParams(**target_rel_params) # type: ignore
+            target_rel_params = schemas.LemmaSearchParams(**target_rel_params)  # type: ignore
             target_rel = crud_lemma.search(db=self.db, params=target_rel_params)
-            logger.debug("target rel: %s", target_rel)
-            filters = {
-                "rel_type": relation.rel_type,
-                "source_id": source_id
-            }
-            
+            # logger.debug("target rel: %s", target_rel)
+            filters = {"rel_type": relation.rel_type, "source_id": source_id}
+
             if target_rel:
                 # logger.debug("target rel found: %s", target_rel)
 
                 filters["target_id"] = target_rel[0].id
                 relation_in = schemas.LemRelCreate(**filters)
-                
+
                 new_lem_rel = crud_lem_rel.get_or_create(
                     db=self.db, obj_in=relation_in, filter_kwargs=filters
                 )

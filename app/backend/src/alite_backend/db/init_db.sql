@@ -47,53 +47,9 @@ DROP TABLE IF EXISTS lexicon;
 
 DROP TABLE IF EXISTS lemmas;
 
--- DROP TYPE IF EXISTS adjective_type_enum
--- DROP TYPE IF EXISTS conj_gender_enum
--- DROP TYPE IF EXISTS conj_person_enum
--- DROP TYPE IF EXISTS gram_tense_enum
--- DROP TYPE IF EXISTS pos_enum
--- DROP TYPE IF EXISTS part_type_enum
--- DROP TYPE IF EXISTS part_voice_enum
--- DROP TYPE IF EXISTS subst_case_enum
--- DROP TYPE IF EXISTS verb_type_enum
--- DROP TYPE IF EXISTS verb_mood_enum
--- DROP TYPE IF EXISTS verb_aspect_enum
--- DROP TYPE IF EXISTS verb_trans_refl_enum
--- CREATE TYPE adjective_type_enum AS ENUM ('comparative', 'superlative')
--- CREATE TYPE conj_gender_enum AS ENUM ('masculine', 'neuter', 'feminine', 'plural')
--- CREATE TYPE conj_person_enum AS ENUM ('first-person', 'second-person', 'third-person')
--- CREATE TYPE gram_tense_enum AS ENUM ('past', 'present', 'future')
--- CREATE TYPE pos_enum AS ENUM (
---     'adjective',
---     'adverb',
---     'com',
---     'interjection',
---     'noun',
---     'participle',
---     'particle',
---     'preposition',
---     'pronoun',
---     'verb',
---     'unknown'
--- )
--- CREATE TYPE part_type_enum AS ENUM ('adjectival', 'adverbial')
--- CREATE TYPE part_voice_enum AS ENUM ('active', 'passive')
--- CREATE TYPE subst_case_enum AS ENUM (
---     'nominative',
---     'genitive',
---     'accusative',
---     'dative',
---     'instrumental',
---     'prepositional',
---     'locative',
---     'vocative',
---     'partitive'
--- )
--- CREATE TYPE verb_type_enum AS ENUM ('type-I', 'type-II')
--- CREATE TYPE verb_mood_enum AS ENUM ('indicative', 'imperative')
--- CREATE TYPE verb_aspect_enum AS ENUM ('imperfective', 'perfective', 'dual')
--- CREATE TYPE verb_trans_refl_enum AS ENUM ('intransitive', 'transitive', 'reflexive')
 CREATE EXTENSION IF NOT EXISTS citext;
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 --
 -- WORDS
@@ -105,16 +61,16 @@ CREATE TABLE
         -- ALL / MOST WILL HAVE
         id SERIAL PRIMARY KEY,
         entry_key UUID NOT NULL UNIQUE,
-        lem_text VARCHAR(50) NOT NULL,
-        lem_canon VARCHAR(50),
-        pos VARCHAR(50) NOT NULL,
+        lem_text VARCHAR(48) NOT NULL,
+        lem_canon VARCHAR(48),
+        pos VARCHAR(48) NOT NULL,
         -- SPARSE
-        noun_gender VARCHAR(50),
+        noun_gender VARCHAR(48),
         subst_animacy BOOLEAN,
-        verb_aspect VARCHAR(50),
+        verb_aspect VARCHAR(48),
         verb_conj VARCHAR(16), -- ZALIZNIAK'S CLASSIFICATION
         verb_type VARCHAR(8), -- TYPE-I / TYPE-II FROM verb_conj
-        verb_trans_refl VARCHAR(50),
+        verb_trans_refl VARCHAR(48),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT unique_lemma UNIQUE (id, entry_key)
     );
@@ -124,8 +80,8 @@ CREATE TABLE
 CREATE TABLE
     lexicon (
         id SERIAL PRIMARY KEY,
-        lex_text VARCHAR(50) NOT NULL UNIQUE,
-        lex_text_clean VARCHAR(50) NOT NULL,
+        lex_text VARCHAR(48) NOT NULL UNIQUE,
+        lex_text_clean VARCHAR(48) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -135,20 +91,20 @@ CREATE TABLE
     gram_props (
         id SERIAL PRIMARY KEY,
         -- GENERAL GRAMMAR
-        gram_tense VARCHAR(50),
+        gram_tense VARCHAR(48),
         irregular BOOLEAN,
-        gram_num VARCHAR(50),
+        gram_num VARCHAR(48),
         -- VERBS
-        conj_gender VARCHAR(50),
-        conj_person VARCHAR(50),
-        verb_mood VARCHAR(50),
+        conj_gender VARCHAR(48),
+        conj_person VARCHAR(48),
+        verb_mood VARCHAR(48),
         -- SUBSTANTIVES (NOUNS, ADJECTIVES, NUMERALS, PARTICIPLES)
-        subst_case VARCHAR(50),
-        alt_adjv_type VARCHAR(50),
-        alt_noun_type VARCHAR(50),
+        subst_case VARCHAR(48),
+        alt_adjv_type VARCHAR(48),
+        alt_noun_type VARCHAR(48),
         -- PARTICIPLES
-        part_type VARCHAR(50),
-        part_voice VARCHAR(50),
+        part_type VARCHAR(48),
+        part_voice VARCHAR(48),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT unique_grammar UNIQUE (
             gram_tense,
@@ -204,7 +160,7 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         pron_text TEXT NOT NULL,
         pron_tags TEXT,
-        pron_type VARCHAR(50) NOT NULL,
+        pron_type VARCHAR(48) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -218,7 +174,7 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         source_id INT NOT NULL,
         target_id INT NOT NULL,
-        rel_type VARCHAR(16) NOT NULL,
+        rel_type VARCHAR(32) NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT id_source FOREIGN KEY (source_id) REFERENCES lemmas (id) ON DELETE CASCADE,
         CONSTRAINT id_target FOREIGN KEY (target_id) REFERENCES lemmas (id) ON DELETE CASCADE
@@ -229,7 +185,7 @@ CREATE TABLE
 CREATE TABLE
     lookup_queue (
         id SERIAL PRIMARY KEY,
-        target_lem VARCHAR(50) NOT NULL,
+        target_lem VARCHAR(48) NOT NULL,
         target_id INT,
         source_id INT NOT NULL,
         rel_type VARCHAR(48) NOT NULL,
@@ -269,9 +225,9 @@ CREATE TABLE
 CREATE TABLE
     users (
         id SERIAL PRIMARY KEY,
-        username VARCHAR(50) NOT NULL UNIQUE,
+        username VARCHAR(48) NOT NULL UNIQUE,
         alias VARCHAR(25),
-        user_role VARCHAR(50),
+        user_role VARCHAR(48),
         email citext,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT email_format_check CHECK (email ~* '^\\S+@\\S+\\.\\S+$')
@@ -280,7 +236,7 @@ CREATE TABLE
 CREATE TABLE
     user_groups (
         id SERIAL PRIMARY KEY,
-        group_name VARCHAR(50),
+        group_name VARCHAR(48),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -311,7 +267,7 @@ CREATE TABLE
 CREATE TABLE
     lessons_lists (
         id SERIAL PRIMARY KEY,
-        title VARCHAR(50) NOT NULL UNIQUE,
+        title VARCHAR(48) NOT NULL UNIQUE,
         topic TEXT,
         owner_id INT,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

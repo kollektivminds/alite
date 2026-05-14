@@ -5,7 +5,7 @@ FROM node:23.11.0
 WORKDIR /app
 
 # Copy package management files
-COPY app/frontend/package.json app/frontend/pnpm-lock.yaml ./
+COPY /frontend/package.json /frontend/pnpm-lock.yaml ./
 
 # Install pnpm and dependencies
 RUN npm install -g pnpm && pnpm install

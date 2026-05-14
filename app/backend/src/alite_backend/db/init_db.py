@@ -182,11 +182,10 @@ def init_database():
 
     all_words = get_all_words()
 
-    problem_words = ["ладно", "летом", "граница", "дождь"]
     print(f"a total of {str(len(all_words))} words, of which\
             {str(len(set(all_words)))} are unique")
 
-    rand_samp = random.sample(all_words, 51)
+    rand_samp = random.sample(all_words, 511)
 
     logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
 

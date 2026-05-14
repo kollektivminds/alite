@@ -20,6 +20,7 @@ from alite_backend.db.models import (
     EnumLookupStatus,
     EnumPronType,
     EnumUserRole,
+    EnumExerciseType,
 )
 from pydantic import (
     BaseModel,
@@ -666,3 +667,54 @@ class LemInLessListUpdate(LemInLessListBase):
 
 class LemInLessListReturn(LemInLessListUpdate):
     created_at: datetime
+
+
+#
+# --- Services Schema ---
+#
+
+# Exercises
+
+
+class ContextIdDict(BaseModel):
+    less_list_ids: List[int]
+    mod_ids: List[int]
+
+
+class ExerciseRequest(BaseModel):
+    context_ids: Optional[ContextIdDict]
+    exercise_type: EnumExerciseType
+    question_count: int = 10
+    distractor_count: int = 3
+    target_props: Optional[Dict[str, Any]] = None
+
+
+class FlashcardResponse(BaseModel):
+    exercise_type: EnumExerciseType
+    front_text: str
+    back_text: str
+
+
+class MultipleChoiceResponse(BaseModel):
+    exercise_type: EnumExerciseType
+    prompt: str
+    key: str
+    distractors: List[str]
+
+
+class FillInTheBlankResponse(BaseModel):
+    exercise_type: EnumExerciseType
+    sentence_parts: List[str]
+    target_lemma: str
+
+
+ExerciseItem = Union[
+    FlashcardResponse,
+    MultipleChoiceResponse,
+    FillInTheBlankResponse
+    ]
+
+
+class ExerciseResponse(BaseModel):
+    total_questions: int
+    response_data: List[ExerciseItem]

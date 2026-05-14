@@ -1,27 +1,44 @@
 from fastapi import APIRouter, Depends, HTTPException
+from typing import List
 from sqlalchemy.orm import Session
-from alite_backend.db import schemas
+from alite_backend.db import schemas, models
 from alite_backend.db.crud import orgi_crud
 from alite_backend.api import deps
 
 router = APIRouter()
 
-# @router.post("/", response_model=schemas.SentenceResponse) # Uses your schemas.py
-# def create_sentence(
-#     sentence_in: schemas.SentenceCreate,
-#     db: Session = Depends(deps.get_db),
-#     current_user = Depends(deps.get_current_active_user)
-# ):
-#     """Create a new Russian sentence entry for analysis."""
-#     return sentence_data.create(db=db, obj_in=sentence_in) # Calls your sentence_data.py
 
-# @router.get("/{sentence_id}", response_model=schemas.SentenceResponse)
-# def read_sentence(
-#     sentence_id: int, 
-#     db: Session = Depends(deps.get_db)
-# ):
-#     """Fetch a specific sentence by ID."""
-#     sentence = sentence_data.get(db=db, id=sentence_id)
-#     if not sentence:
-#         raise HTTPException(status_code=404, detail="Sentence not found")
-#     return sentence
+@router.get("/{module_id}", response_model=schemas.ModuleReturn)
+def read_module(module_id: int, db: Session = Depends(deps.get_db)):
+    """Fetch a specific sentence by ID."""
+    module = orgi_crud.crud_module.get(db=db, id=module_id)
+    if not module:
+        raise HTTPException(status_code=404, detail="Module not found")
+    return module
+
+
+@router.get("/{module_id}/lemmas", response_model=List[schemas.LemmaDetailsReturn])
+def get_lemmas_for_lesson(module_id: int, db: Session = Depends(deps.get_db)):
+    # 1. Check if the module actually exists
+    module = db.query(models.Module).filter(models.Module.id == module_id).first()
+    if not module:
+        raise HTTPException(status_code=404, detail="Module not found")
+    
+    lemmas = (
+        db.query(models.Lemma)
+        # join Lemma to its Lesson junction table
+        .join(
+            models.LemmaInLessonList, models.Lemma.id == models.LemmaInLessonList.lem_id
+        )
+        # join the Lesson junction table to the Module junction table
+        .join(
+            models.LessonListInModule,
+            models.LessonListInModule.less_list_id
+            == models.LemmaInLessonList.less_list_id,
+        )
+        # filter by the requested Module ID
+        .filter(models.LessonListInModule.mod_id == module_id)
+        # optional: Add .distinct() in case a lemma appears in multiple lessons within the same module
+        .distinct().all()
+    )
+    return lemmas
