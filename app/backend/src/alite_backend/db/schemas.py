@@ -1,7 +1,7 @@
 # schemas.py
 # Pydantic models for API data validation and response shaping.
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 from alite_backend.db.models import (
     EnumAltAdjvType,
     EnumAltNounType,
@@ -222,7 +222,7 @@ class UnprocessedWikiWord(BaseModel):
     verb_aspect: Optional[str] = None
     verb_conj: Optional[str] = None
     verb_conj_type: Optional[int] = None
-    verb_pair: Optional[Union[str, List[str]]] = None
+    verb_pair: Optional[str | List[str]] = None
     verb_trans_refl: Optional[Tuple[Optional[bool], Optional[bool]]] = None
 
     class Config:
@@ -675,18 +675,40 @@ class LemInLessListReturn(LemInLessListUpdate):
 
 # Exercises
 
+# Exercise Requests
 
-class ContextIdDict(BaseModel):
+
+class PromptContextDict(BaseModel):
     less_list_ids: List[int]
     mod_ids: List[int]
 
 
+class UserContextDict(BaseModel):
+    user_id: int
+
+
 class ExerciseRequest(BaseModel):
-    context_ids: Optional[ContextIdDict]
+    context_ids: Optional[PromptContextDict]
     exercise_type: EnumExerciseType
     question_count: int = 10
     distractor_count: int = 3
     target_props: Optional[Dict[str, Any]] = None
+
+
+# Raw Exercise Responses
+
+
+class KeysReponse(BaseModel):
+    item_id: int
+    key_text: str | Dict[str, Any]
+
+
+class DistractorsResponse(BaseModel):
+    item_id: int
+    dist_text: str | Dict[str, Any]
+
+
+# Processed Exercise Responses
 
 
 class FlashcardResponse(BaseModel):
@@ -698,23 +720,36 @@ class FlashcardResponse(BaseModel):
 class MultipleChoiceResponse(BaseModel):
     exercise_type: EnumExerciseType
     prompt: str
-    key: str
-    distractors: List[str]
+    item_id: int
+    options: List[str]
 
 
-class FillInTheBlankResponse(BaseModel):
+class ClozeResponse(BaseModel):
     exercise_type: EnumExerciseType
     sentence_parts: List[str]
     target_lemma: str
 
 
-ExerciseItem = Union[
-    FlashcardResponse,
-    MultipleChoiceResponse,
-    FillInTheBlankResponse
-    ]
+ExerciseItem = FlashcardResponse | MultipleChoiceResponse | ClozeResponse
 
 
 class ExerciseResponse(BaseModel):
     total_questions: int
     response_data: List[ExerciseItem]
+
+
+# Item Response & Verification
+
+
+class AnswerSubmission(BaseModel):
+    session_id: int
+    question_id: int
+    selected_option: str
+    response_time_ms: int
+
+
+class AnswerResult(BaseModel):
+    is_correct: bool
+    correct_answer: str
+    attempts_remaining: int
+    explanation: Optional[str] = None

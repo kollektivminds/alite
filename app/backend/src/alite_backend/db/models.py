@@ -1,3 +1,4 @@
+from typing import Optional
 import enum
 from sqlalchemy import (
     Column,
@@ -456,6 +457,58 @@ class LessonListInModule(Base):
     in_module = relationship("Module", back_populates="has_less_list")
 
 
+# --- Sentence Tables ---
+
+
+class Sentence(Base):
+    ___tablename__ = "sentences"
+    
+    id = Column(Integer, primary_key=True)
+    raw_text = Column(Text, nullable=False)
+    
+    tokens = relationship(
+        "SentenceToken", 
+        back_populates="sentence",
+        order_by="SentenceWord.position_index", # Guarantees order when fetched!
+        cascade="all, delete-orphan"
+    )
+    
+class SentenceToken(Base):
+    """Junction table mapping a WordForm to a specific position in a Sentence."""
+    __tablename__ = "sentence_words"
+
+    id = Column(Integer, primary_key=True)
+    sentence_id = Column(Integer, ForeignKey("sentences.id", ondelete="CASCADE"), nullable=False)
+    word_form_id = Column(Integer, ForeignKey("word_forms.id"), nullable=False)
+    
+    position_index = Column(Integer, nullable=False)
+    
+    # sentence-specific orthography
+    # as word form in DB might be "книга", but in the sentence it might be "Книга,"
+    is_capitalized = Column(Boolean, default=False)
+    punctuation_after = Column(String(5), nullable=True) # e.g., ",", ".", "?", "!"
+    punctuation_before = Column(String(5), nullable=True) # e.g., "«", "(", "-"
+
+    # Relationships
+    sentence = relationship("Sentence", back_populates="tokens")
+    word_form = relationship("WordForm")
+
+
+# --- Sentence Organization Tables ---
+
+
+class Document(Base):
+    __tablename__ = "documents"
+    
+    id = Column(Integer, primary_key=True)
+    author = Column(String(48), nullable=False)
+    date = Column(DateTime, nullable=True)
+    source = Column(Text, nullable=False)
+    title = Column(String(48), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    sentences = relationship("Sentence", back_populates="in_document")
+
 # --- Users ---
 
 
@@ -469,6 +522,7 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     in_group = relationship("UserInGroup", back_populates="group_user")
+    exercises = relationship("Items", back_populates="user")
 
 
 class UserGroup(Base):
@@ -492,7 +546,6 @@ class UserInGroup(Base):
     user_group = relationship("UserGroup", back_populates="users")
 
 
-"""
 # --- Questions, Sessions, and Responses ---
 
 
@@ -501,51 +554,54 @@ class Item(Base):
 
     id = Column(Integer, primary_key=True)
     item_type = Column(String(50), nullable=False)
-    item_text = Column(Text, nullable=False)
-    choices = Column(JSON)  # Using JSONB for flexibility
-    correct_answer = Column(Text, nullable=False)
-    lemma_id = Column(Integer, ForeignKey("lemmas.id"))
+    prompt = Column(Text, nullable=False)
+    options = Column(JSON,  nullable=False)  # Using JSONB for flexibility
+    key = Column(Text, nullable=False)
+    lemma_id = Column(Integer, ForeignKey("lemmas.id"), nullable=True)
+    # TODO: set this up to start at load
+    start_time = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    reponses = relationship("ItemResponse", back_populates="item")
 
-class QuestionSession(Base):
-    __tablename__ = "question_sessions"
+class Exercise(Base):
+    __tablename__ = "exercises"
 
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    session_start_time = Column(DateTime(timezone=True), server_default=func.now())
-    session_end_time = Column(DateTime(timezone=True))
+    # TODO: set this up to start at load
+    start_time = Column(DateTime(timezone=True), server_default=func.now())
+    end_time = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    user = relationship("User")
-    responses = relationship("StudentResponse", back_populates="session")
+    user = relationship("User", back_populates="exercises")
+    responses = relationship("ItemResponse", back_populates="exercise")
 
 
-class StudentResponse(Base):
+class ItemResponse(Base):
     __tablename__ = "student_responses"
 
     id = Column(Integer, primary_key=True)
-    session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
+    ex_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
     item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
-    student_answer = Column(Text)
-    is_correct = Column(Boolean)
+    student_answer = Column(Text, nullable=False)
     response_time_ms = Column(Integer)
     submitted_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    session = relationship("QuestionSession", back_populates="responses")
-    question = relationship("Question")
-
-
-class StudentDecision(Base):
-    __tablename__ = "student_decisions"
-
+    exercise = relationship("Exercise", back_populates="responses")
+    item = relationship("Item", back_populates="responses")
+    
+class ResponseResult(Base):
+    __tablename__ = "response_results"
+    
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    decision_type = Column(String(100), nullable=False)
-    decision_value = Column(Text, nullable=False)
-    made_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    user = relationship("User")
+    is_correct = Column(Boolean, nullable=False)
+    correct_answer = Column(String, nullable=True)
+    attempts_remaining = Column(Integer, nullable=True)
+    message = Column(Optional[str], nullable=True))
 
 
+"""
 class Skill(Base):
     __tablename__ = "skills"
 
@@ -589,4 +645,4 @@ class UserExperiment(Base):
     assigned_at = Column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User")
- """
+"""

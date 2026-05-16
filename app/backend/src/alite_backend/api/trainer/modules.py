@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
+import logging
 from sqlalchemy.orm import Session
 from alite_backend.db import schemas, models
 from alite_backend.db.crud import orgi_crud
@@ -7,6 +8,7 @@ from alite_backend.api import deps
 
 router = APIRouter()
 
+logger = logging.getLogger(__name__)
 
 @router.get("/{module_id}", response_model=schemas.ModuleReturn)
 def read_module(module_id: int, db: Session = Depends(deps.get_db)):

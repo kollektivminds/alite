@@ -1,11 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
+import logging
 from typing import List
 from sqlalchemy.orm import Session
 from alite_backend.db import schemas, models
 from alite_backend.db.crud import orgi_crud, word_crud
 from alite_backend.api import deps
 
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
+
 
 # @router.post("/", response_model=schemas.SentenceResponse) # Uses your schemas.py
 # def create_sentence(
