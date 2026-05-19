@@ -21,6 +21,7 @@ from alite_backend.db.models import (
     EnumPronType,
     EnumUserRole,
     EnumExerciseType,
+    EnumWordItemType,
 )
 from pydantic import (
     BaseModel,
@@ -30,6 +31,7 @@ from pydantic import (
     UUID5,
     ConfigDict,
     model_validator,
+    JsonValue,
 )
 
 #
@@ -669,6 +671,50 @@ class LemInLessListReturn(LemInLessListUpdate):
     created_at: datetime
 
 
+# Documents
+
+# Sentences
+
+# Sentences in Documents
+
+# Words in Sentences
+
+# Items
+
+
+class ItemBase(BaseModel):
+    item_type: EnumWordItemType
+    prompt: str
+    settings: JsonValue
+    key: str
+    distractors: Optional[List[str]]
+
+
+class ItemCreate(ItemBase):
+    pass
+
+
+class ItemUpdate(ItemBase):
+    id: int
+
+
+class ItemReturn(ItemUpdate):
+    start_time: datetime
+    finish_time: datetime
+    created_at: datetime
+
+
+# Exercise
+
+
+# Item Response
+
+
+# Response
+
+
+# Response Result
+
 #
 # --- Services Schema ---
 #
@@ -678,18 +724,18 @@ class LemInLessListReturn(LemInLessListUpdate):
 # Exercise Requests
 
 
-class PromptContextDict(BaseModel):
-    less_list_ids: List[int]
-    mod_ids: List[int]
+class ExerciseContext(BaseModel):
+    less_list_ids: Optional[List[int]]
+    mod_ids: Optional[List[int]]
 
 
-class UserContextDict(BaseModel):
+class UserContext(BaseModel):
     user_id: int
-
+    
 
 class ExerciseRequest(BaseModel):
-    context_ids: Optional[PromptContextDict]
-    exercise_type: EnumExerciseType
+    context: ExerciseContext
+    exercise_type: EnumExerciseType | List[EnumExerciseType]
     question_count: int = 10
     distractor_count: int = 3
     target_props: Optional[Dict[str, Any]] = None

@@ -7,8 +7,8 @@ class NounCaseStrategy(BaseExerciseStrategy):
         # Query: WordForms where Pos=Noun, Case IN (Inst, Dat), Lesson IN (10-15)
         keys_dict = {}
         
-        db = 
-        query = db.
+        db = super().db
+        query = db.query
         return keys_dict
         
     def fetch_distractors(self, keys, prompt_criteria, prompt_context):

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 import enum
 from sqlalchemy import (
     Column,
@@ -18,7 +18,6 @@ from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY
 
-# This is the base class which our ORM models will inherit from
 Base = declarative_base()
 
 
@@ -150,21 +149,86 @@ class EnumLookupStatus(str, enum.Enum):
     UNLINKED = "unlinked"
     LINKED = "linked"
 
+
 class EnumExerciseType(str, enum.Enum):
-    GRAM_PROPS_ANALYZE = "gram_props_analyze"
-    GRAM_PROPS_SYNTHESIZE = "gram_props_synthesize"
-    LEMMA_RELATIONSHIP = "lemma_relationship"
+    CLOZE = "cloze"
+    MCQ = "mcq"
     FLASHCARD = "flashcard"
 
-class LemmaInLessonList(Base):
-    __tablename__ = "lems_in_less_lists"
 
-    lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
-    less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+class EnumWordItemType(str, enum.Enum):
+    # --- LEMMA + GENERAL ---
+    # lemma <-> pos
+    LEM_TO_POS = "lem_to_pos"  # "What part of speech is X?" (MCQ)
+    POS_TO_LEM = "pos_to_lem"  # "Which lemma(s) is/are X?" (MCQ)
+    # lemma <-> definition
+    LEM_TO_DEF = "lem_to_def"  # "What is the definition of X?" (MCQ)
+    DEF_TO_LEM = (
+        "def_to_lem"  # "Which lemma(s) fit the following definition: X?" (MCQ/Cloze)
+    )
+    # lemma <-> pronunciation
+    LEM_TO_PRON = "lem_to_pron"  # "What is the pronunciation of X?" (MCQ)
+    PRON_TO_LEM = "pron_to_lem"  # "What is the correct Russian spelling of the word pronounced 'X'?" (MCQ/Cloze)
+    # --- INFLECTIONAL GRAMMAR ---
+    # lemma + lexeme <-> gram_prop
+    LEM_LEX_TO_GRAM_PROP = (
+        "lem_lex_to_gram_prop"  # "What is the grammar of Y in relation to X?" (MCQ)
+    )
+    GRAM_PROP_TO_LEM_LEX = (
+        "gram_prop_to_lem_lex"  # "Which pair is an example of X?" (MCQ/Cloze)
+    )
+    # lemma + gram_prop <-> lexeme
+    LEM_GRAM_PROP_TO_LEX = (
+        "lem_gram_prop_to_lex"  # "What is the Y form of X?" (MCQ/Cloze)
+    )
+    LEX_TO_LEM_GRAM_PROP = (
+        "lex_to_lem_gram_prop"  # "What is the lemma and form of X?" (MCQ)
+    )
+    # --- SUBSTANTIVES ---
+    # lemma (noun) <-> gender
+    LEM_TO_GEND = "lem_to_gender"  # "What gender is X?" (MCQ)
+    GEND_TO_LEM = "gender_to_lem"  # "Which lemma(s) is/are X?" (MCQ)
+    # lemma (noun) <-> animacy (bool)
+    LEM_TO_ANIM = "lem_to_anim"  # "Is X animate or inanimate?" (MCQ)
+    ANIM_TO_LEM = "anim_to_lem"  # "Which lemma(s) is/are in/animate?" (MCQ)
+    # lemma (adjective) <-> comparative / superlative form
+    LEM_TO_ADJV_FORM = "lem_to_adjv_form"  # "What is the Y form of X?" (MCQ)
+    ADJV_FORM_TO_LEM = "adjv_form_to_lem"  # "What is the base form of X?" (MCQ/Cloze)
+    # adjective form <-> adjective type
+    ADJV_FORM_TO_TYPE = "adjv_to_type"  # "What kind of adjective is X?" (MCQ)
+    TYPE_TO_ADJV_FORM = "type_to_adjv"  # "Which of the following adjectives is/are an example of X?" (MCQ)
+    # participle <-> type
+    PART_TO_TYPE = "part_to_type"  # "What type of participle is X?" (MCQ)
+    TYPE_TO_PART = "type_to_part"  # "What form is type X?" (MCQ)
+    # --- VERBS ----
+    # lemma (verb) <-> verb type
+    LEM_TO_VTYP = "lem_to_vtyp"  # "What type of verb is X?" (MCQ)
+    VTYP_TO_LEM = "vtyp_to_lem"  # "Which lemma(s) is/are type X?" (MCQ)
+    # lemma <-> verb_trans_refl
+    LEM_TO_VTR = "lem_to_vtr"  # "Is X transitive, reflexive, or neither?" (MCQ)
+    VTR_TO_LEM = "vtr_to_lem"  # "Which lemma(s) is/are X?" (MCQ/Cloze)
+    # pronoun + infinitive verb <-> lexeme (verb conjugation)
+    PRON_INFV_TO_VERB_CONJ = (
+        "pron_infv_to_verb_conj"  # "What is the X form of Y?" (MCQ/Cloze)
+    )
+    VERB_CONJ_TO_PRON_INFV = "verb_conj_to_pron_infv"  # "What form is X?" (MCQ/Cloze)
+    # --- OTHER ---
+    # lemma + lemma <-> lemma relation
+    LEM2_TO_LREL = "lem2_to_lrel"  # "How does X relate to Y?" (MCQ)
+    LREL_TO_LEM2 = (
+        "lrel_to_lem2"  # "Which of the following pairs is an example of X?" (MCQ/Cloze)
+    )
 
-    # lemma_in = relationship("Lemma", back_populates="in_less_list")
-    # in_less_list = relationship("LessonList", back_populates="has_lemma")
+
+class EnumSentItemType(str, enum.Enum):
+    # how to organize these items?
+    pass
+
+
+class EnumItemDifficulty(str, enum.Enum):
+    EASY = "easy"
+    MEDIUM = "medium"
+    DIFFICULT = "difficult"
 
 
 # --- Word Primary Tables ---
@@ -216,6 +280,7 @@ class Lemma(Base):
     in_less_list = relationship(
         "LessonList", secondary="lems_in_less_lists", back_populates="has_lemma"
     )
+    in_item = relationship("Item", secondary="lems_in_items", back_populates="ref_lems")
     # Relationships for study results
     # lemma_crws = relationship(
     #     "ConjugationResultWordStudied", back_populates="crws_lemma"
@@ -444,6 +509,17 @@ class LessonList(Base):
 # --- Secondary Organization Tables ---
 
 
+class LemmaInLessonList(Base):
+    __tablename__ = "lems_in_less_lists"
+
+    lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
+    less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    # lemma_in = relationship("Lemma", back_populates="in_less_list")
+    # in_less_list = relationship("LessonList", back_populates="has_lemma")
+
+
 class LessonListInModule(Base):
     """Junction table for lessons and modules"""
 
@@ -462,34 +538,37 @@ class LessonListInModule(Base):
 
 class Sentence(Base):
     ___tablename__ = "sentences"
-    
+
     id = Column(Integer, primary_key=True)
     raw_text = Column(Text, nullable=False)
-    
+
     tokens = relationship(
-        "SentenceToken", 
+        "SentenceToken",
         back_populates="sentence",
-        order_by="SentenceWord.position_index", # Guarantees order when fetched!
-        cascade="all, delete-orphan"
+        order_by="SentenceToken.position_index",  # Guarantees order when fetched!
+        cascade="all, delete-orphan",
     )
-    
-class SentenceToken(Base):
+
+
+class WordFormInSentence(Base):
     """Junction table mapping a WordForm to a specific position in a Sentence."""
-    __tablename__ = "sentence_words"
+
+    __tablename__ = "word_forms_in_sentences"
 
     id = Column(Integer, primary_key=True)
-    sentence_id = Column(Integer, ForeignKey("sentences.id", ondelete="CASCADE"), nullable=False)
+    sentence_id = Column(
+        Integer, ForeignKey("sentences.id", ondelete="CASCADE"), nullable=False
+    )
     word_form_id = Column(Integer, ForeignKey("word_forms.id"), nullable=False)
-    
-    position_index = Column(Integer, nullable=False)
-    
-    # sentence-specific orthography
-    # as word form in DB might be "книга", but in the sentence it might be "Книга,"
-    is_capitalized = Column(Boolean, default=False)
-    punctuation_after = Column(String(5), nullable=True) # e.g., ",", ".", "?", "!"
-    punctuation_before = Column(String(5), nullable=True) # e.g., "«", "(", "-"
 
-    # Relationships
+    position_index = Column(Integer, nullable=False)
+
+    # context-specific lexeme orthography
+    is_capitalized = Column(Boolean, default=False)
+    punctuation_after = Column(String(5), nullable=True)
+    punctuation_before = Column(String(5), nullable=True)
+
+    # relationships
     sentence = relationship("Sentence", back_populates="tokens")
     word_form = relationship("WordForm")
 
@@ -499,15 +578,16 @@ class SentenceToken(Base):
 
 class Document(Base):
     __tablename__ = "documents"
-    
+
     id = Column(Integer, primary_key=True)
     author = Column(String(48), nullable=False)
     date = Column(DateTime, nullable=True)
     source = Column(Text, nullable=False)
     title = Column(String(48), nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     sentences = relationship("Sentence", back_populates="in_document")
+
 
 # --- Users ---
 
@@ -553,16 +633,36 @@ class Item(Base):
     __tablename__ = "items"
 
     id = Column(Integer, primary_key=True)
-    item_type = Column(String(50), nullable=False)
+    item_type = Column(String(48), nullable=False)
     prompt = Column(Text, nullable=False)
-    options = Column(JSON,  nullable=False)  # Using JSONB for flexibility
+    settings = Column(JSON, nullable=False)
     key = Column(Text, nullable=False)
-    lemma_id = Column(Integer, ForeignKey("lemmas.id"), nullable=True)
-    # TODO: set this up to start at load
-    start_time = Column(DateTime(timezone=True), server_default=func.now())
+    distractors = Column(ARRAY(String), nullable=True)
+    difficulty = Column(Enum(EnumItemDifficulty), nullable=True)
+    # TODO: set up to record times
+    start_time = Column(DateTime(timezone=True))
+    finish_time = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
+
     reponses = relationship("ItemResponse", back_populates="item")
+    ref_lems = relationship(
+        "Lemma", secondary="lems_in_items", back_populates="in_item"
+    )
+    in_ex = relationship(
+        "Exercise", secondary="items_in_exercises", back_populates="has_item"
+    )
+
+
+class LemmaInItem(Base):
+    __tablename__ = "lems_in_items"
+
+    item_id = Column(
+        Integer, ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+    )
+    lem_id = Column(
+        Integer, ForeignKey("lemmas.id", ondelete="CASCADE"), primary_key=True
+    )
+
 
 class Exercise(Base):
     __tablename__ = "exercises"
@@ -574,8 +674,20 @@ class Exercise(Base):
     end_time = Column(DateTime(timezone=True))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    has_item = relationship
     user = relationship("User", back_populates="exercises")
     responses = relationship("ItemResponse", back_populates="exercise")
+
+
+class ItemInExercise(Base):
+    __tablename__ = "items_in_exercises"
+
+    item_id = Column(
+        Integer, ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+    )
+    ex_id = Column(
+        Integer, ForeignKey("exercises.id", ondelete="CASCADE"), primary_key=True
+    )
 
 
 class ItemResponse(Base):
@@ -590,15 +702,16 @@ class ItemResponse(Base):
 
     exercise = relationship("Exercise", back_populates="responses")
     item = relationship("Item", back_populates="responses")
-    
+
+
 class ResponseResult(Base):
     __tablename__ = "response_results"
-    
+
     id = Column(Integer, primary_key=True)
     is_correct = Column(Boolean, nullable=False)
     correct_answer = Column(String, nullable=True)
     attempts_remaining = Column(Integer, nullable=True)
-    message = Column(Optional[str], nullable=True))
+    message = Column(String, nullable=True)
 
 
 """

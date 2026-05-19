@@ -17,15 +17,15 @@ class BaseExerciseStrategy(ABC):
         self.db = db_session
         self.context = user_context
 
-    # --- ABSTRACT METHODS (Children MUST implement these) ---
+    # --- ABSTRACT METHODS ---
 
     @abstractmethod
-    def fetch_targets(self, prompt_criteria: dict, limit: int):
+    def fetch_keys(self, prompt_criteria: dict, num_keys: int, limit: int):
         """Fetch the database objects that act as the foundation for the correct answer."""
         pass
 
     @abstractmethod
-    def fetch_distractors(self, target, limit: int) -> list[str]:
+    def fetch_distractors(self, target, num_distractors: int) -> list[str]:
         """Fetch incorrect text options for a specific target."""
         pass
 
@@ -39,13 +39,14 @@ class BaseExerciseStrategy(ABC):
         """Extract the correct answer string from the target object."""
         pass
 
-    # --- CONCRETE METHOD (The Orchestrator) ---
+    # --- CONCRETE METHOD ---
 
     def generate_exercise(
         self,
         user_id: int,
         prompt_criteria: dict,
         question_count: int = 10,
+        key_count: int = 1,
         distractor_count: int = 3,
     ):
         """
@@ -58,15 +59,15 @@ class BaseExerciseStrategy(ABC):
         self.db.flush()
 
         # get the targets using the child's specific logic
-        targets = self.fetch_targets(prompt_criteria, limit=question_count)
+        keys = self.fetch_keys(prompt_criteria=prompt_criteria, num_keys=key_count, limit=question_count)
 
         safe_frontend_items = []
 
-        for target in targets:
+        for key in keys: # type: ignore
             # generate the specific distractors and prompt
-            distractor_texts = self.fetch_distractors(target, limit=distractor_count)
-            correct_text = self.get_correct_answer_text(target)
-            prompt_text = self.format_prompt(target)
+            distractor_texts = self.fetch_distractors(key, num_distractors=distractor_count)
+            correct_text = self.get_correct_answer_text(key)
+            prompt_text = self.format_prompt(key)
 
             # combine and shuffle the options
             all_options = distractor_texts + [correct_text]
@@ -76,9 +77,9 @@ class BaseExerciseStrategy(ABC):
             item_record = models.Item(
                 item_type=prompt_criteria.get("exercise_type", "multiple_choice"),
                 prompt=prompt_text,
-                options=all_options,  # Stored as JSON
+                options=all_options,
                 key=correct_text, 
-                lemma_id=target.lem_id if hasattr(target, "lem_id") else None,
+                lemma_id=key.lem_id if hasattr(key, "lem_id") else None,
             )
             self.db.add(item_record)
             self.db.flush()
@@ -96,7 +97,7 @@ class BaseExerciseStrategy(ABC):
         self.db.commit()
 
         return {
-            "session_id": session_record.id,
+            "session_id": exercise_record.id,
             "total_questions": len(safe_frontend_items),
             "items": safe_frontend_items,
         }
