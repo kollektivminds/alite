@@ -20,8 +20,9 @@ from alite_backend.db.models import (
     EnumLookupStatus,
     EnumPronType,
     EnumUserRole,
-    EnumExerciseType,
+    EnumItemFormat,
     EnumWordItemType,
+    EnumItemDifficulty
 )
 from pydantic import (
     BaseModel,
@@ -348,7 +349,7 @@ class GramPropBase(BaseModel):
 class GramPropCreate(GramPropBase):
     gram_tense: Optional[str] = None
     gram_num: Optional[str] = None
-    conj_gender: Optional[str] = None
+    gram_gender: Optional[str] = None
     conj_person: Optional[str] = None
     verb_mood: Optional[str] = None
     subst_case: Optional[str] = None
@@ -727,17 +728,19 @@ class ItemReturn(ItemUpdate):
 class ExerciseContext(BaseModel):
     less_list_ids: Optional[List[int]]
     mod_ids: Optional[List[int]]
-
-
-class UserContext(BaseModel):
+    lem_ids: Optional[List[int]]
     user_id: int
-    
+
+class ExerciseTarget(BaseModel):
+    ex_formats: List[EnumItemFormat]
+    type_counts: Dict[EnumWordItemType, int]
 
 class ExerciseRequest(BaseModel):
     context: ExerciseContext
-    exercise_type: EnumExerciseType | List[EnumExerciseType]
-    question_count: int = 10
-    distractor_count: int = 3
+    num_items: int = 10
+    max_keys: int = 1
+    max_distractors: int = 3
+    difficulty: EnumItemDifficulty
     target_props: Optional[Dict[str, Any]] = None
 
 
@@ -758,33 +761,37 @@ class DistractorsResponse(BaseModel):
 
 
 class FlashcardResponse(BaseModel):
-    exercise_type: EnumExerciseType
+    item_format: EnumItemFormat
+    item_id: int
     front_text: str
     back_text: str
 
 
 class MultipleChoiceResponse(BaseModel):
-    exercise_type: EnumExerciseType
-    prompt: str
+    item_format: EnumItemFormat
     item_id: int
+    prompt: str
     options: List[str]
 
 
-class ClozeResponse(BaseModel):
-    exercise_type: EnumExerciseType
+class WordClozeResponse(BaseModel):
+    item_format: EnumItemFormat
+    item_id: int
+    prompt: str
     sentence_parts: List[str]
+    #TODO: replace below with cheat-secure way to check cloze responses
     target_lemma: str
 
 
-ExerciseItem = FlashcardResponse | MultipleChoiceResponse | ClozeResponse
+ExerciseItems = FlashcardResponse | MultipleChoiceResponse | WordClozeResponse
 
 
 class ExerciseResponse(BaseModel):
     total_questions: int
-    response_data: List[ExerciseItem]
+    response_data: List[ExerciseItems]
 
 
-# Item Response & Verification
+# User Item Response & Verification
 
 
 class AnswerSubmission(BaseModel):
@@ -799,3 +806,10 @@ class AnswerResult(BaseModel):
     correct_answer: str
     attempts_remaining: int
     explanation: Optional[str] = None
+
+
+# Item Type
+
+class Item_FormLemToGnc(BaseModel):
+    target_gram: List
+    

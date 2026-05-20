@@ -95,7 +95,7 @@ CREATE TABLE
         irregular BOOLEAN,
         gram_num VARCHAR(48),
         -- VERBS
-        conj_gender VARCHAR(48),
+        gram_gender VARCHAR(48),
         conj_person VARCHAR(48),
         verb_mood VARCHAR(48),
         -- SUBSTANTIVES (NOUNS, ADJECTIVES, NUMERALS, PARTICIPLES)
@@ -109,7 +109,7 @@ CREATE TABLE
         CONSTRAINT unique_grammar UNIQUE (
             gram_tense,
             gram_num,
-            conj_gender,
+            gram_gender,
             conj_person,
             verb_mood,
             subst_case,

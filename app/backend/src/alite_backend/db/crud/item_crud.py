@@ -23,7 +23,8 @@ from alite_backend.db.models import (
 )
 from alite_backend.db.schemas import (
     ItemCreate,
-    ItemUpdate
+    ItemUpdate,
+    ExerciseCreate
 )
 from alite_backend.db.crud.crud_base import CRUDBase
 

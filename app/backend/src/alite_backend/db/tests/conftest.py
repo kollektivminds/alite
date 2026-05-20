@@ -1,7 +1,6 @@
 # conftest.py
 
 import pytest
-from app.backend.db.testing_utils import setup_test_db, get_test_db
 
 # Fixture to run before all tests to initialize the DB
 @pytest.fixture(scope="session", autouse=True)

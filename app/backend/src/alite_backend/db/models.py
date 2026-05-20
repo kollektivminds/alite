@@ -150,74 +150,94 @@ class EnumLookupStatus(str, enum.Enum):
     LINKED = "linked"
 
 
-class EnumExerciseType(str, enum.Enum):
+class EnumItemFormat(str, enum.Enum):
     CLOZE = "cloze"
     MCQ = "mcq"
     FLASHCARD = "flashcard"
 
 
 class EnumWordItemType(str, enum.Enum):
-    # --- LEMMA + GENERAL ---
-    # lemma <-> pos
-    LEM_TO_POS = "lem_to_pos"  # "What part of speech is X?" (MCQ)
-    POS_TO_LEM = "pos_to_lem"  # "Which lemma(s) is/are X?" (MCQ)
-    # lemma <-> definition
-    LEM_TO_DEF = "lem_to_def"  # "What is the definition of X?" (MCQ)
-    DEF_TO_LEM = (
-        "def_to_lem"  # "Which lemma(s) fit the following definition: X?" (MCQ/Cloze)
-    )
-    # lemma <-> pronunciation
+    # --- LEMMAS ---
+    # Part of Speech
+    # lemmas.lem_canon <-> lemmas.pos
+    LEM_TO_POS = "lem_to_pos"  # "What part of speech is X?" (FC/MCQ)
+    POS_TO_LEM = "pos_to_lem"  # "Which lemma(s) is/are X?" (FC/MCQ)
+    # Definitions
+    # lemmas.lem_canon <-> definitions.def_text
+    LEM_TO_DEF = "lem_to_def"  # "What is the definition of X?" (FC/MCQ)
+    DEF_TO_LEM = "def_to_lem"  # "Which lemma(s) fit the following definition: X?" (MCQ)
+    # Pronunciations
+    # lemmas.lem_canon <-> pronunciations.pron_text
     LEM_TO_PRON = "lem_to_pron"  # "What is the pronunciation of X?" (MCQ)
-    PRON_TO_LEM = "pron_to_lem"  # "What is the correct Russian spelling of the word pronounced 'X'?" (MCQ/Cloze)
-    # --- INFLECTIONAL GRAMMAR ---
-    # lemma + lexeme <-> gram_prop
-    LEM_LEX_TO_GRAM_PROP = (
-        "lem_lex_to_gram_prop"  # "What is the grammar of Y in relation to X?" (MCQ)
+    PRON_TO_LEM = "pron_to_lem"  # "What is the correct Russian spelling of the word pronounced 'X'?" (FC/MCQ/Cloze)
+    # Lemma Relations
+    # lem_rels.source_id(lemmas.lem_canon)
+    # + lem_rels.target_id(lemmas.lem_canon)
+    # <-> lem_rels.rel_type
+    LEM2_TO_LREL = "lem2_to_lrel"  # "How does X relate to Y?" (MCQ)
+    LREL_TO_LEM2 = (
+        "lrel_to_lem2"
+        # "Which of the following pairs is an example of X?" (MCQ)
     )
-    GRAM_PROP_TO_LEM_LEX = (
-        "gram_prop_to_lem_lex"  # "Which pair is an example of X?" (MCQ/Cloze)
+
+    # --- VERBS ----
+    # Aspect
+    # lemmas.filter(pos==verb).lem_canon <-> lemmas(id=lem_id).filter(pos==verb).verb_aspect
+    VERB_TO_ASPT = "verb_to_aspt"  # "What is the aspect of [verb]?" (FC/MCQ)
+    # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id, target_id].lem_canon
+    # <-> lemmas(id=lem_id).verb_aspect
+    VERB_PAIR_TO_REL = "verb_pair_to_rel"  # "Which of these verbs is [aspect]?" (MCQ)
+    # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id].lem_canon
+    # <-> lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[target_id].lem_canon
+    VERB_ASPT_TO_PAIR = (
+        "verb_to_aspt_pair"  # "What is the aspectual partner of [verb]?" (FC/MCQ/Cloze)
     )
-    # lemma + gram_prop <-> lexeme
-    LEM_GRAM_PROP_TO_LEX = (
-        "lem_gram_prop_to_lex"  # "What is the Y form of X?" (MCQ/Cloze)
+    # Conjugation Type
+    # lemmas.filter(pos==verb).lem_canon <-> lemmas.filter(pos==verb).verb_type
+    LEM_TO_VTYP = "lem_to_vtyp"  # "What type of verb is X?" (MCQ)
+    VTYP_TO_LEM = "vtyp_to_lem"  # "Which lemma(s) is/are type X?" (MCQ)
+    # Conjugation Forms (tense, number, gender, person, mood)
+    # word_forms[gram_id=gram_props.[gram_tense, gram_num, gram_gender, conj_person, verb_mood]].lem_id[pos=PRONOUN].lem_canon
+    # + lemmas.filter(pos==verb).lem_canon
+    # <-> word_forms(lem_id=lem, gram_id=gram_prop).lex_id.lex_text
+    PRON_INFV_TO_VERB_CONJ = (
+        "pron_infv_to_verb_conj"  # "What is the X form of Y?" (MCQ/Cloze)
     )
-    LEX_TO_LEM_GRAM_PROP = (
-        "lex_to_lem_gram_prop"  # "What is the lemma and form of X?" (MCQ)
-    )
+    VERB_CONJ_TO_PRON_INFV = "verb_conj_to_pron_infv"  # "What form of what infinitive verb is [verb lexeme]?" (MCQ)
+    # Transitivity & Reflexivity
+    # lemmas.filter(pos==verb).lem_canon
+    # <-> lemmas.filter(pos==verb).verb_trans_refl
+    LEM_TO_VTR = "lem_to_vtr"  # "Is X transitive, reflexive, or neither?" (MCQ)
+    VTR_TO_LEM = "vtr_to_lem"  # "Which lemma(s) is/are X?" (MCQ)
+
     # --- SUBSTANTIVES ---
-    # lemma (noun) <-> gender
-    LEM_TO_GEND = "lem_to_gender"  # "What gender is X?" (MCQ)
-    GEND_TO_LEM = "gender_to_lem"  # "Which lemma(s) is/are X?" (MCQ)
-    # lemma (noun) <-> animacy (bool)
-    LEM_TO_ANIM = "lem_to_anim"  # "Is X animate or inanimate?" (MCQ)
-    ANIM_TO_LEM = "anim_to_lem"  # "Which lemma(s) is/are in/animate?" (MCQ)
+    # Adjectival, Nominal, and Pronominal Inflections
+    # word_forms(gram_props[])
+    FORM_LEM_TO_GNC = "subst_to_gnc"  # "What is the [gender / number / case] of [noun / pronoun / adjective]?" (MCQ)
+    LEM_GNC_TO_FORM = (
+        "subst_to_form"  # "What is the [gnc] form of [lemma]?" (MCQ/Cloze)
+    )
+
+    # --- ADJECTIVES ---
     # lemma (adjective) <-> comparative / superlative form
     LEM_TO_ADJV_FORM = "lem_to_adjv_form"  # "What is the Y form of X?" (MCQ)
     ADJV_FORM_TO_LEM = "adjv_form_to_lem"  # "What is the base form of X?" (MCQ/Cloze)
     # adjective form <-> adjective type
     ADJV_FORM_TO_TYPE = "adjv_to_type"  # "What kind of adjective is X?" (MCQ)
     TYPE_TO_ADJV_FORM = "type_to_adjv"  # "Which of the following adjectives is/are an example of X?" (MCQ)
+
+    # --- NOUNS ---
+    # lemma (noun) <-> gender
+    LEM_TO_GEND = "lem_to_gender"  # "What gender is X?" (MCQ)
+    GEND_TO_LEM = "gender_to_lem"  # "Which lemma(s) is/are X?" (MCQ)
+    # lemma (noun) <-> animacy (bool)
+    LEM_TO_ANIM = "lem_to_anim"  # "Is X animate or inanimate?" (MCQ)
+    ANIM_TO_LEM = "anim_to_lem"  # "Which lemma(s) is/are in/animate?" (MCQ)
+
+    # --- PARTICIPLES ---
     # participle <-> type
     PART_TO_TYPE = "part_to_type"  # "What type of participle is X?" (MCQ)
     TYPE_TO_PART = "type_to_part"  # "What form is type X?" (MCQ)
-    # --- VERBS ----
-    # lemma (verb) <-> verb type
-    LEM_TO_VTYP = "lem_to_vtyp"  # "What type of verb is X?" (MCQ)
-    VTYP_TO_LEM = "vtyp_to_lem"  # "Which lemma(s) is/are type X?" (MCQ)
-    # lemma <-> verb_trans_refl
-    LEM_TO_VTR = "lem_to_vtr"  # "Is X transitive, reflexive, or neither?" (MCQ)
-    VTR_TO_LEM = "vtr_to_lem"  # "Which lemma(s) is/are X?" (MCQ/Cloze)
-    # pronoun + infinitive verb <-> lexeme (verb conjugation)
-    PRON_INFV_TO_VERB_CONJ = (
-        "pron_infv_to_verb_conj"  # "What is the X form of Y?" (MCQ/Cloze)
-    )
-    VERB_CONJ_TO_PRON_INFV = "verb_conj_to_pron_infv"  # "What form is X?" (MCQ/Cloze)
-    # --- OTHER ---
-    # lemma + lemma <-> lemma relation
-    LEM2_TO_LREL = "lem2_to_lrel"  # "How does X relate to Y?" (MCQ)
-    LREL_TO_LEM2 = (
-        "lrel_to_lem2"  # "Which of the following pairs is an example of X?" (MCQ/Cloze)
-    )
 
 
 class EnumSentItemType(str, enum.Enum):
@@ -320,7 +340,7 @@ class GramProp(Base):
     irregular = Column(Boolean, default=False)
     gram_num = Column(Enum(EnumGramNum), nullable=True)
     # Verbs
-    conj_gender = Column(Enum(EnumGender), nullable=True)
+    gram_gender = Column(Enum(EnumGender), nullable=True)
     conj_person = Column(Enum(EnumConjPerson), nullable=True)
     verb_mood = Column(Enum(EnumVerbMood), nullable=True)
     # Substantives (nouns, adjectives, numerals, participles)
@@ -339,7 +359,7 @@ class GramProp(Base):
         UniqueConstraint(
             "gram_tense",
             "gram_num",
-            "conj_gender",
+            "gram_gender",
             "conj_person",
             "verb_mood",
             "subst_case",
@@ -536,57 +556,57 @@ class LessonListInModule(Base):
 # --- Sentence Tables ---
 
 
-class Sentence(Base):
-    ___tablename__ = "sentences"
+# class Sentence(Base):
+#     ___tablename__ = "sentences"
 
-    id = Column(Integer, primary_key=True)
-    raw_text = Column(Text, nullable=False)
+#     id = Column(Integer, primary_key=True)
+#     raw_text = Column(Text, nullable=False)
 
-    tokens = relationship(
-        "SentenceToken",
-        back_populates="sentence",
-        order_by="SentenceToken.position_index",  # Guarantees order when fetched!
-        cascade="all, delete-orphan",
-    )
+#     tokens = relationship(
+#         "SentenceToken",
+#         back_populates="sentence",
+#         order_by="SentenceToken.position_index",  # Guarantees order when fetched!
+#         cascade="all, delete-orphan",
+#     )
 
 
-class WordFormInSentence(Base):
-    """Junction table mapping a WordForm to a specific position in a Sentence."""
+# class WordFormInSentence(Base):
+#     """Junction table mapping a WordForm to a specific position in a Sentence."""
 
-    __tablename__ = "word_forms_in_sentences"
+#     __tablename__ = "word_forms_in_sentences"
 
-    id = Column(Integer, primary_key=True)
-    sentence_id = Column(
-        Integer, ForeignKey("sentences.id", ondelete="CASCADE"), nullable=False
-    )
-    word_form_id = Column(Integer, ForeignKey("word_forms.id"), nullable=False)
+#     id = Column(Integer, primary_key=True)
+#     sentence_id = Column(
+#         Integer, ForeignKey("sentences.id", ondelete="CASCADE"), nullable=False
+#     )
+#     word_form_id = Column(Integer, ForeignKey("word_forms.id"), nullable=False)
 
-    position_index = Column(Integer, nullable=False)
+#     position_index = Column(Integer, nullable=False)
 
-    # context-specific lexeme orthography
-    is_capitalized = Column(Boolean, default=False)
-    punctuation_after = Column(String(5), nullable=True)
-    punctuation_before = Column(String(5), nullable=True)
+#     # context-specific lexeme orthography
+#     is_capitalized = Column(Boolean, default=False)
+#     punctuation_after = Column(String(5), nullable=True)
+#     punctuation_before = Column(String(5), nullable=True)
 
-    # relationships
-    sentence = relationship("Sentence", back_populates="tokens")
-    word_form = relationship("WordForm")
+#     # relationships
+#     sentence = relationship("Sentence", back_populates="tokens")
+#     word_form = relationship("WordForm")
 
 
 # --- Sentence Organization Tables ---
 
 
-class Document(Base):
-    __tablename__ = "documents"
+# class Document(Base):
+#     __tablename__ = "documents"
 
-    id = Column(Integer, primary_key=True)
-    author = Column(String(48), nullable=False)
-    date = Column(DateTime, nullable=True)
-    source = Column(Text, nullable=False)
-    title = Column(String(48), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+#     id = Column(Integer, primary_key=True)
+#     author = Column(String(48), nullable=False)
+#     date = Column(DateTime, nullable=True)
+#     source = Column(Text, nullable=False)
+#     title = Column(String(48), nullable=False)
+#     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    sentences = relationship("Sentence", back_populates="in_document")
+#     sentences = relationship("Sentence", back_populates="in_document")
 
 
 # --- Users ---
@@ -676,7 +696,6 @@ class Exercise(Base):
 
     has_item = relationship
     user = relationship("User", back_populates="exercises")
-    responses = relationship("ItemResponse", back_populates="exercise")
 
 
 class ItemInExercise(Base):
@@ -702,16 +721,6 @@ class ItemResponse(Base):
 
     exercise = relationship("Exercise", back_populates="responses")
     item = relationship("Item", back_populates="responses")
-
-
-class ResponseResult(Base):
-    __tablename__ = "response_results"
-
-    id = Column(Integer, primary_key=True)
-    is_correct = Column(Boolean, nullable=False)
-    correct_answer = Column(String, nullable=True)
-    attempts_remaining = Column(Integer, nullable=True)
-    message = Column(String, nullable=True)
 
 
 """

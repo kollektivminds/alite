@@ -114,10 +114,10 @@ class Loader:
             # gram_num
             "singular": {"gram_num": EnumGramNum.SINGULAR},
             "plural": {"gram_num": EnumGramNum.PLURAL},
-            # conj_gender
-            "masculine": {"conj_gender": EnumGender.MASCULINE},
-            "neuter": {"conj_gender": EnumGender.NEUTER},
-            "feminine": {"conj_gender": EnumGender.FEMININE},
+            # gram_gender
+            "masculine": {"gram_gender": EnumGender.MASCULINE},
+            "neuter": {"gram_gender": EnumGender.NEUTER},
+            "feminine": {"gram_gender": EnumGender.FEMININE},
             # conj_person
             "first-person": {"conj_person": EnumConjPerson.FIRST},
             "second-person": {"conj_person": EnumConjPerson.SECOND},

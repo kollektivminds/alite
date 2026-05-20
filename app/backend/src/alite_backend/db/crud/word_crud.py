@@ -106,38 +106,38 @@ logger = logging.getLogger(__name__)
 # O
 # H
 
-complete_props = {
-    # gram props
-    "gram_tense": None,
-    "irregular": None,
-    "gram_num": None,
-    "conj_gender": None,
-    "conj_person": None,
-    "verb_mood": None,
-    "subst_case": None,
-    "alt_adjv_type": None,
-    "alt_noun_type": None,
-    "part_type": None,
-    "part_voice": None,
-}
+# complete_props = {
+#     # gram props
+#     "gram_tense": None,
+#     "irregular": None,
+#     "gram_num": None,
+#     "gram_gender": None,
+#     "conj_person": None,
+#     "verb_mood": None,
+#     "subst_case": None,
+#     "alt_adjv_type": None,
+#     "alt_noun_type": None,
+#     "part_type": None,
+#     "part_voice": None,
+# }
 
 
-def _map_lemma(lemma_record: LemmasRecord):
-    """_map_lemma _summary_
+# def _map_lemma(lemma_record: LemmasRecord):
+#     """_map_lemma _summary_
 
-    Args:
-        lemma_record (LemmasRecord): _description_
+#     Args:
+#         lemma_record (LemmasRecord): _description_
 
-    Returns:
-        _type_: _description_
-    """
-    mapped_lemma = Lemma(
-        entry_key=lemma_record.entry_key,
-        lem_text=lemma_record.lem_text,
-        lem_canon=lemma_record.lem_canon,
-        pos=lemma_record.pos,
-    )
-    return mapped_lemma
+#     Returns:
+#         _type_: _description_
+#     """
+#     mapped_lemma = Lemma(
+#         entry_key=lemma_record.entry_key,
+#         lem_text=lemma_record.lem_text,
+#         lem_canon=lemma_record.lem_canon,
+#         pos=lemma_record.pos,
+#     )
+#     return mapped_lemma
 
 
 def ensure_params(*required_args):

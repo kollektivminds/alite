@@ -20,12 +20,12 @@ class BaseExerciseStrategy(ABC):
     # --- ABSTRACT METHODS ---
 
     @abstractmethod
-    def fetch_keys(self, prompt_criteria: dict, num_keys: int, limit: int):
+    def fetch_keys(self, prompt_criteria, keys_per_item: int, num_items: int):
         """Fetch the database objects that act as the foundation for the correct answer."""
         pass
 
     @abstractmethod
-    def fetch_distractors(self, target, num_distractors: int) -> list[str]:
+    def fetch_distractors(self, target, distractors_per_item: int) -> list[str]:
         """Fetch incorrect text options for a specific target."""
         pass
 
@@ -45,7 +45,7 @@ class BaseExerciseStrategy(ABC):
         self,
         user_id: int,
         prompt_criteria: dict,
-        question_count: int = 10,
+        item_count: int = 10,
         key_count: int = 1,
         distractor_count: int = 3,
     ):
@@ -59,13 +59,13 @@ class BaseExerciseStrategy(ABC):
         self.db.flush()
 
         # get the targets using the child's specific logic
-        keys = self.fetch_keys(prompt_criteria=prompt_criteria, num_keys=key_count, limit=question_count)
+        keys = self.fetch_keys(prompt_criteria=prompt_criteria, keys_per_item=key_count, num_items=item_count)
 
         safe_frontend_items = []
 
         for key in keys: # type: ignore
             # generate the specific distractors and prompt
-            distractor_texts = self.fetch_distractors(key, num_distractors=distractor_count)
+            distractor_texts = self.fetch_distractors(key, distractors_per_item=distractor_count)
             correct_text = self.get_correct_answer_text(key)
             prompt_text = self.format_prompt(key)
 
