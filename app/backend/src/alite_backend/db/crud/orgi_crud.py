@@ -34,6 +34,7 @@ from alite_backend.db.schemas import (
 )
 from alite_backend.words.funcs import remove_accents
 from alite_backend.db.crud.crud_base import CRUDBase
+from alite_backend.db import models, schemas
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,9 @@ crud_module = CRUDModule(Module)
 class CRUDLessList(CRUDBase[LessonList, LessonListCreate, LessonListUpdate]):
 
     def get_id_by_name(self, db: Session, less_list_name: str) -> int:
-        return db.query(self.model).filter(self.model.title == less_list_name).first().id  # type: ignore
+        stmt = select(self.model).where(self.model.title == less_list_name)
+        # return db.query(self.model).filter(self.model.title == less_list_name).first().id  # type: ignore
+        return db.scalars(stmt).first().id  # type: ignore
 
 
 crud_less_list = CRUDLessList(LessonList)

@@ -11,12 +11,12 @@ from alite_backend.db import schemas
 from alite_backend.db.models import (
     EnumAltAdjvType,
     EnumAltNounType,
-    EnumGender,
+    EnumGramGender,
     EnumConjPerson,
     EnumGramTense,
     EnumGramNum,
-    EnumParticipleType,
-    EnumParticipleVoice,
+    EnumPartType,
+    EnumPartVoice,
     EnumPartOfSpeech,
     EnumSubstCase,
     EnumVerbAspect,
@@ -115,9 +115,9 @@ class Loader:
             "singular": {"gram_num": EnumGramNum.SINGULAR},
             "plural": {"gram_num": EnumGramNum.PLURAL},
             # gram_gender
-            "masculine": {"gram_gender": EnumGender.MASCULINE},
-            "neuter": {"gram_gender": EnumGender.NEUTER},
-            "feminine": {"gram_gender": EnumGender.FEMININE},
+            "masculine": {"gram_gender": EnumGramGender.MASCULINE},
+            "neuter": {"gram_gender": EnumGramGender.NEUTER},
+            "feminine": {"gram_gender": EnumGramGender.FEMININE},
             # conj_person
             "first-person": {"conj_person": EnumConjPerson.FIRST},
             "second-person": {"conj_person": EnumConjPerson.SECOND},
@@ -147,12 +147,12 @@ class Loader:
             "pejorative": {"alt_noun_type": EnumAltNounType.PEJORATIVE},
             # part_type
             "participle": {
-                "part_type": EnumParticipleType.ADJECTIVAL
+                "part_type": EnumPartType.ADJECTIVAL
             },  # in data as "participle"
-            "adverbial": {"part_type": EnumParticipleType.ADVERBIAL},
+            "adverbial": {"part_type": EnumPartType.ADVERBIAL},
             # part_voice
-            "active": {"part_voice": EnumParticipleVoice.ACTIVE},
-            "passive": {"part_voice": EnumParticipleVoice.PASSIVE},
+            "active": {"part_voice": EnumPartVoice.ACTIVE},
+            "passive": {"part_voice": EnumPartVoice.PASSIVE},
         }
 
         return_props = {}
@@ -331,7 +331,7 @@ class Loader:
 
             # new relation
             target_rel_params = {"lem_text": rel_form}
-            target_rel_params = schemas.LemmaSearchParams(**target_rel_params)  # type: ignore
+            target_rel_params = schemas.LemmaSearchParams(**target_rel_params) #type: ignore
             target_rel = crud_lemma.search(db=self.db, params=target_rel_params)
             # logger.debug("target rel: %s", target_rel)
             filters = {"rel_type": relation.rel_type, "source_id": source_id}
@@ -364,7 +364,7 @@ class Loader:
 
         for lem in payload.lemmas:
             db_lemma_id = lemma_id_map[lem.entry_key]
-
+            # logger.debug("db_lemma_id: %s", db_lemma_id)
             # Is this word in our curriculum?
             if lem.lem_text in target_map:
                 lesson_ids = target_map[lem.lem_text]

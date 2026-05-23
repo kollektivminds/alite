@@ -1,36 +1,47 @@
-# conftest.py
-
+# app/backend/src/alite_backend/db/tests/conftest.py
 import pytest
-
-# Fixture to run before all tests to initialize the DB
-@pytest.fixture(scope="session", autouse=True)
-def setup_and_teardown_db():
-    # Setup runs before all tests in the session
-    setup_test_db()
-    
-    # Yield control to the tests
-    yield
-    
-    # Teardown runs after all tests in the session (optional cleanup)
-    # teardown_test_db() 
+import random
+from alite_backend.db import models, schemas
+from alite_backend.db.db_session import SessionLocal
+from alite_backend.db.tests.factories import UserFactory, ExerciseFactory, ItemResponseFactory
 
 # Fixture to inject a database session into any test function
 @pytest.fixture(scope="function")
 def db_session():
-    # This automatically calls setup_and_teardown_db() if used.
-    # We use the generator from testing_utils to manage the session.
-    yield from get_test_db()
-
-# Example Test File (e.g., test_crud.py)
-# You can now write tests that are fast and isolated:
-
-# from app.backend.db.crud import word_data
-# from app.backend.db.schemas import WordCreate
-
-# def test_create_word(db_session): # Pytest injects the db_session fixture
-#     new_word = word_data.create_word(
-#         db=db_session, 
-#         word_in=WordCreate(lemma="test", pos="NOUN", frequency=10)
-#     )
-#     assert new_word.lemma == "test"
-#     assert word_data.get_word_by_lemma(db_session, "test") is not None
+    session = SessionLocal()
+    yield session
+    session.rollback()
+    session.close()
+    
+@pytest.fixture
+def simulate_mcq_guess(db_session):
+    
+    def _simulate(ex_id: int):
+        # latest question
+        real_item = (
+            db_session.query(models.Item)
+            .filter(models.Item.in_ex == ex_id)
+            .order_by(models.Item.id.desc())
+            .first()
+        )
+        
+        if not real_item:
+            raise ValueError("No items found in the DB")
+        
+        # simulate student answer
+        random_guess = random.choice(real_item.distractors | real_item.key)
+        
+        # check if correct
+        is_correct = (random_guess == real_item.key)
+        
+        # make response
+        response_record = ItemResponseFactory(
+            ex_id=ex_id,
+            item_id=real_item.id,
+            student_answer=random_guess,
+            is_correct=is_correct
+        )
+        
+        return response_record
+    
+    return _simulate

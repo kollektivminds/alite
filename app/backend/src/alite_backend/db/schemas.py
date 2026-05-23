@@ -5,11 +5,11 @@ from typing import Any, Dict, List, Optional, Tuple
 from alite_backend.db.models import (
     EnumAltAdjvType,
     EnumAltNounType,
-    EnumGender,
+    EnumGramGender,
     EnumConjPerson,
     EnumGramTense,
-    EnumParticipleType,
-    EnumParticipleVoice,
+    EnumPartType,
+    EnumPartVoice,
     EnumPartOfSpeech,
     EnumSubstCase,
     EnumVerbAspect,
@@ -22,7 +22,7 @@ from alite_backend.db.models import (
     EnumUserRole,
     EnumItemFormat,
     EnumWordItemType,
-    EnumItemDifficulty
+    EnumItemDifficulty,
 )
 from pydantic import (
     BaseModel,
@@ -131,7 +131,7 @@ class LemmasRecord(BaseModel):
     lem_canon: Optional[str] = None
     pos: EnumPartOfSpeech
     entry_key: UUID5
-    noun_gender: Optional[EnumGender]
+    noun_gender: Optional[EnumGramGender]
     subst_animacy: Optional[bool]
     verb_aspect: Optional[EnumVerbAspect]
     verb_conj: Optional[str]
@@ -258,7 +258,7 @@ class LemmaBase(BaseModel):
 # lemma shared grammar properties
 class LemmaProps(BaseModel):
     pos: Optional[EnumPartOfSpeech] = None
-    noun_gender: Optional[EnumGender] = None
+    noun_gender: Optional[EnumGramGender] = None
     subst_animacy: Optional[bool] = None
     verb_aspect: Optional[EnumVerbAspect] = None
     verb_conj: Optional[str] = None
@@ -299,7 +299,7 @@ class LemmaSearchParams(BaseModel):
     lem_canon: Optional[str] = None
     pos: Optional[EnumPartOfSpeech] = None
     entry_key: Optional[UUID5] = None
-    noun_gender: Optional[EnumGender] = None
+    noun_gender: Optional[EnumGramGender] = None
     subst_animacy: Optional[bool] = None
     verb_aspect: Optional[EnumVerbAspect] = None
     verb_conj: Optional[str] = None
@@ -708,13 +708,46 @@ class ItemReturn(ItemUpdate):
 # Exercise
 
 
+class ExerciseBase(BaseModel):
+    user_id: int
+
+
+class ExerciseCreate(ExerciseBase):
+    pass
+
+
+class ExerciseUpdate(ExerciseBase):
+    id: int
+
+
+class ExerciseReturn(ExerciseUpdate):
+    start_time: datetime
+    finish_time: datetime
+    created_at: datetime
+
+
 # Item Response
 
 
-# Response
+class ItemResponseBase(BaseModel):
+    user_id: int
+    item_id: int
 
 
-# Response Result
+class ItemResponseCreate(ItemResponseBase):
+    pass
+
+
+class ItemResponseUpdate(ItemResponseBase):
+    student_answer: str
+    is_correct: bool
+    id: int
+
+
+class ItemResponseReturn(ItemResponseUpdate):
+    response_time_ms: int
+    submitted_at: datetime
+
 
 #
 # --- Services Schema ---
@@ -726,22 +759,20 @@ class ItemReturn(ItemUpdate):
 
 
 class ExerciseContext(BaseModel):
+    # Side-A menu items
     less_list_ids: Optional[List[int]]
     mod_ids: Optional[List[int]]
     lem_ids: Optional[List[int]]
-    user_id: int
-
-class ExerciseTarget(BaseModel):
     ex_formats: List[EnumItemFormat]
-    type_counts: Dict[EnumWordItemType, int]
-
-class ExerciseRequest(BaseModel):
-    context: ExerciseContext
     num_items: int = 10
     max_keys: int = 1
     max_distractors: int = 3
-    difficulty: EnumItemDifficulty
-    target_props: Optional[Dict[str, Any]] = None
+
+
+class ExerciseRequest(BaseModel):
+    # Side-A + Side-B items = request
+    exercise_context: ExerciseContext
+    type_counts: Dict[EnumWordItemType, int]
 
 
 # Raw Exercise Responses
@@ -755,31 +786,37 @@ class KeysReponse(BaseModel):
 class DistractorsResponse(BaseModel):
     item_id: int
     dist_text: str | Dict[str, Any]
+    
+
+class ItemBlueprint(BaseModel):
+    prompt: str
+    key: str
+    distractors: List[str]
 
 
 # Processed Exercise Responses
 
 
 class FlashcardResponse(BaseModel):
-    item_format: EnumItemFormat
+    item_format = EnumItemFormat.FLASHCARD
     item_id: int
     front_text: str
     back_text: str
 
 
 class MultipleChoiceResponse(BaseModel):
-    item_format: EnumItemFormat
+    item_format = EnumItemFormat.MCQ
     item_id: int
     prompt: str
-    options: List[str]
+    options: List[str | int]
 
 
 class WordClozeResponse(BaseModel):
-    item_format: EnumItemFormat
+    item_format = EnumItemFormat.CLOZE
     item_id: int
     prompt: str
     sentence_parts: List[str]
-    #TODO: replace below with cheat-secure way to check cloze responses
+    # TODO: replace below with cheat-secure way to check cloze responses
     target_lemma: str
 
 
@@ -791,25 +828,27 @@ class ExerciseResponse(BaseModel):
     response_data: List[ExerciseItems]
 
 
-# User Item Response & Verification
+# User Item Response & Result
 
 
 class AnswerSubmission(BaseModel):
-    session_id: int
-    question_id: int
-    selected_option: str
+    user_id: int
+    item_id: int
+    selection: str
     response_time_ms: int
 
 
 class AnswerResult(BaseModel):
     is_correct: bool
-    correct_answer: str
     attempts_remaining: int
+    correct_answer: Optional[str] = None
     explanation: Optional[str] = None
 
 
 # Item Type
 
+
 class Item_FormLemToGnc(BaseModel):
-    target_gram: List
-    
+    gender: bool = True
+    number: bool = True
+    case: bool = True

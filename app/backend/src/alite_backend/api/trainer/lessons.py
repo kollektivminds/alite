@@ -11,16 +11,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# @router.post("/", response_model=schemas.SentenceResponse) # Uses your schemas.py
-# def create_sentence(
-#     sentence_in: schemas.SentenceCreate,
-#     db: Session = Depends(deps.get_db),
-#     current_user = Depends(deps.get_current_active_user)
-# ):
-#     """Create a new Russian sentence entry for analysis."""
-#     return sentence_data.create(db=db, obj_in=sentence_in) # Calls your sentence_data.py
-
-
 @router.get("/{lesson_id}", response_model=schemas.LessonListReturn)
 def read_lesson(lesson_id: int, db: Session = Depends(deps.get_db)):
     """Fetch a specific sentence by ID."""

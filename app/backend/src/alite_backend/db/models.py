@@ -1,4 +1,6 @@
-from typing import Optional, List
+from typing import List
+from datetime import datetime
+from uuid import UUID
 import enum
 from sqlalchemy import (
     Column,
@@ -11,14 +13,11 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     JSON,
-    UUID,
     Enum,
 )
-from sqlalchemy.orm import relationship, declarative_base
+from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY
-
-Base = declarative_base()
 
 
 class EnumAltNounType(str, enum.Enum):
@@ -35,7 +34,7 @@ class EnumAltAdjvType(str, enum.Enum):
     SHORT = "short"
 
 
-class EnumGender(str, enum.Enum):
+class EnumGramGender(str, enum.Enum):
     MASCULINE = "masculine"
     NEUTER = "neuter"
     FEMININE = "feminine"
@@ -74,12 +73,12 @@ class EnumPartOfSpeech(str, enum.Enum):
     UNKNOWN = "unknown"
 
 
-class EnumParticipleType(str, enum.Enum):
+class EnumPartType(str, enum.Enum):
     ADJECTIVAL = "adjectival"
     ADVERBIAL = "adverbial"
 
 
-class EnumParticipleVoice(str, enum.Enum):
+class EnumPartVoice(str, enum.Enum):
     ACTIVE = "active"
     PASSIVE = "passive"
 
@@ -157,6 +156,19 @@ class EnumItemFormat(str, enum.Enum):
 
 
 class EnumWordItemType(str, enum.Enum):
+    # db/services/items/{HEADERS}
+    # --- ADJECTIVES ---
+    # lemma (adjective) <-> comparative / superlative form
+    ADJV_FORM_TO_TYPE = "adjv_form_to_type"  # "What is the [comparative | superlative] form of X?" (MCQ)
+    ADJV_TYPE_TO_LEM = (
+        "adjv_type_to_lem"  # "What is the base form of [adjective]?" (MCQ/Cloze)
+    )
+    # adjective form <-> adjective type
+    ADJV_FORM_TO_GRAM = (
+        "adjv_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
+    )
+    ADJV_GRAM_TO_FORM = "gram_to_adjv_form"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)
+
     # --- LEMMAS ---
     # Part of Speech
     # lemmas.lem_canon <-> lemmas.pos
@@ -179,6 +191,24 @@ class EnumWordItemType(str, enum.Enum):
         "lrel_to_lem2"
         # "Which of the following pairs is an example of X?" (MCQ)
     )
+
+    # --- NOUNS ---
+    # lemma (noun) <-> gender
+    NOUN_TO_GEND = "noun_to_gender"  # "What gender is [noun]?" (MCQ)
+    GEND_TO_NOUN = "gender_to_noun"  # "Which lemma(s) is/are [noun_gender]?" (MCQ)
+    # lemma (noun) <-> animacy (bool)
+    NOUN_TO_ANIM = "noun_to_anim"  # "Is [noun] animate or inanimate?" (MCQ)
+    ANIM_TO_NOUN = "anim_to_noun"  # "Which lemma(s) is/are [subst_animacy]?" (MCQ)
+    # noun form <-> noun GNC
+    NOUN_FORM_TO_GRAM = (
+        "noun_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
+    )
+    NOUN_GRAM_TO_FORM = "type_to_adjv"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)
+
+    # --- PARTICIPLES ---
+    # participle <-> type (tense, mood)
+    PART_TYPE_TO_LEM = "part_type_to_lem"  # "What form is type X?" (MCQ)
+    LEM_TO_PART_TYPE = "lem_to_part_type"  # "What type of participle is X?" (MCQ)
 
     # --- VERBS ----
     # Aspect
@@ -207,37 +237,8 @@ class EnumWordItemType(str, enum.Enum):
     # Transitivity & Reflexivity
     # lemmas.filter(pos==verb).lem_canon
     # <-> lemmas.filter(pos==verb).verb_trans_refl
-    LEM_TO_VTR = "lem_to_vtr"  # "Is X transitive, reflexive, or neither?" (MCQ)
-    VTR_TO_LEM = "vtr_to_lem"  # "Which lemma(s) is/are X?" (MCQ)
-
-    # --- SUBSTANTIVES ---
-    # Adjectival, Nominal, and Pronominal Inflections
-    # word_forms(gram_props[])
-    FORM_LEM_TO_GNC = "subst_to_gnc"  # "What is the [gender / number / case] of [noun / pronoun / adjective]?" (MCQ)
-    LEM_GNC_TO_FORM = (
-        "subst_to_form"  # "What is the [gnc] form of [lemma]?" (MCQ/Cloze)
-    )
-
-    # --- ADJECTIVES ---
-    # lemma (adjective) <-> comparative / superlative form
-    LEM_TO_ADJV_FORM = "lem_to_adjv_form"  # "What is the Y form of X?" (MCQ)
-    ADJV_FORM_TO_LEM = "adjv_form_to_lem"  # "What is the base form of X?" (MCQ/Cloze)
-    # adjective form <-> adjective type
-    ADJV_FORM_TO_TYPE = "adjv_to_type"  # "What kind of adjective is X?" (MCQ)
-    TYPE_TO_ADJV_FORM = "type_to_adjv"  # "Which of the following adjectives is/are an example of X?" (MCQ)
-
-    # --- NOUNS ---
-    # lemma (noun) <-> gender
-    LEM_TO_GEND = "lem_to_gender"  # "What gender is X?" (MCQ)
-    GEND_TO_LEM = "gender_to_lem"  # "Which lemma(s) is/are X?" (MCQ)
-    # lemma (noun) <-> animacy (bool)
-    LEM_TO_ANIM = "lem_to_anim"  # "Is X animate or inanimate?" (MCQ)
-    ANIM_TO_LEM = "anim_to_lem"  # "Which lemma(s) is/are in/animate?" (MCQ)
-
-    # --- PARTICIPLES ---
-    # participle <-> type
-    PART_TO_TYPE = "part_to_type"  # "What type of participle is X?" (MCQ)
-    TYPE_TO_PART = "type_to_part"  # "What form is type X?" (MCQ)
+    VERB_TO_TNRF = "verb_to_tnrf"  # "Is X transitive, reflexive, or neither?" (MCQ)
+    TNRF_TO_VERB = "tnrf_to_verb"  # "Which lemma(s) is/are X?" (MCQ)
 
 
 class EnumSentItemType(str, enum.Enum):
@@ -251,61 +252,83 @@ class EnumItemDifficulty(str, enum.Enum):
     DIFFICULT = "difficult"
 
 
+#
+# Declarative Base for Models
+#
+
+# Base = declarative_base()
+
+
+class Base(DeclarativeBase):
+    """
+    All your database models will inherit from this class.
+    You can also put global helpers or common columns here
+    (like a created_at timestamp).
+    """
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    pass
+
+
 # --- Word Primary Tables ---
 class Lemma(Base):
     """Represents a dictionary base form (lemma) of a word."""
 
     __tablename__ = "lemmas"
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
     # UUID5 entry key
-    entry_key = Column(UUID, nullable=False)
+    entry_key: Mapped[UUID] = mapped_column()
     # text of the lemma
-    lem_text = Column(String(50), nullable=False)
+    lem_text: Mapped[str] = mapped_column(String(50))
     # canonical of the lemma
-    lem_canon = Column(String(50), nullable=True)
+    lem_canon: Mapped[str | None] = mapped_column(String(50))
     # part of speech of the lemma
-    pos = Column(Enum(EnumPartOfSpeech), nullable=False)
+    pos: Mapped[EnumPartOfSpeech] = mapped_column(Enum(EnumPartOfSpeech))
     # nominal gender
-    noun_gender = Column(Enum(EnumGender), nullable=True)
+    noun_gender: Mapped[EnumGramGender | None] = mapped_column(Enum(EnumGramGender))
     # substantive animacy
-    subst_animacy = Column(Boolean, nullable=True)
+    subst_animacy: Mapped[bool | None] = mapped_column()
     # verb aspect
-    verb_aspect = Column(Enum(EnumVerbAspect), nullable=True)
+    verb_aspect: Mapped[EnumVerbAspect | None] = mapped_column(Enum(EnumVerbAspect))
     # verb conj (Zalizniak's)
-    verb_conj = Column(String(8), nullable=True)
+    verb_conj: Mapped[str | None] = mapped_column(String(8))
     # verb type
-    verb_type = Column(Enum(EnumVerbType), nullable=True)
+    verb_type: Mapped[EnumVerbType | None] = mapped_column(Enum(EnumVerbType))
     # verb transivity/reflexivity
-    verb_trans_refl = Column(Enum(EnumVerbTransRefl), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    verb_trans_refl: Mapped[EnumVerbTransRefl | None] = mapped_column(
+        Enum(EnumVerbTransRefl)
+    )
 
     # A single lemma has many inflected word forms
-    lemma_word_form = relationship("WordForm", back_populates="word_form_lemma")
-    # Relationship for lemma defintion
-    lemma_definition = relationship(
-        "LemmaDefinition", back_populates="lemma_definition"
+    lemma_word_form: Mapped[List["WordForm"]] = relationship(
+        back_populates="word_form_lemma"
     )
-    # Relationship to other lemmas
-    related_to = relationship(
-        "LemmaRelation",
+    # Relationship for lemma defintion
+    definitions: Mapped[List["LemmaDefinition"]] = relationship(back_populates="lemma")
+    # Relationship to other lemmas as source
+    related_to: Mapped[List["LemmaRelation"]] = relationship(
         foreign_keys="[LemmaRelation.source_id]",
         back_populates="source_lemma",
     )
-    related_from = relationship(
-        "LemmaRelation",
+    # Relationship to other lemmas as target
+    related_from: Mapped[List["LemmaRelation"]] = relationship(
         foreign_keys="[LemmaRelation.target_id]",
         back_populates="target_lemma",
     )
-    in_less_list = relationship(
-        "LessonList", secondary="lems_in_less_lists", back_populates="has_lemma"
+    in_less_list: Mapped[List["LessonList"]] = relationship(
+        secondary="lems_in_less_lists", back_populates="has_lemma"
     )
-    in_item = relationship("Item", secondary="lems_in_items", back_populates="ref_lems")
+    in_item: Mapped[List["Item"]] = relationship(
+        secondary="lems_in_items", back_populates="ref_lems"
+    )
     # Relationships for study results
-    # lemma_crws = relationship(
+    # lemma_crws: Mapped["WordForm"] = relationship(
     #     "ConjugationResultWordStudied", back_populates="crws_lemma"
     # )
-    # lemma_drws = relationship(
+    # lemma_drws: Mapped["WordForm"] = relationship(
     #     "DeclensionResultWordStudied", back_populates="drws_lemma"
     # )
     # Unique pair of "lem_text" and "pos" to prevent duplicates
@@ -317,12 +340,13 @@ class Lexeme(Base):
 
     __tablename__ = "lexicon"
 
-    id = Column(Integer, primary_key=True)
-    lex_text = Column(String(50), nullable=False, unique=True)
-    lex_text_clean = Column(String(50), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lex_text: Mapped[str] = mapped_column(String(50), unique=True)
+    lex_text_clean: Mapped[str] = mapped_column(String(50))
 
-    lexeme_word_form = relationship("WordForm", back_populates="word_form_lexicon")
+    lexeme_word_form: Mapped[List["WordForm"]] = relationship(
+        back_populates="word_form_lexicon"
+    )
 
 
 class GramProp(Base):
@@ -330,30 +354,31 @@ class GramProp(Base):
 
     __tablename__ = "gram_props"
 
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
 
     # Various grammatical properties that can potentially apply,
     # though table will be largely sparse
 
     # non-specific grammar
-    gram_tense = Column(Enum(EnumGramTense), nullable=True)
-    irregular = Column(Boolean, default=False)
-    gram_num = Column(Enum(EnumGramNum), nullable=True)
+    irregular: Mapped[bool] = mapped_column(default=False)
+    gram_tense: Mapped[EnumGramTense | None] = mapped_column(Enum(EnumGramTense))
+    gram_num: Mapped[EnumGramNum | None] = mapped_column(Enum(EnumGramNum))
     # Verbs
-    gram_gender = Column(Enum(EnumGender), nullable=True)
-    conj_person = Column(Enum(EnumConjPerson), nullable=True)
-    verb_mood = Column(Enum(EnumVerbMood), nullable=True)
+    gram_gender: Mapped[EnumGramGender | None] = mapped_column(Enum(EnumGramGender))
+    conj_person: Mapped[EnumConjPerson | None] = mapped_column(Enum(EnumConjPerson))
+    verb_mood: Mapped[EnumVerbMood | None] = mapped_column(Enum(EnumVerbMood))
     # Substantives (nouns, adjectives, numerals, participles)
-    subst_case = Column(Enum(EnumSubstCase), nullable=True)
-    alt_adjv_type = Column(Enum(EnumAltAdjvType), nullable=True)
-    alt_noun_type = Column(Enum(EnumAltNounType), nullable=True)
+    subst_case: Mapped[EnumSubstCase | None] = mapped_column(Enum(EnumSubstCase))
+    alt_adjv_type: Mapped[EnumAltAdjvType | None] = mapped_column(Enum(EnumAltAdjvType))
+    alt_noun_type: Mapped[EnumAltNounType | None] = mapped_column(Enum(EnumAltNounType))
     # Participles
-    part_type = Column(Enum(EnumParticipleType), nullable=True)
-    part_voice = Column(Enum(EnumParticipleVoice), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    part_type: Mapped[EnumPartType | None] = mapped_column(Enum(EnumPartType))
+    part_voice: Mapped[EnumPartVoice | None] = mapped_column(Enum(EnumPartVoice))
 
     # Relationship for a word form's grammatical properties
-    gram_word_form = relationship("WordForm", back_populates="word_form_gram")
+    gram_word_form: Mapped[List["WordForm"]] = relationship(
+        back_populates="word_form_gram"
+    )
     # Unique set of grammatical properties to prevent duplicates
     __table_args__ = (
         UniqueConstraint(
@@ -378,53 +403,50 @@ class WordForm(Base):
 
     __tablename__ = "word_forms"
 
-    id = Column(Integer, primary_key=True)
-    lem_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
-    lex_id = Column(Integer, ForeignKey("lexicon.id"), nullable=False)
-    gram_id = Column(Integer, ForeignKey("gram_props.id"), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"))
+    lex_id: Mapped[int] = mapped_column(ForeignKey("lexicon.id"))
+    gram_id: Mapped[int] = mapped_column(ForeignKey("gram_props.id"))
 
-    word_form_lemma = relationship("Lemma", back_populates="lemma_word_form")
-    word_form_lexicon = relationship("Lexeme", back_populates="lexeme_word_form")
-    word_form_gram = relationship("GramProp", back_populates="gram_word_form")
+    word_form_lemma: Mapped["Lemma"] = relationship(back_populates="lemma_word_form")
+    word_form_lexicon: Mapped["Lexeme"] = relationship(
+        back_populates="lexeme_word_form"
+    )
+    word_form_gram: Mapped["GramProp"] = relationship(back_populates="gram_word_form")
 
 
 class Definition(Base):
     __tablename__ = "definitions"
 
-    id = Column(Integer, primary_key=True)
-    def_text = Column(String, unique=True, nullable=False)
-    def_tags = Column(ARRAY(String), nullable=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    def_text: Mapped[str] = mapped_column(unique=True)
+    def_tags: Mapped[List[str] | None] = mapped_column(ARRAY(String))
 
-    definition_lemma = relationship(
-        "LemmaDefinition", back_populates="definition_lemma"
-    )
+    lemmas: Mapped[List["LemmaDefinition"]] = relationship(back_populates="definition")
 
-    definition_example = relationship(
-        "DefinitionExample", back_populates="definition_example"
+    example: Mapped[List["DefinitionExample"]] = relationship(
+        back_populates="definition_example"
     )
 
 
 class Example(Base):
     __tablename__ = "examples"
 
-    id = Column(Integer, primary_key=True)
-    ex_text = Column(String, unique=True, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ex_text: Mapped[str] = mapped_column(unique=True)
 
-    example_definition = relationship(
-        "DefinitionExample", back_populates="example_definition"
+    definition: Mapped["DefinitionExample"] = relationship(
+        back_populates="example_definition"
     )
 
 
 class Pronunciation(Base):
     __tablename__ = "pronunciations"
 
-    id = Column(Integer, primary_key=True)
-    pron_text = Column(String, unique=True, nullable=False)
-    pron_tags = Column(ARRAY(String), nullable=True)
-    pron_type = Column(Enum(EnumPronType), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    pron_text: Mapped[str] = mapped_column(unique=True)
+    pron_tags: Mapped[List[str] | None] = mapped_column(ARRAY(String))
+    pron_type: Mapped[EnumPronType] = mapped_column(Enum(EnumPronType))
 
 
 # --- Word Junction Tables ---
@@ -435,17 +457,16 @@ class LemmaRelation(Base):
 
     __tablename__ = "lem_rels"
 
-    id = Column(Integer, primary_key=True, index=True)
-    source_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
-    target_id = Column(Integer, ForeignKey("lemmas.id"), nullable=False)
-    rel_type = Column(Enum(EnumRelLemType), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    source_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    target_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    rel_type: Mapped[EnumRelLemType] = mapped_column(Enum(EnumRelLemType))
 
-    source_lemma = relationship(
-        "Lemma", foreign_keys=[source_id], back_populates="related_to"
+    source_lemma: Mapped["Lemma"] = relationship(
+        foreign_keys=[source_id], back_populates="related_to"
     )
-    target_lemma = relationship(
-        "Lemma", foreign_keys=[target_id], back_populates="related_from"
+    target_lemma: Mapped["Lemma"] = relationship(
+        foreign_keys=[target_id], back_populates="related_from"
     )
 
 
@@ -453,15 +474,14 @@ class LookupQueue(Base):
 
     __tablename__ = "lookup_queue"
 
-    id = Column(Integer, primary_key=True, index=True)
-    target_lem = Column(String(50), nullable=False)
-    target_id = Column(Integer, ForeignKey("lemmas.id"), nullable=True)
-    source_id = Column(Integer, ForeignKey("lemmas.id"), nullable=True)
-    rel_type = Column(Enum(EnumRelLemType), nullable=False)
-    lookup_status = Column(
-        Enum(EnumLookupStatus), nullable=False, default=EnumLookupStatus.UNLINKED
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    target_lem: Mapped[int] = mapped_column(String(50))
+    target_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    source_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    rel_type: Mapped[EnumRelLemType] = mapped_column(Enum(EnumRelLemType))
+    lookup_status: Mapped[EnumLookupStatus] = mapped_column(
+        Enum(EnumLookupStatus), default=EnumLookupStatus.UNLINKED
     )
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class LemmaDefinition(Base):
@@ -469,15 +489,14 @@ class LemmaDefinition(Base):
 
     __tablename__ = "lem_defs"
 
-    lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
-    def_id = Column(Integer, ForeignKey("definitions.id"), primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
+    def_id: Mapped[int] = mapped_column(ForeignKey("definitions.id"), primary_key=True)
 
-    lemma_definition = relationship(
-        "Lemma", foreign_keys=[lem_id], back_populates="lemma_definition"
+    lemma: Mapped["Lemma"] = relationship(
+        foreign_keys=[lem_id], back_populates="definitions"
     )
-    definition_lemma = relationship(
-        "Definition", foreign_keys=[def_id], back_populates="definition_lemma"
+    definition: Mapped["Definition"] = relationship(
+        foreign_keys=[def_id], back_populates="lemmas"
     )
 
 
@@ -486,15 +505,14 @@ class DefinitionExample(Base):
 
     __tablename__ = "def_exs"
 
-    def_id = Column(Integer, ForeignKey("definitions.id"), primary_key=True)
-    ex_id = Column(Integer, ForeignKey("examples.id"), primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    def_id: Mapped[int] = mapped_column(ForeignKey("definitions.id"), primary_key=True)
+    ex_id: Mapped[int] = mapped_column(ForeignKey("examples.id"), primary_key=True)
 
-    definition_example = relationship(
-        "Definition", foreign_keys=[def_id], back_populates="definition_example"
+    definition_example: Mapped["Definition"] = relationship(
+        foreign_keys=[def_id], back_populates="example"
     )
-    example_definition = relationship(
-        "Example", foreign_keys=[ex_id], back_populates="example_definition"
+    example_definition: Mapped["Example"] = relationship(
+        foreign_keys=[ex_id], back_populates="definition"
     )
 
 
@@ -504,25 +522,27 @@ class DefinitionExample(Base):
 class Module(Base):
     __tablename__ = "modules"
 
-    id = Column(Integer, primary_key=True, index=True)
-    module_name = Column(String(10), nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    module_name: Mapped[str] = mapped_column(String(10))
 
-    has_less_list = relationship("LessonListInModule", back_populates="in_module")
+    has_less_list: Mapped[List["LessonListInModule"]] = relationship(
+        back_populates="in_module"
+    )
 
 
 class LessonList(Base):
     __tablename__ = "lessons_lists"
 
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String(50), nullable=False, unique=True)
-    topic = Column(String, nullable=True)
-    owner_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    title: Mapped[str] = mapped_column(String(50), unique=True)
+    topic: Mapped[str | None] = mapped_column(String)
+    owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
 
-    in_module = relationship("LessonListInModule", back_populates="less_list_in")
-    has_lemma = relationship(
-        "Lemma", secondary="lems_in_less_lists", back_populates="in_less_list"
+    in_module: Mapped[List["LessonListInModule"]] = relationship(
+        back_populates="less_list_in"
+    )
+    has_lemma: Mapped[List["Lemma"]] = relationship(
+        secondary="lems_in_less_lists", back_populates="in_less_list"
     )
 
 
@@ -532,9 +552,10 @@ class LessonList(Base):
 class LemmaInLessonList(Base):
     __tablename__ = "lems_in_less_lists"
 
-    lem_id = Column(Integer, ForeignKey("lemmas.id"), primary_key=True)
-    less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
+    less_list_id: Mapped[int] = mapped_column(
+        ForeignKey("lessons_lists.id"), primary_key=True
+    )
 
     # lemma_in = relationship("Lemma", back_populates="in_less_list")
     # in_less_list = relationship("LessonList", back_populates="has_lemma")
@@ -545,12 +566,13 @@ class LessonListInModule(Base):
 
     __tablename__ = "less_lists_in_mods"
 
-    less_list_id = Column(Integer, ForeignKey("lessons_lists.id"), primary_key=True)
-    mod_id = Column(Integer, ForeignKey("modules.id"), primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    less_list_id: Mapped[int] = mapped_column(
+        ForeignKey("lessons_lists.id"), primary_key=True
+    )
+    mod_id: Mapped[int] = mapped_column(ForeignKey("modules.id"), primary_key=True)
 
-    less_list_in = relationship("LessonList", back_populates="in_module")
-    in_module = relationship("Module", back_populates="has_less_list")
+    less_list_in: Mapped["LessonList"] = relationship(back_populates="in_module")
+    in_module: Mapped["Module"] = relationship(back_populates="has_less_list")
 
 
 # --- Sentence Tables ---
@@ -559,8 +581,8 @@ class LessonListInModule(Base):
 # class Sentence(Base):
 #     ___tablename__ = "sentences"
 
-#     id = Column(Integer, primary_key=True)
-#     raw_text = Column(Text, nullable=False)
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+#     raw_text: Mapped[str] = mapped_column(Text, nullable=False)
 
 #     tokens = relationship(
 #         "SentenceToken",
@@ -575,18 +597,18 @@ class LessonListInModule(Base):
 
 #     __tablename__ = "word_forms_in_sentences"
 
-#     id = Column(Integer, primary_key=True)
-#     sentence_id = Column(
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+#     sentence_id: Mapped[int] = mapped_column(
 #         Integer, ForeignKey("sentences.id", ondelete="CASCADE"), nullable=False
 #     )
-#     word_form_id = Column(Integer, ForeignKey("word_forms.id"), nullable=False)
+#     word_form_id: Mapped[int] = mapped_column(Integer, ForeignKey("word_forms.id"), nullable=False)
 
-#     position_index = Column(Integer, nullable=False)
+#     position_index: Mapped[int] = mapped_column(Integer, nullable=False)
 
 #     # context-specific lexeme orthography
-#     is_capitalized = Column(Boolean, default=False)
-#     punctuation_after = Column(String(5), nullable=True)
-#     punctuation_before = Column(String(5), nullable=True)
+#     is_capitalized = mapped_column()
+#     punctuation_after = mapped_column(String(5), nullable=True)
+#     punctuation_before = mapped_column(String(5), nullable=True)
 
 #     # relationships
 #     sentence = relationship("Sentence", back_populates="tokens")
@@ -599,12 +621,11 @@ class LessonListInModule(Base):
 # class Document(Base):
 #     __tablename__ = "documents"
 
-#     id = Column(Integer, primary_key=True)
-#     author = Column(String(48), nullable=False)
-#     date = Column(DateTime, nullable=True)
-#     source = Column(Text, nullable=False)
-#     title = Column(String(48), nullable=False)
-#     created_at = Column(DateTime(timezone=True), server_default=func.now())
+#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
+#     author: Mapped[int] = mapped_column(String(48), nullable=False)
+#     date: Mapped[int] = mapped_column(DateTime, nullable=True)
+#     source: Mapped[int] = mapped_column(Text, nullable=False)
+#     title: Mapped[int] = mapped_column(String(48), nullable=False)
 
 #     sentences = relationship("Sentence", back_populates="in_document")
 
@@ -615,35 +636,36 @@ class LessonListInModule(Base):
 class User(Base):
     __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String(50), unique=True, nullable=True)
-    alias = Column(String(25), unique=False, nullable=True)
-    user_role = Column(Enum(EnumUserRole))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str | None] = mapped_column(String(50), unique=True)
+    alias: Mapped[str | None] = mapped_column(String(25))
+    user_role: Mapped[EnumUserRole] = mapped_column(Enum(EnumUserRole))
 
-    in_group = relationship("UserInGroup", back_populates="group_user")
-    exercises = relationship("Items", back_populates="user")
+    in_group: Mapped["UserInGroup"] = relationship(back_populates="group_user")
+    exercises: Mapped[List["Exercise"]] = relationship(back_populates="user")
 
 
 class UserGroup(Base):
     __tablename__ = "user_groups"
 
-    id = Column(Integer, primary_key=True, index=True)
-    group_name = Column(String(50), unique=True, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    group_name: Mapped[str | None] = mapped_column(String(50), unique=True)
 
-    users = relationship("UserInGroup", back_populates="user_group")
+    users: Mapped[List["UserInGroup"]] = relationship(back_populates="user_group")
 
 
 class UserInGroup(Base):
     __tablename__ = "users_in_groups"
 
-    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
-    group_id = Column(Integer, ForeignKey("user_groups.id"), primary_key=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    user_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("users.id"), primary_key=True
+    )
+    group_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("user_groups.id"), primary_key=True
+    )
 
-    group_user = relationship("User", back_populates="in_group")
-    user_group = relationship("UserGroup", back_populates="users")
+    group_user: Mapped["User"] = relationship(back_populates="in_group")
+    user_group: Mapped["UserGroup"] = relationship(back_populates="users")
 
 
 # --- Questions, Sessions, and Responses ---
@@ -651,107 +673,101 @@ class UserInGroup(Base):
 
 class Item(Base):
     __tablename__ = "items"
-
-    id = Column(Integer, primary_key=True)
-    item_type = Column(String(48), nullable=False)
-    prompt = Column(Text, nullable=False)
-    settings = Column(JSON, nullable=False)
-    key = Column(Text, nullable=False)
-    distractors = Column(ARRAY(String), nullable=True)
-    difficulty = Column(Enum(EnumItemDifficulty), nullable=True)
+    # id, type
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ex_id: Mapped[int] = mapped_column(
+        ForeignKey("exercises.id", ondelete="CASCADE"), index=True
+    )
+    item_type: Mapped[EnumWordItemType] = mapped_column(Enum(EnumWordItemType))
+    # content
+    prompt: Mapped[str] = mapped_column()
+    settings: Mapped[dict] = mapped_column(JSON)
+    key: Mapped[str] = mapped_column()
+    distractors: Mapped[List[str] | None] = mapped_column(ARRAY(String))
+    difficulty: Mapped[EnumItemDifficulty | None] = mapped_column(
+        Enum(EnumItemDifficulty)
+    )
+    responses: Mapped[List["ItemResponse"]] = relationship(back_populates="item")
+    # meta
     # TODO: set up to record times
-    start_time = Column(DateTime(timezone=True))
-    finish_time = Column(DateTime(timezone=True))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finish_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    reponses = relationship("ItemResponse", back_populates="item")
-    ref_lems = relationship(
-        "Lemma", secondary="lems_in_items", back_populates="in_item"
+    ref_lems: Mapped[List["Lemma"]] = relationship(
+        secondary="lems_in_items", back_populates="in_item"
     )
-    in_ex = relationship(
-        "Exercise", secondary="items_in_exercises", back_populates="has_item"
-    )
+    in_ex: Mapped["Exercise"] = relationship(back_populates="has_item")
 
 
 class LemmaInItem(Base):
     __tablename__ = "lems_in_items"
 
-    item_id = Column(
-        Integer, ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+    item_id: Mapped[int] = mapped_column(
+        ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
     )
-    lem_id = Column(
-        Integer, ForeignKey("lemmas.id", ondelete="CASCADE"), primary_key=True
+    lem_id: Mapped[int] = mapped_column(
+        ForeignKey("lemmas.id", ondelete="CASCADE"), primary_key=True
     )
 
 
 class Exercise(Base):
     __tablename__ = "exercises"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
     # TODO: set this up to start at load
-    start_time = Column(DateTime(timezone=True), server_default=func.now())
-    end_time = Column(DateTime(timezone=True))
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-    has_item = relationship
-    user = relationship("User", back_populates="exercises")
-
-
-class ItemInExercise(Base):
-    __tablename__ = "items_in_exercises"
-
-    item_id = Column(
-        Integer, ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+    start_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
     )
-    ex_id = Column(
-        Integer, ForeignKey("exercises.id", ondelete="CASCADE"), primary_key=True
+    finish_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    has_item: Mapped[List["Item"]] = relationship(
+        back_populates="in_ex", cascade="all, delete-orphan"
     )
+    user: Mapped["User"] = relationship(back_populates="exercises")
 
 
 class ItemResponse(Base):
     __tablename__ = "student_responses"
 
-    id = Column(Integer, primary_key=True)
-    ex_id = Column(Integer, ForeignKey("exercises.id"), nullable=False)
-    item_id = Column(Integer, ForeignKey("items.id"), nullable=False)
-    student_answer = Column(Text, nullable=False)
-    response_time_ms = Column(Integer)
-    submitted_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
+    selection: Mapped[str] = mapped_column()
+    is_correct: Mapped[bool] = mapped_column()
+    response_time_ms: Mapped[int] = mapped_column()
 
-    exercise = relationship("Exercise", back_populates="responses")
-    item = relationship("Item", back_populates="responses")
+    item: Mapped["Item"] = relationship(back_populates="responses")
 
 
 """
 class Skill(Base):
     __tablename__ = "skills"
 
-    id = Column(Integer, primary_key=True)
-    skill_name = Column(String(255), nullable=False, unique=True)
-    skill_description = Column(Text)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    skill_name: Mapped[int] = mapped_column(String(255), nullable=False, unique=True)
+    skill_description: Mapped[int] = mapped_column(Text)
 
 
 class SkillInQuestion(Base):
     __tablename__ = "question_skills"
 
-    question_id = Column(Integer, ForeignKey("questions.id"), primary_key=True)
-    skill_id = Column(Integer, ForeignKey("skills.id"), primary_key=True)
+    question_id: Mapped[int] = mapped_column(Integer, ForeignKey("questions.id"), primary_key=True)
+    skill_id: Mapped[int] = mapped_column(Integer, ForeignKey("skills.id"), primary_key=True)
 
 
 class StudentSkillMastery(Base):
     __tablename__ = "student_skill_mastery"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    skill_id = Column(Integer, ForeignKey("skills.id"), nullable=False)
-    mastery_level = Column(Float, default=0.0)
-    p_learn = Column(Float)
-    p_guess = Column(Float)
-    p_slip = Column(Float)
-    last_seen_at = Column(DateTime(timezone=True))
-    next_review_at = Column(DateTime(timezone=True))
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    skill_id: Mapped[int] = mapped_column(Integer, ForeignKey("skills.id"), nullable=False)
+    mastery_level: Mapped[int] = mapped_column(Float, default=0.0)
+    p_learn: Mapped[int] = mapped_column(Float)
+    p_guess: Mapped[int] = mapped_column(Float)
+    p_slip: Mapped[int] = mapped_column(Float)
+    last_seen_at: Mapped[int] = mapped_column(DateTime(timezone=True))
+    next_review_at: Mapped[int] = mapped_column(DateTime(timezone=True))
 
     user = relationship("User")
     skill = relationship("Skill")
@@ -760,11 +776,11 @@ class StudentSkillMastery(Base):
 class UserExperiment(Base):
     __tablename__ = "user_experiments"
 
-    id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    experiment_name = Column(String(255), nullable=False)
-    variant_name = Column(String(255), nullable=False)
-    assigned_at = Column(DateTime(timezone=True), server_default=func.now())
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    experiment_name: Mapped[int] = mapped_column(String(255), nullable=False)
+    variant_name: Mapped[int] = mapped_column(String(255), nullable=False)
+    assigned_at: Mapped[int] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     user = relationship("User")
 """

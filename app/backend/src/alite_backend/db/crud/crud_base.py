@@ -1,7 +1,9 @@
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union
+from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union, Sequence
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from fastapi import HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 import logging
 
@@ -23,22 +25,43 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
 
     def get(self, db: Session, id: Any) -> Optional[ModelType]:
-        return db.query(self.model).filter(self.model.id == id).first()
+        # return db.query(self.model).filter(self.model.id == id).first()
+        return db.get(self.model, id)
 
     def get_multi(
         self, db: Session, *, skip: int = 0, limit: int = 100
     ) -> List[ModelType]:
-        return db.query(self.model).offset(skip).limit(limit).all()
+        # return db.query(self.model).offset(skip).limit(limit).all()
+        stmt = select(self.model).offset(skip).limit(limit)
+
+        return list(db.scalars(stmt).all())
+
+    def params_search(
+        self, db: Session, filter_kwargs: dict[str, Any], find_one: bool = True
+    ) -> ModelType | Sequence[ModelType] | None:
+
+        stmt = select(self.model)
+
+        for key, value in filter_kwargs.items():
+            # getattr(self.model, 'lem_text') behaves exactly like self.model.lem_text
+            stmt = stmt.where(getattr(self.model, key) == value)
+
+        if find_one:
+            return db.scalars(stmt).first()
+        else:
+            return db.scalars(stmt).all()
 
     def create(self, db: Session, *, obj_in: CreateSchemaType) -> ModelType:
         try:
             # Convert Pydantic model to dict and unpack into SQLAlchemy model
-            obj_in_data = obj_in.model_dump()
+            # obj_in_data = obj_in.model_dump()
+            obj_in_data = jsonable_encoder(obj=obj_in)
             db_obj = self.model(**obj_in_data)
             db.add(db_obj)
             db.flush()
             db.refresh(db_obj)
             return db_obj
+
         except IntegrityError as e:
             db.rollback()
             logger.exception(f"IntegrityError creating {self.model.__name__}: {str(e)}")
@@ -61,10 +84,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Tries to fetch the object based on filter_kwargs.
         If it doesn't exist, it creates it using obj_in.
         """
-        existing_obj = db.query(self.model).filter_by(**filter_kwargs).first()
+        # stmt = select(self.model)
+
+        # for key, value in filter_kwargs.items():
+        #     # getattr(self.model, 'lem_text') behaves exactly like self.model.lem_text
+        #     stmt = stmt.where(getattr(self.model, key) == value)
+
+        # existing_obj = db.scalars(stmt).first()
+
+        existing_obj = self.params_search(db, filter_kwargs)
 
         if existing_obj:
-            return existing_obj
+            return existing_obj  # type: ignore
 
         return self.create(db=db, obj_in=obj_in)
 
@@ -77,17 +108,17 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> ModelType:
         try:
             # check that type is dict
+            obj_data = jsonable_encoder(db_obj)
             if isinstance(obj_in, dict):
                 update_data = obj_in
             else:
-                update_data = obj_in.model_dump(exclude_unset=True)
+                update_data = obj_in.dict(exclude_unset=True)
 
-            # iterate and update as relevant
-            for field, value in update_data.items():
-                if hasattr(db_obj, field):
-                    setattr(db_obj, field, value)
+            for field in obj_data:
+                if field in update_data:
+                    setattr(db_obj, field, update_data[field])
 
-            # save changesƒ
+            # save changes
             db.add(db_obj)
             db.flush()
             db.refresh(db_obj)
@@ -108,13 +139,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
                 detail="An unexpected database error occurred during update.",
             )
 
-    def remove(self, db: Session, *, id: Any) -> ModelType:
+    def remove(self, db: Session, *, id: int) -> ModelType:
         """
         Deletes a record from the database by its ID.
         """
         try:
             # 1. Fetch the object
-            obj = db.query(self.model).filter(self.model.id == id).first()
+            # obj = db.query(self.model).filter(self.model.id == id).first()
+            obj = db.get(self.model, id)
 
             # 2. If it doesn't exist, raise a clean 404 error
             if not obj:

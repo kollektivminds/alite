@@ -26,7 +26,7 @@ from alite_backend.config import settings
 from alite_backend.db.schemas import FDAPIreturn, ProcessedPayload
 from alite_backend.db.models import (
     EnumPartOfSpeech,
-    EnumGender,
+    EnumGramGender,
     EnumVerbAspect,
     EnumVerbTransRefl,
     EnumGramNum,
@@ -60,9 +60,9 @@ class ReturnedLemmaProcessor:
         lemma_chars_dict = {}
         noun_chars_map = {
             # noun_gender
-            "masculine": {"noun_gender": EnumGender.MASCULINE},
-            "neuter": {"noun_gender": EnumGender.NEUTER},
-            "feminine": {"noun_gender": EnumGender.FEMININE},
+            "masculine": {"noun_gender": EnumGramGender.MASCULINE},
+            "neuter": {"noun_gender": EnumGramGender.NEUTER},
+            "feminine": {"noun_gender": EnumGramGender.FEMININE},
             # gram_num
             "singular": {"gram_num": EnumGramNum.SINGULAR},
             "plural": {"gram_num": EnumGramNum.PLURAL},

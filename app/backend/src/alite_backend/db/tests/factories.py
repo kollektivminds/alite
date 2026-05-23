@@ -28,3 +28,12 @@ class ExerciseFactory(BaseFactory):
         model = models.Exercise
         
     user_id = SubFactory(UserFactory)
+    start_time = Faker('date_time_this_month')
+    end_time = Faker('date_time_this_month')
+    
+class ItemResponseFactory(BaseFactory):
+    class Meta: # type: ignore
+        model = models.ItemResponse
+        
+    id = Sequence(lambda n: n)
+    response_time_ms = Faker("random_int", min=500, max=4000)

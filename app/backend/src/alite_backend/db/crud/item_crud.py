@@ -15,28 +15,47 @@ from sqlalchemy.exc import (
     StatementError,
 )
 from fastapi import HTTPException, status
-from alite_backend.db.models import (
-    Item,
-    Exercise,
-    ItemResponse,
-    ResponseResult
-)
+from alite_backend.db.crud.crud_base import CRUDBase
+from alite_backend.db.models import Item, Exercise, ItemResponse
 from alite_backend.db.schemas import (
     ItemCreate,
     ItemUpdate,
-    ExerciseCreate
+    ExerciseCreate,
+    ExerciseUpdate,
+    ItemResponseCreate,
+    ItemResponseUpdate
 )
-from alite_backend.db.crud.crud_base import CRUDBase
 
 logger = logging.getLogger(__name__)
+
+
+#
+# EXERCISES
+#
+
+
+class CRUDExercises(CRUDBase[Exercise, ExerciseCreate, ExerciseUpdate]):
+    pass
+
+crud_exercise = CRUDExercises(Exercise)
 
 #
 # ITEMS
 #
 
 
-class CRUDItems(CRUDBase[Item, ItemCreate, ItemCreate]):
+class CRUDItems(CRUDBase[Item, ItemCreate, ItemUpdate]):
     pass
 
 
 crud_item = CRUDItems(Item)
+
+
+#
+# ITEM RESPONSES
+#
+
+class CRUDItemResponses(CRUDBase[ItemResponse, ItemResponseCreate, ItemResponseUpdate]):
+    pass
+
+crud_item_response = CRUDItemResponses(ItemResponse)
