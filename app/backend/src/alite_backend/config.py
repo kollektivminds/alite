@@ -21,6 +21,8 @@ class Settings(BaseSettings):
     DB_HOST: str
     DB_PORT: int
     DB_NAME: str
+    TEST_DB_NAME: str
+    DEV_DB_NAME: str
     CANVAS_TOKEN: str
     APP_DIR: str
     LOG_LOC: str
@@ -30,9 +32,19 @@ class Settings(BaseSettings):
 
     # Computed Database URL (as a property)
     @property
-    def DATABASE_URL(self) -> str:
+    def PROD_DATABASE_URL(self) -> str:
         # SecretStr needs .get_secret_value() to expose the string
         return f"postgresql://{self.DB_USER}:{self.DB_PW.get_secret_value()}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+    # Computed Database URL (as a property)
+    @property
+    def DEV_DATABASE_URL(self) -> str:
+        # SecretStr needs .get_secret_value() to expose the string
+        return f"postgresql://{self.DB_USER}:{self.DB_PW.get_secret_value()}@{self.DB_HOST}:{self.DB_PORT}/{self.DEV_DB_NAME}"
+    # Computed Database URL (as a property)
+    @property
+    def TEST_DATABASE_URL(self) -> str:
+        # SecretStr needs .get_secret_value() to expose the string
+        return f"postgresql://{self.DB_USER}:{self.DB_PW.get_secret_value()}@{self.DB_HOST}:{self.DB_PORT}/{self.TEST_DB_NAME}"
 
 # Instantiate the settings once for the entire application
 settings = Settings() # type: ignore

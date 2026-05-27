@@ -15,13 +15,13 @@ from alite_backend.db import models, schemas
 class LemmaToDefinitionStrategy(BaseExerciseStrategy):
 
     def generate_item_blueprints(
-        self, limit: int, max_distractors: int
+        self, num_items: int, max_keys: int, max_distractors: int
     ) -> List[schemas.ItemBlueprint]:
         blueprints = []
 
         # 1. Fetch lemmas and their definitions in one go
         stmt = (
-            self.get_scoped_lemma_statement()
+            self.get_scoped_stmt()
             .add_columns(models.Definition)
             .join(
                 models.LemmaDefinition, models.LemmaDefinition.lem_id == models.Lemma.id
@@ -29,7 +29,7 @@ class LemmaToDefinitionStrategy(BaseExerciseStrategy):
             .join(
                 models.Definition, models.LemmaDefinition.def_id == models.Definition.id
             )
-            .limit(limit)
+            .limit(num_items)
         )
         results = self.db.execute(stmt).all()
 

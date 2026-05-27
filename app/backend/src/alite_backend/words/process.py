@@ -4,15 +4,6 @@ This module provides tools for processing and analyzing scraped word data. It
 includes functions for cleaning raw text, extracting specific word forms, and
 preparing data payloads for database insertion. It is designed to be the
 'transform' step in an ETL (Extract, Transform, Load) pipeline.
-
-This module supports:
-- RawScrapedData: A dataclass for holding unprocessed scraped data.
-- Processor: A class that orchestrates the transformation logic.
-
-Example:
-    processor = Processor()
-    raw_data = RawScrapedData(term="example", ...)
-    payload = processor.transform(raw_data)
 """
 
 #!/usr/bin/env python
@@ -173,7 +164,11 @@ class ReturnedLemmaProcessor:
                     ][0]
                     # logger.debug("canonical object: %s", canonical_object)
                     canonical_form = canonical_object.word
+                    # TODO: dual-gender nouns?
                     if pos == EnumPartOfSpeech.NOUN:
+                        dual_gender = "m anim or f anim by sense"
+                        if re.match(dual_gender, canonical_form):
+                            lemma_dict["noun_gender"] = EnumGramGender.DUAL
                         # logger.debug("noun base form lex entry: %s", noun_base_lex_entry)
                         canon_tags = canonical_object.tags
                         if len(canon_tags) > 1:

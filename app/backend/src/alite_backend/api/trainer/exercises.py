@@ -8,44 +8,44 @@ from alite_backend.services.exercise_router import ExerciseRouter
 router = APIRouter()
 
 
-@router.post("/generate-exercise", response_model=schemas.ExerciseResponse)
+@router.post("/generate", response_model=schemas.ExerciseResponse)
 def create_custom_exercise(
-    context: schemas.ExerciseContext,
     request: schemas.ExerciseRequest,
     db: Session = Depends(deps.get_db),
 ):
     generator = ExerciseRouter(
-        db,
-        context,
+        db=db,
+        user_id=Depends(deps.get_current_user),
+        # exercise_request = request
     )
+    return generator.generate_exercise(request=request)
 
-    return
 
-
-@router.post("/evaluate-answer", response_model=schemas.AnswerResult)
+@router.post("/evaluate", response_model=schemas.AnswerResult)
 def evaluate_student_answer(
     submission: schemas.AnswerSubmission,
     db: Session = Depends(deps.get_db),
-    # current_user = Depends(deps.get_current_user)
+    user_id=Depends(deps.get_current_user),
 ):
     # fetch the real correct answer from the database securely
-    actual_correct_answer = fetch_correct_answer_from_db(db, submission.question_id)
+    # actual_correct_answer = fetch_correct_answer_from_db(db, submission.question_id)
 
     # compare
-    is_correct = submission.selected_option == actual_correct_answer
+    # is_correct = submission.selected_option == actual_correct_answer
 
     # log it in your existing StudentResponse table for analytics!
-    response_record = models.ItemResponse(
-        session_id=submission.session_id,
-        item_id=submission.question_id,
-        student_answer=submission.selected_option,
-        is_correct=is_correct,
-        response_time_ms=submission.response_time_ms,
-    )
-    db.add(response_record)
-    db.commit()
+    # response_record = models.ItemResponse(
+    #     session_id=submission.session_id,
+    #     item_id=submission.question_id,
+    #     student_answer=submission.selected_option,
+    #     is_correct=is_correct,
+    #     response_time_ms=submission.response_time_ms,
+    # )
+    # db.add(response_record)
+    # db.commit()
 
     # return the result to the UI
-    return schemas.AnswerResult(
-        is_correct=is_correct, correct_answer=actual_correct_answer
-    )
+    # return schemas.AnswerResult(
+    #     is_correct=is_correct, correct_answer=actual_correct_answer
+    # )
+    pass

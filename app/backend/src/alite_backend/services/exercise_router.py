@@ -6,10 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException
 from alite_backend.db import schemas, models
 from alite_backend.api import deps
 from alite_backend.db.schemas import EnumWordItemType
-from .items.base import BaseExerciseStrategy
-from .items.substantives import FormLemToGncStrategy
+from alite_backend.services.items.base import BaseExerciseStrategy
 
-# from .items.nouns import NounCaseStrategy
+# from alite_backend.services.items.lemmas import
+from alite_backend.services.items.substantives import NounFormToGramStrategy
+
+# from alite_backend.services.items.lemmas import
+
 # from .items.verbs import
 # from .items.participles import
 
@@ -17,96 +20,69 @@ logger = logging.getLogger(__name__)
 
 
 class ExerciseRouter:
+    """_summary_"""
 
     def __init__(
         self,
         db: Session,
         user_id: int,  # from endpoint
-        exercise_context: schemas.ExerciseContext,
+        # exercise_request: schemas.ExerciseRequest,
     ):
         self.db = db
-        self.context = exercise_context
+        # self.exercise_request = exercise_request
+        # self.context = exercise_request.exercise_context
         self.user_id = user_id
-        self.STRATEGY_MAP = {EnumWordItemType.FORM_LEM_TO_GNC: FormLemToGncStrategy}
+        self.STRATEGY_MAP = {EnumWordItemType.NOUN_FORM_TO_GRAM: NounFormToGramStrategy}
         # create exercise record
         self.exercise_in = models.Exercise(user_id=self.user_id)
         self.db.add(self.exercise_in)
         self.db.flush()
 
     def get_exercise_generator(
-        self,
-        exercise_type: EnumWordItemType,
+        self, exercise_type: EnumWordItemType, request: schemas.ExerciseRequest
     ) -> BaseExerciseStrategy:
 
         StrategyClass = self.STRATEGY_MAP.get(exercise_type)
         if not StrategyClass:
             raise ValueError(f"Unknown exercise type: {exercise_type}")
 
-        return StrategyClass(db_session=self.db, context=self.context)
+        return StrategyClass(
+            db_session=self.db, request_context=request.exercise_context
+        )
 
     def generate_exercise(
-        self, exercise_target: schemas.ExerciseRequest
+        self, request: schemas.ExerciseRequest
     ) -> schemas.ExerciseResponse:
         collated_items_payload = []
 
-        if not exercise_target.exercise_context or not exercise_target.type_counts:
+        if not request.exercise_context or not request.type_counts:
             raise ValueError("No targets or generation formats provided.")
 
-        for item_type, requested_qty in exercise_target.type_counts.items():
+        for item_type, requested_qty in request.type_counts.items():
             if requested_qty <= 0:
                 continue
 
-            strategy_runner = self.get_exercise_generator(item_type)
-            targets = strategy_runner.fetch_keys(
-                prompt_criteria=self.context.model_dump(),
-                keys_per_item=exercise_target.exercise_context.max_keys,
-                num_items=exercise_target.exercise_context.num_items,
+            strategy_runner = self.get_exercise_generator(item_type, request)
+            blueprints = strategy_runner.generate_item_blueprints(
+                num_items=request.exercise_context.num_items,
+                max_keys=request.exercise_context.max_keys,
+                max_distractors=request.exercise_context.max_distractors,
             )
+            # # Shape frontend response structures
+            # if chosen_format == models.EnumItemFormat.MCQ:
+            #     item_payload = schemas.MultipleChoiceResponse(
+            #         item_id=db_item.id, prompt=prompt_text, options=options
+            #     )
+            # elif chosen_format == models.EnumItemFormat.FLASHCARD:
+            #     item_payload = schemas.FlashcardResponse(
+            #         item_id=db_item.id,
+            #         front_text=prompt_text,
+            #         back_text=correct_key,
+            #     )
+            # else:
+            #     continue
 
-            for target in targets:
-                prompt_text = strategy_runner.format_prompt(target)
-                correct_key = strategy_runner.get_correct_answer_text(target)
-                distractors = strategy_runner.fetch_distractors(
-                    target,
-                    distractors_per_item=exercise_target.exercise_context.max_distractors,
-                )
-
-                options = [correct_key] + distractors
-                random.shuffle(options)
-
-                chosen_format = strategy_runner.determine_format(
-                    exercise_target.output.ex_formats
-                )
-
-                # Map attributes directly to columns in models.Item
-                db_item = models.Item(
-                    exercise_id=self.exercise_record.id,  # Link foreign key explicitly
-                    item_type=item_type,
-                    prompt=prompt_text,  # Column is named 'prompt'
-                    key=correct_key,  # Column is named 'key'
-                    distractors=distractors,
-                    choices=options,  # Saved to JSON choices field
-                    settings={"format": chosen_format.value},
-                    difficulty=self.context.difficulty,
-                )
-                self.db.add(db_item)
-                self.db.flush()  # Secure db_item.id
-
-                # Shape frontend response structures
-                if chosen_format == models.EnumItemFormat.MCQ:
-                    item_payload = schemas.MultipleChoiceResponse(
-                        item_id=db_item.id, prompt=prompt_text, options=options
-                    )
-                elif chosen_format == models.EnumItemFormat.FLASHCARD:
-                    item_payload = schemas.FlashcardResponse(
-                        item_id=db_item.id,
-                        front_text=prompt_text,
-                        back_text=correct_key,
-                    )
-                else:
-                    continue
-
-                collated_items_payload.append(item_payload)
+            # collated_items_payload.append(item_payload)
 
         random.shuffle(collated_items_payload)
         self.db.commit()  # Save transaction securely

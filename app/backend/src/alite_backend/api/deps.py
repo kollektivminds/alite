@@ -30,20 +30,20 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
         )
 
     # Look up the user in ALITE's local database
-    user = user_crud.get_by_intranet_id(db, intranet_id=intranet_user_id)
+    # user = user_crud.get_by_intranet_id(db, intranet_id=intranet_user_id)
     
-    if not user:
-        # TODO: add Just-In-Time (JIT) Provisioning.
+    # if not user:
+    #     # TODO: add Just-In-Time (JIT) Provisioning.
         
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User authenticated, but not registered in ALITE."
-        )
+    #     raise HTTPException(
+    #         status_code=status.HTTP_403_FORBIDDEN,
+    #         detail="User authenticated, but not registered in ALITE."
+    #     )
 
-    return user
+    # return user
 
 # 3. Role-Based Authorization Dependency
-def get_current_instructor(current_user: schemas.User = Depends(get_current_user)):
+def get_current_instructor(current_user=Depends(get_current_user)):
     """Ensures the authenticated user has instructor privileges."""
     if not current_user.is_instructor:
         raise HTTPException(

@@ -23,6 +23,7 @@ from alite_backend.db.models import (
     EnumItemFormat,
     EnumWordItemType,
     EnumItemDifficulty,
+    EnumTargetLanguage
 )
 from pydantic import (
     BaseModel,
@@ -537,11 +538,12 @@ class DefExReturn(DefExUpdate):
 
 class UserBase(BaseModel):
     username: str
+    # target_lang: EnumTargetLanguage
 
 
 class UserCreate(UserBase):
     user_role: EnumUserRole
-    email: str
+    # email: str
 
 
 class UserUpdate(UserBase):
@@ -786,7 +788,7 @@ class KeysReponse(BaseModel):
 class DistractorsResponse(BaseModel):
     item_id: int
     dist_text: str | Dict[str, Any]
-    
+
 
 class ItemBlueprint(BaseModel):
     prompt: str
@@ -798,21 +800,21 @@ class ItemBlueprint(BaseModel):
 
 
 class FlashcardResponse(BaseModel):
-    item_format = EnumItemFormat.FLASHCARD
+    item_format: EnumItemFormat = EnumItemFormat.FLASHCARD
     item_id: int
     front_text: str
     back_text: str
 
 
 class MultipleChoiceResponse(BaseModel):
-    item_format = EnumItemFormat.MCQ
+    item_format: EnumItemFormat = EnumItemFormat.MCQ
     item_id: int
     prompt: str
     options: List[str | int]
 
 
 class WordClozeResponse(BaseModel):
-    item_format = EnumItemFormat.CLOZE
+    item_format: EnumItemFormat = EnumItemFormat.CLOZE
     item_id: int
     prompt: str
     sentence_parts: List[str]
@@ -832,7 +834,6 @@ class ExerciseResponse(BaseModel):
 
 
 class AnswerSubmission(BaseModel):
-    user_id: int
     item_id: int
     selection: str
     response_time_ms: int

@@ -20,6 +20,9 @@ from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY
 
 
+class EnumTargetLanguage(str, enum.Enum):
+    RU = "ru"
+
 class EnumAltNounType(str, enum.Enum):
     DIMINUTIVE = "diminutive"
     AUGMENTATIVE = "augmentative"
@@ -38,6 +41,7 @@ class EnumGramGender(str, enum.Enum):
     MASCULINE = "masculine"
     NEUTER = "neuter"
     FEMININE = "feminine"
+    DUAL = "dual"
 
 
 class EnumGramNum(str, enum.Enum):
@@ -156,19 +160,6 @@ class EnumItemFormat(str, enum.Enum):
 
 
 class EnumWordItemType(str, enum.Enum):
-    # db/services/items/{HEADERS}
-    # --- ADJECTIVES ---
-    # lemma (adjective) <-> comparative / superlative form
-    ADJV_FORM_TO_TYPE = "adjv_form_to_type"  # "What is the [comparative | superlative] form of X?" (MCQ)
-    ADJV_TYPE_TO_LEM = (
-        "adjv_type_to_lem"  # "What is the base form of [adjective]?" (MCQ/Cloze)
-    )
-    # adjective form <-> adjective type
-    ADJV_FORM_TO_GRAM = (
-        "adjv_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
-    )
-    ADJV_GRAM_TO_FORM = "gram_to_adjv_form"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)
-
     # --- LEMMAS ---
     # Part of Speech
     # lemmas.lem_canon <-> lemmas.pos
@@ -192,6 +183,16 @@ class EnumWordItemType(str, enum.Enum):
         # "Which of the following pairs is an example of X?" (MCQ)
     )
 
+    # --- SUBSTANTIVES ---
+    # --- ADJECTIVES ---
+    # lemma (adjective) <-> comparative / superlative form
+    ADJV_FORM_TO_TYPE = "adjv_form_to_type"  # "What is the [comparative | superlative] form of X?" (MCQ)
+    ADJV_TYPE_TO_LEM = (
+        "adjv_type_to_lem"  # "What is the base form of [adjective]?" (MCQ/Cloze)
+    )
+    # adjective form <-> adjective type
+    ADJV_FORM_TO_GRAM = "adjv_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
+    ADJV_GRAM_TO_FORM = "adjv_gram_to_form"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)
     # --- NOUNS ---
     # lemma (noun) <-> gender
     NOUN_TO_GEND = "noun_to_gender"  # "What gender is [noun]?" (MCQ)
@@ -200,11 +201,8 @@ class EnumWordItemType(str, enum.Enum):
     NOUN_TO_ANIM = "noun_to_anim"  # "Is [noun] animate or inanimate?" (MCQ)
     ANIM_TO_NOUN = "anim_to_noun"  # "Which lemma(s) is/are [subst_animacy]?" (MCQ)
     # noun form <-> noun GNC
-    NOUN_FORM_TO_GRAM = (
-        "noun_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
-    )
-    NOUN_GRAM_TO_FORM = "type_to_adjv"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)
-
+    NOUN_FORM_TO_GRAM = "noun_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
+    NOUN_GRAM_TO_FORM = "noun_gram_to_form"  # "Which of the following noun forms is/are an example of [grammar]?" (MCQ)
     # --- PARTICIPLES ---
     # participle <-> type (tense, mood)
     PART_TYPE_TO_LEM = "part_type_to_lem"  # "What form is type X?" (MCQ)
@@ -640,7 +638,8 @@ class User(Base):
     username: Mapped[str | None] = mapped_column(String(50), unique=True)
     alias: Mapped[str | None] = mapped_column(String(25))
     user_role: Mapped[EnumUserRole] = mapped_column(Enum(EnumUserRole))
-
+    # target_lang: Mapped[EnumTargetLanguage] = mapped_column(Enum(EnumTargetLanguage))
+    # email: Mapped[str] = mapped_column()
     in_group: Mapped["UserInGroup"] = relationship(back_populates="group_user")
     exercises: Mapped[List["Exercise"]] = relationship(back_populates="user")
 
