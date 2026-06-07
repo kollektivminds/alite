@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     APP_DIR: str
     LOG_LOC: str
     VOCAB_LIST_LOC: str
+    VOCAB_CACHE_LOC: str
     VITE_API_BASE_URL: str
     NAMESPACE: str
 

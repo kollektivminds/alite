@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from fastapi import HTTPException, status
-from fastapi.encoders import jsonable_encoder
+# from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 import logging
 
@@ -55,7 +55,11 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         try:
             # Convert Pydantic model to dict and unpack into SQLAlchemy model
             # obj_in_data = obj_in.model_dump()
-            obj_in_data = jsonable_encoder(obj=obj_in)
+            # obj_in_data = jsonable_encoder(obj=obj_in)
+            if isinstance(obj_in, BaseModel):
+                obj_in_data = obj_in.model_dump()
+            else:
+                obj_in_data = dict(obj_in)
             db_obj = self.model(**obj_in_data)
             db.add(db_obj)
             db.flush()
@@ -108,13 +112,18 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> ModelType:
         try:
             # check that type is dict
-            obj_data = jsonable_encoder(db_obj)
+            #obj_data = jsonable_encoder(db_obj)
+            if isinstance(obj_in, BaseModel):
+                obj_in_data = db_obj.model_dump()
+            else:
+                obj_in_data = dict(db_obj)
+            
             if isinstance(obj_in, dict):
                 update_data = obj_in
             else:
                 update_data = obj_in.dict(exclude_unset=True)
-
-            for field in obj_data:
+            
+            for field in obj_in_data:
                 if field in update_data:
                     setattr(db_obj, field, update_data[field])
 

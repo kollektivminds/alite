@@ -23,7 +23,7 @@ from alite_backend.db.models import (
     EnumItemFormat,
     EnumWordItemType,
     EnumItemDifficulty,
-    EnumTargetLanguage
+    EnumTargetLanguage,
 )
 from pydantic import (
     BaseModel,
@@ -205,42 +205,42 @@ class ProcessedPayload(BaseModel):
 # --- Wiki Pre-Processing Schema ---
 
 
-class UnprocessedWikiWord(BaseModel):
-    """Pydantic model for validating raw scraped data."""
+# class UnprocessedWikiWord(BaseModel):
+#     """Pydantic model for validating raw scraped data."""
 
-    # General fields
-    pos: Optional[str] = None
-    definitions: Optional[Dict] = None
-    inflections: Dict[str, Dict] = Field(default_factory=dict)
+#     # General fields
+#     pos: Optional[str] = None
+#     definitions: Optional[Dict] = None
+#     inflections: Dict[str, Dict] = Field(default_factory=dict)
 
-    # Adjectives
-    has_short: Optional[bool] = None
-    hard_stem: Optional[bool] = None
+#     # Adjectives
+#     has_short: Optional[bool] = None
+#     hard_stem: Optional[bool] = None
 
-    # Nouns
-    subst_animacy: Optional[bool] = None
-    subst_gender: Optional[str] = None
-    subst_number: Optional[str] = None
+#     # Nouns
+#     subst_animacy: Optional[bool] = None
+#     subst_gender: Optional[str] = None
+#     subst_number: Optional[str] = None
 
-    # Verbs
-    verb_aspect: Optional[str] = None
-    verb_conj: Optional[str] = None
-    verb_conj_type: Optional[int] = None
-    verb_pair: Optional[str | List[str]] = None
-    verb_trans_refl: Optional[Tuple[Optional[bool], Optional[bool]]] = None
+#     # Verbs
+#     verb_aspect: Optional[str] = None
+#     verb_conj: Optional[str] = None
+#     verb_conj_type: Optional[int] = None
+#     verb_pair: Optional[str | List[str]] = None
+#     verb_trans_refl: Optional[Tuple[Optional[bool], Optional[bool]]] = None
 
-    class Config:
-        """This helps prevent errors if your scraper passes extra,
-        unexpected fields that are not defined in the model."""
+#     class Config:
+#         """This helps prevent errors if your scraper passes extra,
+#         unexpected fields that are not defined in the model."""
 
-        extra = "ignore"
+#         extra = "ignore"
 
 
-class RawWikiLemma(BaseModel):
-    """"""
+# class RawWikiLemma(BaseModel):
+#     """"""
 
-    lemma: Optional[str] = None
-    parts_of_speech: Dict[str, List[UnprocessedWikiWord]]
+#     lemma: Optional[str] = None
+#     parts_of_speech: Dict[str, List[UnprocessedWikiWord]]
 
 
 #

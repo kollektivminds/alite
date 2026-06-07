@@ -17,12 +17,8 @@ from alite_backend.db.models import (
     EnumGramNum,
     EnumPartType,
     EnumPartVoice,
-    EnumPartOfSpeech,
     EnumSubstCase,
-    EnumVerbAspect,
-    EnumVerbMood,
-    EnumVerbTransRefl,
-    EnumVerbType,
+    EnumVerbMood
 )
 from alite_backend.db.crud.word_crud import (
     crud_lemma,

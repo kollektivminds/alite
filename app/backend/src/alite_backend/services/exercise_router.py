@@ -39,7 +39,7 @@ class ExerciseRouter:
         self.db.flush()
 
     def get_exercise_generator(
-        self, exercise_type: EnumWordItemType, request: schemas.ExerciseRequest
+        self, exercise_type: EnumWordItemType, exercise_context: schemas.ExerciseContext
     ) -> BaseExerciseStrategy:
 
         StrategyClass = self.STRATEGY_MAP.get(exercise_type)
@@ -47,7 +47,7 @@ class ExerciseRouter:
             raise ValueError(f"Unknown exercise type: {exercise_type}")
 
         return StrategyClass(
-            db_session=self.db, request_context=request.exercise_context
+            db_session=self.db, request_context=exercise_context
         )
 
     def generate_exercise(

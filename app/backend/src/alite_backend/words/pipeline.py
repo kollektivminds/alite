@@ -48,7 +48,7 @@ def feed_data(db: Session, word_s: list[str]):
     for raw_data_dict in results_stream:
         try:
             # GET: Grab the raw dictionary data
-            word_lemma = raw_data_dict.get("word", "unknown")
+            # word_lemma = raw_data_dict.get("word", "unknown")
             # logger.debug("Successfully looked up data for '%s':\n%s\n", word_lemma, raw_data_dict)
 
             # PROCESS: Pass the raw dictionary to the processor

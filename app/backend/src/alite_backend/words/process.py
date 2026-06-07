@@ -54,6 +54,7 @@ class ReturnedLemmaProcessor:
             "masculine": {"noun_gender": EnumGramGender.MASCULINE},
             "neuter": {"noun_gender": EnumGramGender.NEUTER},
             "feminine": {"noun_gender": EnumGramGender.FEMININE},
+            "dual": {"noun_gender": EnumGramGender.DUAL},
             # gram_num
             "singular": {"gram_num": EnumGramNum.SINGULAR},
             "plural": {"gram_num": EnumGramNum.PLURAL},
@@ -154,8 +155,12 @@ class ReturnedLemmaProcessor:
                             if tag in ["perfective", "imperfective"]:
                                 # logger.debug("verb_aspect: %s", tag)
                                 verbal_aspect = tag
-                                lemma_dict["verb_aspect"] = verbal_aspect  # type: ignore
                         # logger.debug("form word: %s", form.word)
+                    elif len(tags) == 3:
+                        if {"perfective", "imperfective"} < set(tags):
+                            verbal_aspect = EnumVerbAspect.DUAL.value
+                    if verbal_aspect:  # type: ignore
+                        lemma_dict["verb_aspect"] = verbal_aspect  # type: ignore
                     # logger.debug("first can form: %s", canonical_form)
                     # logger.debug("verb_infin_lex_entry: %s", verb_infin_lex_entry)
                 else:
@@ -164,11 +169,11 @@ class ReturnedLemmaProcessor:
                     ][0]
                     # logger.debug("canonical object: %s", canonical_object)
                     canonical_form = canonical_object.word
-                    # TODO: dual-gender nouns?
                     if pos == EnumPartOfSpeech.NOUN:
-                        dual_gender = "m anim or f anim by sense"
-                        if re.match(dual_gender, canonical_form):
+                        dual_gender = " m anim or f anim by sense"
+                        if re.search(dual_gender, canonical_form):
                             lemma_dict["noun_gender"] = EnumGramGender.DUAL
+                            canonical_form = re.sub(dual_gender, "", canonical_form)
                         # logger.debug("noun base form lex entry: %s", noun_base_lex_entry)
                         canon_tags = canonical_object.tags
                         if len(canon_tags) > 1:
@@ -324,7 +329,7 @@ class ReturnedLemmaProcessor:
                                         EnumRelLemType.IMPERFECTIVE_PAIR_OF
                                     )
                                     sorted_data["rel_lems"].append(verb_pair_dict)
-                                elif verbal_aspect == "imperfective":  # type: ignore
+                                elif verbal_aspect in ["imperfective", "dual"]:  # type: ignore
                                     perfective_form = [
                                         x.word
                                         for x in entry.forms

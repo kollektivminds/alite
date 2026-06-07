@@ -57,10 +57,12 @@ crud_module = CRUDModule(Module)
 
 class CRUDLessList(CRUDBase[LessonList, LessonListCreate, LessonListUpdate]):
 
-    def get_id_by_name(self, db: Session, less_list_name: str) -> int:
+    def get_id_by_name(self, db: Session, less_list_name: str) -> int | None:
         stmt = select(self.model).where(self.model.title == less_list_name)
-        # return db.query(self.model).filter(self.model.title == less_list_name).first().id  # type: ignore
-        return db.scalars(stmt).first().id  # type: ignore
+        result = db.scalars(stmt).first()
+        if result is None:
+            return None
+        return result.id  # type: ignore
 
 
 crud_less_list = CRUDLessList(LessonList)

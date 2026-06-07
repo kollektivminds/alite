@@ -23,6 +23,7 @@ from sqlalchemy.dialects.postgresql import ARRAY
 class EnumTargetLanguage(str, enum.Enum):
     RU = "ru"
 
+
 class EnumAltNounType(str, enum.Enum):
     DIMINUTIVE = "diminutive"
     AUGMENTATIVE = "augmentative"
@@ -280,9 +281,9 @@ class Lemma(Base):
     # UUID5 entry key
     entry_key: Mapped[UUID] = mapped_column()
     # text of the lemma
-    lem_text: Mapped[str] = mapped_column(String(50))
+    lem_text: Mapped[str] = mapped_column(String(48))
     # canonical of the lemma
-    lem_canon: Mapped[str | None] = mapped_column(String(50))
+    lem_canon: Mapped[str | None] = mapped_column(String(48))
     # part of speech of the lemma
     pos: Mapped[EnumPartOfSpeech] = mapped_column(Enum(EnumPartOfSpeech))
     # nominal gender
@@ -292,7 +293,7 @@ class Lemma(Base):
     # verb aspect
     verb_aspect: Mapped[EnumVerbAspect | None] = mapped_column(Enum(EnumVerbAspect))
     # verb conj (Zalizniak's)
-    verb_conj: Mapped[str | None] = mapped_column(String(8))
+    verb_conj: Mapped[str | None] = mapped_column(String(16))
     # verb type
     verb_type: Mapped[EnumVerbType | None] = mapped_column(Enum(EnumVerbType))
     # verb transivity/reflexivity
@@ -339,8 +340,8 @@ class Lexeme(Base):
     __tablename__ = "lexicon"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    lex_text: Mapped[str] = mapped_column(String(50), unique=True)
-    lex_text_clean: Mapped[str] = mapped_column(String(50))
+    lex_text: Mapped[str] = mapped_column(String(48), unique=True)
+    lex_text_clean: Mapped[str] = mapped_column(String(48))
 
     lexeme_word_form: Mapped[List["WordForm"]] = relationship(
         back_populates="word_form_lexicon"
@@ -473,7 +474,7 @@ class LookupQueue(Base):
     __tablename__ = "lookup_queue"
 
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    target_lem: Mapped[int] = mapped_column(String(50))
+    target_lem: Mapped[int] = mapped_column(String(48))
     target_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
     source_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
     rel_type: Mapped[EnumRelLemType] = mapped_column(Enum(EnumRelLemType))
@@ -532,7 +533,7 @@ class LessonList(Base):
     __tablename__ = "lessons_lists"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(50), unique=True)
+    title: Mapped[str] = mapped_column(String(48), unique=True)
     topic: Mapped[str | None] = mapped_column(String)
     owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
 
@@ -635,7 +636,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str | None] = mapped_column(String(50), unique=True)
+    username: Mapped[str | None] = mapped_column(String(48), unique=True)
     alias: Mapped[str | None] = mapped_column(String(25))
     user_role: Mapped[EnumUserRole] = mapped_column(Enum(EnumUserRole))
     # target_lang: Mapped[EnumTargetLanguage] = mapped_column(Enum(EnumTargetLanguage))
@@ -648,7 +649,7 @@ class UserGroup(Base):
     __tablename__ = "user_groups"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    group_name: Mapped[str | None] = mapped_column(String(50), unique=True)
+    group_name: Mapped[str | None] = mapped_column(String(48), unique=True)
 
     users: Mapped[List["UserInGroup"]] = relationship(back_populates="user_group")
 

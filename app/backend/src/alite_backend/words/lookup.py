@@ -12,7 +12,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 app_dir = os.getenv("APP_DIR")
-cache_loc = app_dir + "backend/src/alite_backend/words/data/word_cache.json"  # type: ignore
+cache_loc = os.getenv("VOCAB_CACHE_LOC")
 
 
 class LookupFDAPI:
@@ -47,7 +47,7 @@ class LookupFDAPI:
             return None
 
     def _check_local(
-        self, word: str, cache_loc: str = cache_loc
+        self, word: str, cache_loc: str | None = cache_loc
     ) -> Dict[str, Any] | None:
         # check if the cache file exists and is not empty
         # cache file for init vocab to reduce API calls
