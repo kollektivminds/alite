@@ -2,6 +2,7 @@
 # Pydantic models for API data validation and response shaping.
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
+from enum import Enum
 from alite_backend.db.models import (
     EnumAltAdjvType,
     EnumAltNounType,
@@ -766,15 +767,41 @@ class ExerciseContext(BaseModel):
     mod_ids: Optional[List[int]]
     lem_ids: Optional[List[int]]
     ex_formats: List[EnumItemFormat]
-    num_items: int = 10
+    # num_items: int
     max_keys: int = 1
     max_distractors: int = 3
+
+
+class EnumGramExFocus(str, Enum):
+    ALL = "all"
+    SUBST_CASE = "subst_case"
+    SUBST_GENDER = "subst_gender"
+    SUBST_NUMBER = "subst_number"
+    VERB_TENSE = "verb_tense"
+    VERB_PERSON = "verb_person"
+    VERB_MOOD = "verb_mood"
+    
+# Define our modular configuration models
+class NounStrategyConfig(BaseModel):
+    # Users can pick specific sub-facets, or leave empty/default to ALL
+    focus_props: List[EnumGramExFocus] = [EnumGramExFocus.ALL]
+    is_odd_one_out: bool = False
+
+class VerbStrategyConfig(BaseModel):
+    focus_props: List[EnumGramExFocus] = [EnumGramExFocus.ALL]
+    is_odd_one_out: bool = False
+
+class StrategyConfigs(BaseModel):
+    # Use optional attributes mapped directly to your core strategy enums
+    noun_form_to_gram: Optional[NounStrategyConfig] = None
+    verb_conjugation: Optional[VerbStrategyConfig] = None
 
 
 class ExerciseRequest(BaseModel):
     # Side-A + Side-B items = request
     exercise_context: ExerciseContext
     type_counts: Dict[EnumWordItemType, int]
+    grammar_focus: Optional[StrategyConfigs] = None
 
 
 # Raw Exercise Responses
@@ -826,7 +853,7 @@ ExerciseItems = FlashcardResponse | MultipleChoiceResponse | WordClozeResponse
 
 
 class ExerciseResponse(BaseModel):
-    total_questions: int
+    # total_questions: int
     response_data: List[ExerciseItems]
 
 
@@ -844,12 +871,3 @@ class AnswerResult(BaseModel):
     attempts_remaining: int
     correct_answer: Optional[str] = None
     explanation: Optional[str] = None
-
-
-# Item Type
-
-
-class Item_FormLemToGnc(BaseModel):
-    gender: bool = True
-    number: bool = True
-    case: bool = True

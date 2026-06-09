@@ -10,7 +10,7 @@ from fastapi.testclient import TestClient
 
 from alite_backend.config import settings
 from alite_backend.db import models, schemas
-from alite_backend.db.tests.factories import UserFactory, BaseFactory
+from alite_backend.db.tests.factories import UserFactory, BaseFactory, ALL_FACTORIES
 from alite_backend.main import app
 from alite_backend.api import deps
 
@@ -235,11 +235,14 @@ def db_session(clone_lexicon_snapshot):
     #     if not nested.is_active:
     #         nested = session.begin_nested()
 
-    BaseFactory._meta.sqlalchemy_session = session
+    for factory_class in ALL_FACTORIES:
+        factory_class._meta.sqlalchemy_session = session
     
-    yield session  # Testing functions execute here
-
-    BaseFactory._meta.sqlalchemy_session = None
+    yield session  # Running tests populate transient items here
+    
+    # Teardown: Safely sever session pointers to prevent cross-test memory contamination
+    for factory_class in ALL_FACTORIES:
+        factory_class._meta.sqlalchemy_session = None
     # 5. Teardown: Close the session and ROLL BACK the outer transaction.
     session.close()
     transaction.rollback()
@@ -264,8 +267,8 @@ def api_client(db_session):
 
     app.dependency_overrides[deps.get_db] = override_get_db
     app.dependency_overrides[deps.get_current_user] = override_get_current_user
+    
     client = TestClient(app)
-
     yield client
 
     app.dependency_overrides.clear()

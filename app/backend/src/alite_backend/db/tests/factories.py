@@ -52,14 +52,14 @@ class InstructorFactory(UserFactory):
 
 
 class ExerciseContextFactory(BaseFactory):
-    class Meta:
+    class Meta: #type: ignore
         model = schemas.ExerciseContext
 
     less_list_ids = None
     mod_ids = None
     lem_ids = None
     ex_formats = [models.EnumItemFormat.MCQ]
-    num_items = 10
+    # num_items = 10
     max_keys = 1
     max_distractors = 3
 
@@ -70,7 +70,7 @@ class ExerciseRequestFactory(BaseFactory):
 
     exercise_context = SubFactory(ExerciseContextFactory)
 
-    type_counts = {models.EnumWordItemType.NOUN_FORM_TO_GRAM: 10}
+    # type_counts = {models.EnumWordItemType.NOUN_FORM_TO_GRAM: 10}
 
     @classmethod
     def build_payload(cls, **kwargs) -> dict:
@@ -90,3 +90,12 @@ class ItemResponseFactory(BaseFactory):
 
     id = Sequence(lambda n: n)
     response_time_ms = Faker("random_int", min=500, max=4000)
+
+ALL_FACTORIES = [
+    UserFactory,
+    StudentFactory,
+    InstructorFactory,
+    ExerciseContextFactory,
+    ExerciseRequestFactory,
+    ItemResponseFactory
+]

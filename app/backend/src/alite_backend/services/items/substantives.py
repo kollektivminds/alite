@@ -1,6 +1,9 @@
 # app/backend/src/alite_backend/services/items/nouns.py
 from typing import List
+import random
+from collections import defaultdict
 import logging
+from sqlalchemy import select, func
 from alite_backend.db import models, schemas
 from alite_backend.services.items.base import BaseExerciseStrategy
 
@@ -57,34 +60,69 @@ logger = logging.getLogger(__name__)
 
 class NounFormToGramStrategy(BaseExerciseStrategy):
 
-    gender_col = "conj_gender"
-    number_col = "gram_num"
-    case_col = "subst_case"
-
     def generate_item_blueprints(
-        self, num_items: int = 10, max_keys: int = 1, max_distractors: int = 3
+        self,
+        num_items: int = 10,
+        max_keys: int = 1,
+        max_distractors: int = 3,
+        config: schemas.NounStrategyConfig | None = None,
     ) -> List[schemas.ItemBlueprint]:
         blueprints = []
-
-        stmt = (
-            self.get_scoped_stmt()
-            .add_columns(models.Lexeme, models.GramProp)
-            .join(models.WordForm, models.WordForm.lem_id == models.Lemma.id)
-            .join(models.Lexeme, models.WordForm.lex_id == models.Lexeme.id)
-            .join(models.GramProp, models.WordForm.gram_id == models.GramProp.id)
-            #
-            .where(models.Lemma.pos == models.EnumPartOfSpeech.NOUN)
-            .limit(num_items)
+        allowed_foci = (
+            config.focus_props
+            if config and config.focus_props
+            else schemas.EnumGramExFocus.ALL
         )
-        results = self.db.execute(stmt).all()
+        allow_odd_one_out = config.is_odd_one_out if config else False
 
-        for Lemma, WordForm, GramProp in results:
-            logger.debug(
-                "Lemma, WordForm, GramProp:" "%s, %s, %s", Lemma, WordForm, GramProp
-            )
-            # get distractors
+        # target lemma/grammar data
+        paradigms = self._fetch_grouped_paradigms(
+            pos_target=models.EnumPartOfSpeech.NOUN, num_lemmas=num_items
+        )
+        # for each lemma/grammar: id key, fetch distractors, make prompt, add to master list
+        for lemma_id, forms in paradigms.items():
+            if not forms or len(forms) < (max_keys + max_distractors):
+                continue
+            
+            item_focus = random.choice(allowed_foci)
+            target_attr, static_attrs = self._get_trait_mapping(item_focus)
+            
+            
+            
+            keys = []
+            distractors = []
+            prompt_text = ""
+            base_word = forms[0][0].lem_canon
+            
+            # SCENARIO A: ONE-OUT-OUT OR MULTI-SELECT BLUEPRINTS
+            if (is_odd_one_out or max_keys > 1):
+                if focus
+            
+            # SCENARIO B: TRADITIONAL SINGLE-KEY BLUEPRINTS
+            else:
+                key_tuple = random.choice(forms)
+                keys = [key_tuple]
+                
+                if focus == schemas.EnumGramExFocus.SUBST_CASE:
+                    # Drill Case: Distractors have different case, same number
+                    pool = [f for f in forms if f[3].subst_case != key_tuple[3].subst_case and f[3].gram_num == key_tuple[3].gram_num]
+                else:
+                    pool = [f for f in forms if f[3].id != key_tuple[3].id]
 
-            # add everything to blueprints
+                distractors = random.sample(pool, min(max_distractors, len(pool)))
+                prompt_text = f"Identify the {key_tuple[3].subst_case} {key_tuple[3].gram_num} of '{base_word}':"
+
+
+            # -----------------------------------------------------------------
+            # BUILD AND APPEND THE BLUEPRINT
+            # -----------------------------------------------------------------
+            if keys and distractors:
+                blueprints.append({
+                    "prompt": prompt_text,
+                    # Map the tuples back to their Lexeme text values
+                    "keys": [k[2].lex_text for k in keys],
+                    "distractors": [d[2].lex_text for d in distractors]
+                })
 
         return blueprints
 
