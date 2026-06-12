@@ -65,13 +65,13 @@ class NounFormToGramStrategy(BaseExerciseStrategy):
         num_items: int = 10,
         max_keys: int = 1,
         max_distractors: int = 3,
-        config: schemas.NounStrategyConfig | None = None,
+        config: schemas.StrategyConfigs | None = None,
     ) -> List[schemas.ItemBlueprint]:
         blueprints = []
         allowed_foci = (
-            config.focus_props
-            if config and config.focus_props
-            else schemas.EnumGramExFocus.ALL
+            config.strategies
+            if config and config.strategies
+            else [e.value for e in schemas.EnumGramExFocus]
         )
         allow_odd_one_out = config.is_odd_one_out if config else False
 
@@ -79,7 +79,7 @@ class NounFormToGramStrategy(BaseExerciseStrategy):
         paradigms = self._fetch_grouped_paradigms(
             pos_target=models.EnumPartOfSpeech.NOUN, num_lemmas=num_items
         )
-        # for each lemma/grammar: id key, fetch distractors, make prompt, add to master list
+        # for each lemma+grammar: identify key, fetch distractors, make prompt, add to master list
         for lemma_id, forms in paradigms.items():
             if not forms or len(forms) < (max_keys + max_distractors):
                 continue
@@ -87,30 +87,34 @@ class NounFormToGramStrategy(BaseExerciseStrategy):
             item_focus = random.choice(allowed_foci)
             target_attr, static_attrs = self._get_trait_mapping(item_focus)
             
-            
-            
             keys = []
             distractors = []
             prompt_text = ""
-            base_word = forms[0][0].lem_canon
+            base_word = forms[0][0].lem_text if forms[0][0].lem_canon is None else forms[0][0].lem_canon
             
-            # SCENARIO A: ONE-OUT-OUT OR MULTI-SELECT BLUEPRINTS
-            if (is_odd_one_out or max_keys > 1):
-                if focus
+            # # SCENARIO A: ODD-ONE-OUT OR MULTI-SELECT BLUEPRINTS
+            if (allow_odd_one_out or max_keys > 1):
+                pass
             
-            # SCENARIO B: TRADITIONAL SINGLE-KEY BLUEPRINTS
+            # # SCENARIO B: TRADITIONAL SINGLE-KEY BLUEPRINTS
             else:
                 key_tuple = random.choice(forms)
                 keys = [key_tuple]
                 
-                if focus == schemas.EnumGramExFocus.SUBST_CASE:
+                if item_focus == schemas.EnumGramExFocus.SUBST_CASE:
                     # Drill Case: Distractors have different case, same number
-                    pool = [f for f in forms if f[3].subst_case != key_tuple[3].subst_case and f[3].gram_num == key_tuple[3].gram_num]
+                    pool = [f for f in forms if f[3].subst_case != key_tuple[3].subst_case]
+                elif item_focus == schemas.EnumGramExFocus.SUBST_GENDER:
+                    # Drill Case: Distractors have different case, same number
+                    pool = [f for f in forms if f[3].subst_gender != key_tuple[3].subst_gender]
+                elif item_focus == schemas.EnumGramExFocus.SUBST_NUM:
+                    # Drill Case: Distractors have different case, same number
+                    pool = [f for f in forms if f[3].subst_num != key_tuple[3].subst_num]
                 else:
                     pool = [f for f in forms if f[3].id != key_tuple[3].id]
 
                 distractors = random.sample(pool, min(max_distractors, len(pool)))
-                prompt_text = f"Identify the {key_tuple[3].subst_case} {key_tuple[3].gram_num} of '{base_word}':"
+                prompt_text = f"Identify the {key_tuple[3].subst_case.lower} {key_tuple[3].gram_num.lower} of '{base_word}':"
 
 
             # -----------------------------------------------------------------

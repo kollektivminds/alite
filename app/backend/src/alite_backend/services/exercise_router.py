@@ -64,9 +64,9 @@ class ExerciseRouter:
 
             strategy_runner = self.get_exercise_generator(item_strategy, request.exercise_context)
             specific_config = None
-            if request.grammar_focus and hasattr(request.grammar_focus, item_strategy.value):
-                specific_config = getattr(request.grammar_focus, item_strategy.value)
-                
+            if request.grammar_focus and len(request.grammar_focus.strategies) > 0:
+                    specific_config = request.grammar_focus
+                            
             blueprints = strategy_runner.generate_item_blueprints(
                 num_items=requested_qty,
                 max_keys=request.exercise_context.max_keys,

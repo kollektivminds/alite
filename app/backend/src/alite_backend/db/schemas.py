@@ -773,28 +773,39 @@ class ExerciseContext(BaseModel):
 
 
 class EnumGramExFocus(str, Enum):
-    ALL = "all"
+    #ALL = "all"
     SUBST_CASE = "subst_case"
     SUBST_GENDER = "subst_gender"
-    SUBST_NUMBER = "subst_number"
+    SUBST_NUM = "subst_num"
     VERB_TENSE = "verb_tense"
     VERB_PERSON = "verb_person"
     VERB_MOOD = "verb_mood"
+    PART_TYPE = "part_type"
+    PART_VOICE = "part_voice"
+    PART_TENSE = "part_tense"
     
 # Define our modular configuration models
 class NounStrategyConfig(BaseModel):
     # Users can pick specific sub-facets, or leave empty/default to ALL
-    focus_props: List[EnumGramExFocus] = [EnumGramExFocus.ALL]
-    is_odd_one_out: bool = False
+    focus_props: List[EnumGramExFocus] = [
+        EnumGramExFocus.SUBST_CASE,
+        EnumGramExFocus.SUBST_GENDER,
+        EnumGramExFocus.SUBST_NUM
+        ]
 
 class VerbStrategyConfig(BaseModel):
-    focus_props: List[EnumGramExFocus] = [EnumGramExFocus.ALL]
-    is_odd_one_out: bool = False
+    focus_props: List[EnumGramExFocus] = [
+        EnumGramExFocus.VERB_MOOD,
+        EnumGramExFocus.VERB_PERSON,
+        EnumGramExFocus.VERB_TENSE
+    ]
 
 class StrategyConfigs(BaseModel):
     # Use optional attributes mapped directly to your core strategy enums
-    noun_form_to_gram: Optional[NounStrategyConfig] = None
-    verb_conjugation: Optional[VerbStrategyConfig] = None
+    is_odd_one_out: bool = False
+    strategies: List[EnumGramExFocus] = []
+    # noun_form_to_gram: Optional[NounStrategyConfig] = None
+    # verb_conjugation: Optional[VerbStrategyConfig] = None
 
 
 class ExerciseRequest(BaseModel):

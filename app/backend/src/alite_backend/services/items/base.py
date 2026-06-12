@@ -1,6 +1,7 @@
 # app/backend/src/alite_backend/services/items/base.py
 from abc import ABC, abstractmethod
 import logging
+import re
 import json
 import random
 from collections import defaultdict
@@ -110,32 +111,26 @@ class BaseExerciseStrategy(ABC):
         Returns: (target_column_name, [list_of_static_column_names])
         """
         # Group definitions by major structural domains
-        substantive_cols = ["subst_case", "gram_num", "gram_gender"]
-        verb_cols = ["verb_tense", "verb_person", "gram_num", "verb_mood"]
-        participle_cols = ["verb_tense", "subst_case", "gram_num", "gram_gender", "voice", "aspect"]
-
-        # 1. SUBSTANTIVE FOCUSES (Nouns, Adjectives, Pronouns)
-        if focus == "subst_case":
-            return "subst_case", [c for c in substantive_cols if c != "subst_case"]
-        elif focus == "gram_num" and "subst" in focus: # or check enum type specifically
-            return "gram_num", [c for c in substantive_cols if c != "gram_num"]
-        elif focus == "gram_gender":
-            return "gram_gender", [c for c in substantive_cols if c != "gram_gender"]
-
-        # 2. VERB FOCUSES
-        elif focus == "verb_tense":
-            return "verb_tense", [c for c in verb_cols if c != "verb_tense"]
-        elif focus == "verb_person":
-            return "verb_person", [c for c in verb_cols if c != "verb_person"]
-        elif focus == "verb_mood":
-            return "verb_mood", [c for c in verb_cols if c != "verb_mood"]
-
-        # 3. PARTICIPLE FOCUSES
-        elif focus == "participle_tense":
-            return "verb_tense", [c for c in participle_cols if c != "verb_tense"]
-        elif focus == "participle_voice":
-            return "voice", [c for c in participle_cols if c != "voice"]
-
+        substantive_cols: List[str] = ["subst_case", "gram_num", "gram_gender"]
+        verb_cols: List[str] = ["gram_tense", "conj_person", "gram_num", "verb_mood", "gram_gender"]
+        participle_cols: List[str] = ["gram_tense", "part_type", "part_voice"]
+        
+        strat_id = r"(subst_)(.*)$"
+        groups = re.findall(strat_id, focus)
+        type_cols = groups[0][0]
+        focus_gram = groups[0][1]
+        
+        
+        
+        # 1. SUBSTANTIVES' FOCI
+        if type_cols == "subst_":
+            return focus, [c for c in substantive_cols if focus_gram not in c]
+        # 2. VERBS' FOCI
+        elif type_cols == "verb_":
+            return focus, [c for c in verb_cols if focus_gram not in c]
+        # 3. PARTICIPLES' FOCI
+        elif type_cols == "part_":
+            return focus, [c for c in participle_cols if focus_gram not in c]
         # 4. FALLBACK / MIXED GENERAL STUDY ("ALL")
         # Returning "all" signals the child generator loop to bypass variable isolation
         return "all", []
@@ -148,7 +143,7 @@ class BaseExerciseStrategy(ABC):
         num_items: int, 
         max_keys: int, 
         max_distractors: int,
-        config: schemas.VerbStrategyConfig | schemas.NounStrategyConfig | None = None
+        config: schemas.StrategyConfigs | None = None
     ) -> List[schemas.ItemBlueprint]:
         """generate_item_blueprints _summary_
 

@@ -2,10 +2,10 @@
 
 - [ALITE Database Schema](#alite-database-schema)
   - [Word Tables](#word-tables)
-    - [00. lexicon](#00-lexicon)
     - [01. lemmas](#01-lemmas)
       - [table](#table)
       - [controlled vocab](#controlled-vocab)
+    - [00. lexicon](#00-lexicon)
     - [02. gram\_props](#02-gram_props)
       - [table](#table-1)
       - [controlled vocab](#controlled-vocab-1)
@@ -46,6 +46,59 @@
 
 ## Word Tables
 
+### 01. lemmas
+
+Base forms with part of speech
+
+#### table
+
+| name            | type        | constraints     | description    |
+| --------------- | ----------- | --------------- | -------------- |
+| id              | SERIAL      | PRIMARY KEY     |                |
+| entry_key       | UUID        | NOT NULL UNIQUE |                |
+| lem_text        | INT         | NOT NULL        | part of speech |
+| lem_canon       | INT         |                 | part of speech |
+| pos             | VARCHAR(48) | *controlled*    | part of speech |
+| noun_gender     | VARCHAR(48) | *controlled*    | part of speech |
+| subst_animacy   | BOOLEAN     |                 | part of speech |
+| verb_aspect     | VARCHAR(48) | *controlled*    | part of speech |
+| verb_conj       | VARCHAR(16) |                 | part of speech |
+| verb_type       | VARCHAR(8)  | *controlled*    | part of speech |
+| verb_trans_refl | VARCHAR(48) | *controlled*    | part of speech |
+| created_at      | INT         |                 | part of speech |
+
+#### controlled vocab
+
+| **property**        | **value**    |
+| ------------------- | ------------ |
+| **pos**             | adjective    |
+|                     | adverb       |
+|                     | com          |
+|                     | conjunction  |
+|                     | interjection |
+|                     | noun         |
+|                     | number       |
+|                     | participle   |
+|                     | particle     |
+|                     | preposition  |
+|                     | pronoun      |
+|                     | verb         |
+|                     | unknown      |
+|                     |              |
+| **noun_gender**     | masculine    |
+|                     | neuter       |
+|                     | feminine     |
+|                     |              |
+| **verb_aspect**     | imperfective |
+|                     | perfective   |
+|                     |              |
+| **verb_type**       | Type-I       |
+|                     | Type-II      |
+|                     |              |
+| **verb_trans_refl** | intransitive |
+|                     | transitive   |
+|                     | reflexive    |
+
 ### 00. lexicon
 
 Forms of lemmas
@@ -55,36 +108,6 @@ Forms of lemmas
 | id             | SERIAL      | PRIMARY KEY     |                                 |
 | lex_text       | VARCHAR(50) | NOT NULL UNIQUE | lexeme text with accent mark    |
 | lex_text_clean | VARCHAR(50) | NOT NULL UNIQUE | lexeme text without accent mark |
-
-### 01. lemmas
-
-Base forms with part of speech
-
-#### table
-
-| name     | type        | constraints  | description    |
-| -------- | ----------- | ------------ | -------------- |
-| id       | SERIAL      | PRIMARY KEY  |                |
-| lem_text | VARCHAR(50) |              | lemma text     |
-| pos      | INT         | *controlled* | part of speech |
-
-#### controlled vocab
-
-| property | value | meaning      |
-| -------- | ----- | ------------ |
-| pos      | 0     | adjective    |
-|          | 1     | adverb       |
-|          | 2     | com          |
-|          | 3     | conjunction  |
-|          | 4     | interjection |
-|          | 5     | noun         |
-|          | 6     | number       |
-|          | 7     | participle   |
-|          | 8     | particle     |
-|          | 9     | preposition  |
-|          | 10    | pronoun      |
-|          | 11    | verb         |
-|          | 12    | unknown      |
 
 ### 02. gram_props
 
@@ -97,11 +120,11 @@ Grammar property combinations of lemmas
 | id               | SERIAL     | PRIMARY KEY  |                                     |
 | verb_aspect      | INT        | *controlled* | verb aspect                         |
 | verb_conj        | VARCHAR(4) |              | verb conjugation (Zalizniak)        |
-| verb_type   | INT        | *controlled* | verb conjugation type (I/II/irreg)  |
+| verb_type        | INT        | *controlled* | verb conjugation type (I/II/irreg)  |
 | verb_infinitive  | BOOLEAN    |              |                                     |
 | verb_mood        | INT        | *controlled* |                                     |
 | verb_trans_refl  | INT        | *controlled* | transitivity, reflexivity of a verb |
-| conj_person | INT        | *controlled* | x-person verb conjugation           |
+| conj_person      | INT        | *controlled* | x-person verb conjugation           |
 | part_type        | INT        | *controlled* | type of participle                  |
 | part_voice       | INT        | *controlled* | voice of participle                 |
 | part_parent_verb | INT        | <lemmas(id)> | participle's parent (verb) id       |
@@ -110,7 +133,7 @@ Grammar property combinations of lemmas
 | adjv_short       | BOOLEAN    |              | short adjectives                    |
 | conj_gender      | INT        | *controlled* | grammatical gender                  |
 | gram_number      | INT        | *controlled* | grammatical number                  |
-| gram_tense        | INT    |              | past tense                          |
+| gram_tense       | INT        |              | past tense                          |
 | noun_dimun       | BOOLEAN    |              | dimunitive nouns                    |
 | adjv_comp_type   | INT        | *controlled* | adjectival comparative types        |
 
@@ -235,9 +258,9 @@ Example sentences from definitions
 
 Joins definitions, definition_sentences
 
-| name    | type | constraints                | description |
-| ------- | ---- | -------------------------- | ----------- |
-| def_id  | INT  | NOT NULL definitions(id)   |             |
+| name    | type | constraints               | description |
+| ------- | ---- | ------------------------- | ----------- |
+| def_id  | INT  | NOT NULL definitions(id)  |             |
 | sent_id | INT  | NOT NULL def_examples(id) |             |
 
 ### 11. lemma_defs

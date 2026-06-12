@@ -3,7 +3,7 @@ import pytest
 from sqlalchemy import select, func
 from alite_backend.db.tests.factories import ExerciseRequestFactory
 from alite_backend.db import models
-from alite_backend.db.schemas import EnumWordItemType, EnumItemFormat
+from alite_backend.db.schemas import EnumWordItemType, EnumItemFormat, EnumGramExFocus
 from alite_backend.db.tests.factories import UserFactory
 
 CONFIG_MATRIX = [
@@ -11,6 +11,14 @@ CONFIG_MATRIX = [
     {
         "exercise_context__ex_formats": [EnumItemFormat.MCQ],
         "type_counts": {EnumWordItemType.NOUN_FORM_TO_GRAM: 5},
+        "grammar_focus": {
+            "strategies": [
+                EnumGramExFocus.SUBST_CASE,
+                EnumGramExFocus.SUBST_GENDER,
+                EnumGramExFocus.SUBST_NUM,
+            ]
+        },
+        "is_odd_one_out": False,
     },
     # Test 2: Highly constrained distractors
     # {

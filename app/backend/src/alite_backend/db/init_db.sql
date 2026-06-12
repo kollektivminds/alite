@@ -1,4 +1,4 @@
--- Drop tables in the correct reverse order of dependency to avoid errors
+-- Drop tables in the reverse order of dependency to avoid errors
 -- First, drop all junction tables and tables with foreign keys
 DROP TABLE IF EXISTS users_in_groups;
 
@@ -71,7 +71,7 @@ CREATE TABLE
         verb_conj VARCHAR(16), -- ZALIZNIAK'S CLASSIFICATION
         verb_type VARCHAR(8), -- TYPE-I / TYPE-II FROM verb_conj
         verb_trans_refl VARCHAR(48),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT unique_lemma UNIQUE (id, entry_key)
     );
 
@@ -82,10 +82,10 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         lex_text VARCHAR(48) NOT NULL UNIQUE,
         lex_text_clean VARCHAR(48) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
 
--- PRIMARY TABLE for all grammatical combinations (NOT COVERED IN LEMMA)
+-- PRIMARY TABLE for all grammatical variations of lemmas
 -- RELS INCL 
 CREATE TABLE
     gram_props (
@@ -105,7 +105,7 @@ CREATE TABLE
         -- PARTICIPLES
         part_type VARCHAR(48),
         part_voice VARCHAR(48),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT unique_grammar UNIQUE (
             gram_tense,
             gram_num,
@@ -128,7 +128,7 @@ CREATE TABLE
         lem_id INT NOT NULL,
         lex_id INT NOT NULL,
         gram_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT lemma FOREIGN KEY (lem_id) REFERENCES lemmas (id) ON DELETE CASCADE,
         CONSTRAINT lexicon FOREIGN KEY (lex_id) REFERENCES lexicon (id) ON DELETE CASCADE,
         CONSTRAINT grammar FOREIGN KEY (gram_id) REFERENCES gram_props (id) ON DELETE CASCADE
@@ -141,7 +141,7 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         def_text TEXT NOT NULL,
         def_tags TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
 
 -- PRIMARY TABLE for word definition example sentences
@@ -150,7 +150,7 @@ CREATE TABLE
     examples (
         id SERIAL PRIMARY KEY,
         ex_text TEXT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
 
 -- PRIMARY TABLE for word pronunciations
@@ -161,7 +161,7 @@ CREATE TABLE
         pron_text TEXT NOT NULL,
         pron_tags TEXT,
         pron_type VARCHAR(48) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
 
 --
@@ -175,7 +175,7 @@ CREATE TABLE
         source_id INT NOT NULL,
         target_id INT NOT NULL,
         rel_type VARCHAR(32) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT id_source FOREIGN KEY (source_id) REFERENCES lemmas (id) ON DELETE CASCADE,
         CONSTRAINT id_target FOREIGN KEY (target_id) REFERENCES lemmas (id) ON DELETE CASCADE
     );
@@ -190,7 +190,7 @@ CREATE TABLE
         source_id INT NOT NULL,
         rel_type VARCHAR(48) NOT NULL,
         lookup_status VARCHAR(16),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT source_id FOREIGN KEY (source_id) REFERENCES lemmas (id) ON DELETE CASCADE,
         CONSTRAINT target_id FOREIGN KEY (target_id) REFERENCES lemmas (id) ON DELETE CASCADE
     );
@@ -201,7 +201,7 @@ CREATE TABLE
     lem_defs (
         lem_id INT NOT NULL,
         def_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (lem_id, def_id),
         CONSTRAINT lemma_definition FOREIGN KEY (lem_id) REFERENCES lemmas (id) ON DELETE CASCADE,
         CONSTRAINT definition_lemma FOREIGN KEY (def_id) REFERENCES definitions (id) ON DELETE CASCADE
@@ -213,7 +213,7 @@ CREATE TABLE
     def_exs (
         def_id INT NOT NULL,
         ex_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (def_id, ex_id),
         CONSTRAINT definition_example FOREIGN KEY (def_id) REFERENCES definitions (id) ON DELETE CASCADE,
         CONSTRAINT example_definition FOREIGN KEY (ex_id) REFERENCES examples (id) ON DELETE CASCADE
@@ -229,7 +229,7 @@ CREATE TABLE
         alias VARCHAR(25),
         user_role VARCHAR(48),
         email citext,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT email_format_check CHECK (email ~* '^\\S+@\\S+\\.\\S+$')
     );
 
@@ -237,14 +237,14 @@ CREATE TABLE
     user_groups (
         id SERIAL PRIMARY KEY,
         group_name VARCHAR(48),
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
 
 CREATE TABLE
     users_in_groups (
         user_id INT NOT NULL,
         group_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (user_id, group_id),
         CONSTRAINT id_user FOREIGN KEY (user_id) REFERENCES users (id),
         CONSTRAINT id_group FOREIGN KEY (group_id) REFERENCES user_groups (id)
@@ -259,7 +259,7 @@ CREATE TABLE
     modules (
         id SERIAL PRIMARY KEY,
         module_name VARCHAR(10) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
 
 -- PRIMARY TABLE for lessons and custom word lists
@@ -270,7 +270,7 @@ CREATE TABLE
         title VARCHAR(48) NOT NULL UNIQUE,
         topic TEXT,
         owner_id INT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT user_owner_id FOREIGN KEY (owner_id) REFERENCES users (id)
     );
 
@@ -280,7 +280,7 @@ CREATE TABLE
     less_lists_in_mods (
         mod_id INT NOT NULL,
         less_list_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (less_list_id, mod_id),
         CONSTRAINT lessons_lists FOREIGN KEY (less_list_id) REFERENCES lessons_lists (id) ON DELETE CASCADE,
         CONSTRAINT module FOREIGN KEY (mod_id) REFERENCES modules (id) ON DELETE CASCADE
@@ -292,7 +292,7 @@ CREATE TABLE
     lems_in_less_lists (
         lem_id INT NOT NULL,
         less_list_id INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         PRIMARY KEY (lem_id, less_list_id),
         CONSTRAINT lemma FOREIGN KEY (lem_id) REFERENCES lemmas (id) ON DELETE CASCADE,
         CONSTRAINT lessons_lists FOREIGN KEY (less_list_id) REFERENCES lessons_lists (id) ON DELETE CASCADE

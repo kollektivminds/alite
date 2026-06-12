@@ -24,8 +24,6 @@ def test_make_request_success(monkeypatch):
         return mock_response
 
     # 2. MONKEYPATCH: Safely swap the real requests.get for our fake one
-    # Justification: monkeypatch strictly bounds this modification to THIS single test function.
-    # The moment this function closes, the real requests.get is cleanly restored automatically.
     monkeypatch.setattr(requests, "get", mock_get)
 
     # ACT: Call your actual fetcher method
