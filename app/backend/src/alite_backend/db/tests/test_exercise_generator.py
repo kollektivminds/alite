@@ -1,24 +1,41 @@
 #
+from typing import Literal
+
+from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy import select, func
 from alite_backend.db.tests.factories import ExerciseRequestFactory
 from alite_backend.db import models
-from alite_backend.db.schemas import EnumWordItemType, EnumItemFormat, EnumGramExFocus
+from alite_backend.db.schemas import (
+    EnumWordItemType,
+    EnumItemFormat,
+    EnumGramExFocus,
+    EnumSubstGramExFocus,
+    EnumVerbGramExFocus,
+    EnumPartGramExFocus,
+)
 from alite_backend.db.tests.factories import UserFactory
+from sqlalchemy.orm.session import Session
 
 CONFIG_MATRIX = [
     # Test 1: MCQ generation only
     {
         "exercise_context__ex_formats": [EnumItemFormat.MCQ],
-        "type_counts": {EnumWordItemType.NOUN_FORM_TO_GRAM: 5},
-        "grammar_focus": {
-            "strategies": [
-                EnumGramExFocus.SUBST_CASE,
-                EnumGramExFocus.SUBST_GENDER,
-                EnumGramExFocus.SUBST_NUM,
-            ]
+        "type_counts": {
+            EnumWordItemType.NOUN_GRAM_TO_FORM: 5,
+            EnumWordItemType.NOUN_FORM_TO_GRAM: 5,
         },
-        "is_odd_one_out": False,
+        "grammar_focus": {
+            "strategies": {
+                "participles": [],
+                "substantives": [
+                    EnumSubstGramExFocus.GRAM_GENDER,
+                    EnumSubstGramExFocus.SUBST_CASE,
+                ],
+                "verbs": [],
+            },
+            "allow_odd_one_out": True,
+        },
     },
     # Test 2: Highly constrained distractors
     # {
@@ -37,13 +54,15 @@ CONFIG_MATRIX = [
 
 
 @pytest.mark.parametrize("factory_overrides", CONFIG_MATRIX)
-def test_exercise_generation_configurations(api_client, db_session, factory_overrides):
+def test_exercise_generation_configurations(
+    api_client: TestClient, db_session: Session, factory_overrides: dict[str, Any]
+):
     """
     Blasts the /generate endpoint with various valid configurations to ensure
     the orchestrator and strategies don't crash under different rulesets.
     """
     # ARRANGE
-    # Unpack the specific matrix overrides into our payload builder
+    # unpack the specific matrix overrides into our payload builder
     payload = ExerciseRequestFactory.build_payload(**factory_overrides)
 
     # from alite_backend.main import app
@@ -58,10 +77,11 @@ def test_exercise_generation_configurations(api_client, db_session, factory_over
     assert response.status_code == 200
     data = response.json()
 
-    # Ensure the requested item count exactly matches the output length
+    # ensure the requested item count exactly matches the output length
     expected_count = sum(payload["type_counts"].values())
     # assert data["total_questions"] == expected_count
     assert len(data["response_data"]) == expected_count
+    # TODO assert type counts results
 
 
 def get_valid_id_range(db_session, model):
@@ -74,7 +94,9 @@ def get_valid_id_range(db_session, model):
     return result if result else (None, None)
 
 
-def test_exercise_generation_respects_valid_id_ranges(api_client, db_session):
+def test_exercise_generation_respects_valid_id_ranges(
+    api_client: TestClient, db_session: Session
+):
     """
     Justification: We extract a target ID straight from our live clone to verify
     the orchestrator maps it to valid structural parameters.
@@ -130,7 +152,15 @@ def test_exercise_generation_respects_valid_id_ranges(api_client, db_session):
     ],
 )
 def test_exercise_generation_gracefully_rejects_boundaries(
-    api_client, db_session, invalid_modifier, expected_error_snippet
+    api_client: TestClient,
+    db_session: Session,
+    invalid_modifier: dict[str, list[int]] | dict[str, int],
+    expected_error_snippet: (
+        Literal["out of range"]
+        | Literal["not found"]
+        | Literal["greater than 0"]
+        | Literal["too many distractors"]
+    ),
 ):
     """
     Verifies that invalid bounds don't cause 500 crashes, but are caught by ALITE's

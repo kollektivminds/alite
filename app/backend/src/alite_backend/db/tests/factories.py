@@ -52,7 +52,7 @@ class InstructorFactory(UserFactory):
 
 
 class ExerciseContextFactory(BaseFactory):
-    class Meta: #type: ignore
+    class Meta:  # type: ignore
         model = schemas.ExerciseContext
 
     less_list_ids = None
@@ -91,11 +91,12 @@ class ItemResponseFactory(BaseFactory):
     id = Sequence(lambda n: n)
     response_time_ms = Faker("random_int", min=500, max=4000)
 
+
 ALL_FACTORIES = [
     UserFactory,
     StudentFactory,
     InstructorFactory,
     ExerciseContextFactory,
     ExerciseRequestFactory,
-    ItemResponseFactory
+    ItemResponseFactory,
 ]

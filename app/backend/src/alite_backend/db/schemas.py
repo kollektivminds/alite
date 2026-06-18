@@ -190,13 +190,12 @@ class RelatedLemmaRecord(BaseModel):
 class ProcessedPayload(BaseModel):
     """
     A container for the structured, processed data, ready for the Loader.
-    This is the final output of your 'Processor' class.
+    This is the final output of the 'Processor' class.
     """
 
     lemmas: List[LemmasRecord]
     gram_props: List[GramPropsRecord]
     lexicon: List[LexiconRecord]
-    # A word can have multiple definitions
     definitions: List[DefinitionsRecord]
     def_examples: List[DefExamplesRecord]
     pronunciations: List[PronunciationsRecord]
@@ -772,8 +771,29 @@ class ExerciseContext(BaseModel):
     max_distractors: int = 3
 
 
+class EnumSubstGramExFocus(str, Enum):
+    ALL = "all"
+    SUBST_CASE = "subst_case"
+    GRAM_GENDER = "gram_gender"
+    GRAM_NUM = "gram_num"
+
+
+class EnumVerbGramExFocus(str, Enum):
+    ALL = "all"
+    GRAM_TENSE = "gram_tense"
+    VERB_PERSON = "verb_person"
+    VERB_MOOD = "verb_mood"
+
+
+class EnumPartGramExFocus(str, Enum):
+    ALL = "all"
+    PART_TYPE = "part_type"
+    PART_VOICE = "part_voice"
+    GRAM_TENSE = "gram_tense"
+
+
 class EnumGramExFocus(str, Enum):
-    #ALL = "all"
+    ALL = "all"
     SUBST_CASE = "subst_case"
     SUBST_GENDER = "subst_gender"
     SUBST_NUM = "subst_num"
@@ -783,27 +803,35 @@ class EnumGramExFocus(str, Enum):
     PART_TYPE = "part_type"
     PART_VOICE = "part_voice"
     PART_TENSE = "part_tense"
-    
-# Define our modular configuration models
-class NounStrategyConfig(BaseModel):
-    # Users can pick specific sub-facets, or leave empty/default to ALL
-    focus_props: List[EnumGramExFocus] = [
-        EnumGramExFocus.SUBST_CASE,
-        EnumGramExFocus.SUBST_GENDER,
-        EnumGramExFocus.SUBST_NUM
-        ]
 
-class VerbStrategyConfig(BaseModel):
-    focus_props: List[EnumGramExFocus] = [
-        EnumGramExFocus.VERB_MOOD,
-        EnumGramExFocus.VERB_PERSON,
-        EnumGramExFocus.VERB_TENSE
-    ]
+
+# Define our modular configuration models
+# class NounStrategyConfig(BaseModel):
+#     # Users can pick specific sub-facets, or leave empty/default to ALL
+#     focus_props: List[EnumGramExFocus] = [
+#         EnumGramExFocus.SUBST_CASE,
+#         EnumGramExFocus.SUBST_GENDER,
+#         EnumGramExFocus.SUBST_NUM,
+#     ]
+
+
+# class VerbStrategyConfig(BaseModel):
+#     focus_props: List[EnumGramExFocus] = [
+#         EnumGramExFocus.VERB_MOOD,
+#         EnumGramExFocus.VERB_PERSON,
+#         EnumGramExFocus.VERB_TENSE,
+#     ]
+
 
 class StrategyConfigs(BaseModel):
     # Use optional attributes mapped directly to your core strategy enums
-    is_odd_one_out: bool = False
-    strategies: List[EnumGramExFocus] = []
+    allow_odd_one_out: bool = False
+    strategies: Dict[
+        str,
+        List[EnumSubstGramExFocus]
+        | List[EnumVerbGramExFocus]
+        | List[EnumPartGramExFocus],
+    ]
     # noun_form_to_gram: Optional[NounStrategyConfig] = None
     # verb_conjugation: Optional[VerbStrategyConfig] = None
 
@@ -818,20 +846,25 @@ class ExerciseRequest(BaseModel):
 # Raw Exercise Responses
 
 
-class KeysReponse(BaseModel):
-    item_id: int
-    key_text: str | Dict[str, Any]
+# class KeysReponse(BaseModel):
+#     item_id: int
+#     key_text: str | Dict[str, Any]
 
 
-class DistractorsResponse(BaseModel):
-    item_id: int
-    dist_text: str | Dict[str, Any]
+# class DistractorsResponse(BaseModel):
+#     item_id: int
+#     dist_text: str | Dict[str, Any]
 
 
 class ItemBlueprint(BaseModel):
     prompt: str
-    key: str
+    key: str | List[str]
     distractors: List[str]
+
+
+class ItemFormatBlueprints(BaseModel):
+    item_bp: ItemBlueprint
+    item_format: EnumItemFormat
 
 
 # Processed Exercise Responses
@@ -864,7 +897,8 @@ ExerciseItems = FlashcardResponse | MultipleChoiceResponse | WordClozeResponse
 
 
 class ExerciseResponse(BaseModel):
-    # total_questions: int
+    exercise_id: int
+    num_questions: int
     response_data: List[ExerciseItems]
 
 

@@ -671,6 +671,23 @@ class UserInGroup(Base):
 # --- Questions, Sessions, and Responses ---
 
 
+class Exercise(Base):
+    __tablename__ = "exercises"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    # TODO: set this up to start at load
+    start_time: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    finish_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    has_item: Mapped[List["Item"]] = relationship(
+        back_populates="in_ex", cascade="all, delete-orphan"
+    )
+    user: Mapped["User"] = relationship(back_populates="exercises")
+
+
 class Item(Base):
     __tablename__ = "items"
     # id, type
@@ -678,11 +695,13 @@ class Item(Base):
     ex_id: Mapped[int] = mapped_column(
         ForeignKey("exercises.id", ondelete="CASCADE"), index=True
     )
+    order_in_ex: Mapped[int] = mapped_column()
     item_type: Mapped[EnumWordItemType] = mapped_column(Enum(EnumWordItemType))
+    item_format: Mapped[EnumItemFormat] = mapped_column(Enum(EnumItemFormat))
     # content
-    prompt: Mapped[str] = mapped_column()
-    settings: Mapped[dict] = mapped_column(JSON)
-    key: Mapped[str] = mapped_column()
+    prompt: Mapped[str | None] = mapped_column()
+    settings: Mapped[dict | None] = mapped_column(JSON)
+    key: Mapped[str | List[str]] = mapped_column(ARRAY(String))
     distractors: Mapped[List[str] | None] = mapped_column(ARRAY(String))
     difficulty: Mapped[EnumItemDifficulty | None] = mapped_column(
         Enum(EnumItemDifficulty)
@@ -708,23 +727,6 @@ class LemmaInItem(Base):
     lem_id: Mapped[int] = mapped_column(
         ForeignKey("lemmas.id", ondelete="CASCADE"), primary_key=True
     )
-
-
-class Exercise(Base):
-    __tablename__ = "exercises"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
-    # TODO: set this up to start at load
-    start_time: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
-    )
-    finish_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
-    has_item: Mapped[List["Item"]] = relationship(
-        back_populates="in_ex", cascade="all, delete-orphan"
-    )
-    user: Mapped["User"] = relationship(back_populates="exercises")
 
 
 class ItemResponse(Base):

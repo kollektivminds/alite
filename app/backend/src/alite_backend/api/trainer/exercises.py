@@ -12,7 +12,7 @@ router = APIRouter()
 def create_custom_exercise(
     request: schemas.ExerciseRequest,
     db: Session = Depends(deps.get_db),
-    current_user = Depends(deps.get_current_user)
+    current_user=Depends(deps.get_current_user),
 ):
     generator = ExerciseRouter(
         db=db,
