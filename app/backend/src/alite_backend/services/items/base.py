@@ -32,7 +32,7 @@ class BaseExerciseStrategy(ABC):
 
     # --- HELPER METHODS ---
 
-    def get_scoped_stmt(self):
+    def _get_scoped_stmt(self):
 
         stmt = select(models.Lemma)
 
@@ -57,12 +57,47 @@ class BaseExerciseStrategy(ABC):
 
         return stmt
 
-    def get_enum_distractors(self, correct_enum: Enum, num_distractors: int):
-        """To get distractors with an enum class"""
-        all_options = [
-            e.value for e in correct_enum.__class__ if e != correct_enum.value
-        ]
-        return random.sample(all_options, min(num_distractors, len(all_options)))
+    def _get_enum_distractors(
+        self, correct_enum: Enum | bool, num_distractors: int = 3
+    ) -> List:
+        """to get distractors from within an enum class"""
+        if isinstance(correct_enum, bool):
+            return [str(not correct_enum)]
+        elif isinstance(correct_enum, Enum):
+
+            target_val = getattr(correct_enum, "value", correct_enum)
+
+            all_options = [
+                e.value for e in correct_enum.__class__ if e.value != target_val
+            ]
+            return random.sample(all_options, min(num_distractors, len(all_options)))
+
+    def _format_attribute_name(self, target_attr: str) -> str:
+        """_format_attribute_name translates db column names into human-readable strings
+
+        Args:
+            target_attr (str): _description_
+
+        Returns:
+            str: _description_
+        """
+        attribute_map = {
+            "pos": "part of speech",
+            "noun_gender": "grammatical gender",
+            "subst_animacy": "animacy",
+            "verb_aspect": "verbal aspect",
+            "verb_type": "conjugation type",
+            "verb_person": "person",
+            "verb_trans_refl": "transitivity or reflexivity",
+        }
+
+        return attribute_map.get(
+            target_attr,
+            target_attr.replace("gram_", "")
+            .replace("verb_", "")
+            .replace("subst_", "")
+            .replace("_", " "),
+        )
 
     def _fetch_grouped_paradigms(
         self, pos_target: models.EnumPartOfSpeech, num_lemmas: int, *gram_filters
@@ -73,7 +108,7 @@ class BaseExerciseStrategy(ABC):
         """
         # subquery: get distinct base words
         lemma_stmt = (
-            self.get_scoped_stmt()
+            self._get_scoped_stmt()
             .with_only_columns(models.Lemma.id)
             .where(models.Lemma.pos == pos_target)
             .order_by(func.random())
@@ -102,13 +137,16 @@ class BaseExerciseStrategy(ABC):
 
         return grouped_results
 
-    def _get_trait_mapping(self, focus: str) -> Tuple[str, List[str]] | None:
+    def _get_trait_mapping(
+        self, pos_target: models.EnumPartOfSpeech, focus: schemas.EnumSubstGramExFocus
+    ) -> Tuple[str, List[str]] | None:
         """
         UNIVERSAL MAPPING ENGINE: Translates an API focus selection into structural database column sets.
         Returns: (target_column_name, [list_of_static_column_names])
         """
         # Group definitions by major structural domains
-        substantive_cols: List[str] = ["subst_case", "gram_num", "gram_gender"]
+        noun_cols: List[str] = ["subst_case", "gram_num"]
+        adjective_cols: List[str] = noun_cols + ["gram_gender"]
         verb_cols: List[str] = [
             "gram_tense",
             "conj_person",
@@ -118,21 +156,30 @@ class BaseExerciseStrategy(ABC):
         ]
         participle_cols: List[str] = ["gram_tense", "part_type", "part_voice"]
 
-        strat_id = r"(subst_)(.*)$"
-        groups = re.findall(strat_id, focus)
-        if groups:
-            type_cols = groups[0][0]
-            focus_gram = groups[0][1]
+        if pos_target == models.EnumPartOfSpeech.NOUN:
+            return focus, [c for c in noun_cols if c != focus.value]
+        elif pos_target == models.EnumPartOfSpeech.ADJECTIVE:
+            return focus, [c for c in adjective_cols if c != focus.value]
+        elif pos_target == models.EnumPartOfSpeech.VERB:
+            return focus, [c for c in verb_cols if c != focus.value]
+        elif pos_target == models.EnumPartOfSpeech.PARTICIPLE:
+            return focus, [c for c in participle_cols if c != focus.value]
 
-            # 1. SUBSTANTIVES' FOCI
-            if type_cols == "subst_":
-                return focus, [c for c in substantive_cols if focus_gram not in c]
-            # 2. VERBS' FOCI
-            elif type_cols == "verb_":
-                return focus, [c for c in verb_cols if focus_gram not in c]
-            # 3. PARTICIPLES' FOCI
-            elif type_cols == "part_":
-                return focus, [c for c in participle_cols if focus_gram not in c]
+        # strat_id = r"(\w{4,5}_)(.*)$"
+        # groups = re.findall(strat_id, focus.value)
+        # if groups:
+        #     type_cols = groups[0][0]
+        #     focus_gram = groups[0][1]
+
+        #     # 1. SUBSTANTIVES' FOCI
+        #     if type_cols == "subst_":
+        #         return focus, [c for c in substantive_cols if focus_gram not in c]
+        #     # 2. VERBS' FOCI
+        #     elif type_cols == "verb_":
+        #         return focus, [c for c in verb_cols if focus_gram not in c]
+        #     # 3. PARTICIPLES' FOCI
+        #     elif type_cols == "part_":
+        #         return focus, [c for c in participle_cols if focus_gram not in c]
         # 4. FALLBACK / MIXED GENERAL STUDY ("ALL")
         # Returning "all" signals the child generator loop to bypass variable isolation
         else:
@@ -149,6 +196,179 @@ class BaseExerciseStrategy(ABC):
         else:
             target_val = getattr(gp, target_attr)
             return getattr(target_val, "value", str(target_val))
+
+    def _build_zero_query_drill(
+        self,
+        pos_target: models.EnumPartOfSpeech | None,
+        target_attr: str,
+        num_items: int,
+        max_keys: int,
+        max_distractors: int,
+        allow_odd_one_out: bool,
+        drill_direction: str,  # "word_to_trait" OR "trait_to_word"
+    ) -> list:
+        """
+        engine for creating exercises based on the lemma table
+        """
+        blueprints = []
+        attr_name = self._format_attribute_name(target_attr)
+        # fetch a buffered pool of valid lemmas
+        stmt = self._get_scoped_stmt()
+        
+        if pos_target is not None:
+            stmt = stmt.where(models.Lemma.pos == pos_target)
+            
+        stmt = (
+            stmt.where(getattr(models.Lemma, target_attr).isnot(None))  # Ignore nulls
+            .order_by(func.random())
+            .limit(num_items * 4)  # heavy buffer for deduplication
+        )
+        lemmas = self.db.execute(stmt).scalars().all()
+
+        # group by the target attribute
+        buckets = defaultdict(list)
+        for lem in lemmas:
+            buckets[getattr(lem, target_attr)].append(lem)
+
+        # a flat list of traits to pull distractors from
+        all_traits = list(buckets.keys())
+        if len(all_traits) < 2:
+            return blueprints  # not enough variance in the database to form a question
+
+        for baseline_lem in lemmas:
+            if len(blueprints) == num_items:
+                break
+            lemma_id = baseline_lem.id
+            baseline_trait = getattr(baseline_lem, target_attr)
+            trait_str = getattr(baseline_trait, "value", str(baseline_trait))
+            base_word = baseline_lem.lem_canon or baseline_lem.lem_text
+
+            keys, distractors, prompt_text = [], [], ""
+
+            # -----------------------------------------------------------------
+            # scenario a: lemma -> trait (buttons are grammar qualities)
+            # e.g., "What is the gender of 'книга'?" -> [Feminine, Masculine, Neuter]
+            # -----------------------------------------------------------------
+            if drill_direction == "lemma_to_trait":
+                keys = [trait_str]
+
+                # distractors are other enum traits available
+                distractors = self._get_enum_distractors(
+                    baseline_trait, num_distractors=max_distractors
+                )
+
+                # if len(distractors) < max_distractors:
+                #     continue
+
+                # dynamic prompt based on the attribute we are testing
+                # attr_name = self._format_attribute_name(target_attr)
+                prompt_text = f"Identify the {attr_name} of '{base_word}':"
+
+            # -----------------------------------------------------------------
+            # scenario b: trait -> lemma (buttons are Russian words)
+            # e.g., "Which of these nouns is Feminine?" -> [книга, дом, окно]
+            # -----------------------------------------------------------------
+            elif drill_direction == "trait_to_lemma":
+                item_is_ooo = (
+                    random.choice([True, False]) if allow_odd_one_out else False
+                )
+
+                if item_is_ooo or max_keys > 1:
+                    majority_trait, minority_trait = None, None
+                    for trait, items in buckets.items():
+                        if len(items) >= 3:
+                            majority_trait = trait
+                            other_traits = [t for t in buckets.keys() if t != trait]
+                            if other_traits:
+                                minority_trait = other_traits[0]
+                            break
+
+                    if not majority_trait or not minority_trait:
+                        continue
+                    maj_str = getattr(majority_trait, "value", str(majority_trait))
+
+                    if item_is_ooo:
+                        # the key is the anomaly
+                        keys = [
+                            getattr(k, "lem_canon", k.lem_text)
+                            for k in random.sample(buckets[minority_trait], 1)
+                        ]
+
+                        pool = list(buckets[majority_trait])
+                        random.shuffle(pool)
+                        seen_texts = set(keys)
+
+                        for lem in pool:
+                            text = lem.lem_canon or lem.lem_text
+                            if text not in seen_texts:
+                                seen_texts.add(text)
+                                distractors.append(text)
+                            if len(distractors) == 3:
+                                break
+
+                        # if len(distractors) < 3:
+                        #     continue
+                        prompt_text = f"Which of these is NOT {maj_str} ({attr_name})?"
+
+                    else:
+                        # multi-select
+                        keys = [
+                            getattr(k, "lem_canon", k.lem_text)
+                            for k in random.sample(buckets[majority_trait], max_keys)
+                        ]
+
+                        pool = list(buckets[minority_trait])
+                        random.shuffle(pool)
+                        seen_texts = set(keys)
+
+                        for lem in pool:
+                            text = lem.lem_canon or lem.lem_text
+                            if text not in seen_texts:
+                                seen_texts.add(text)
+                                distractors.append(text)
+                            if len(distractors) == max_distractors:
+                                break
+
+                        # if len(distractors) < max_distractors:
+                        #     continue
+                        prompt_text = f"Select all {maj_str} {pos_target}s:"
+
+                else:
+                    # single key: "Which word is feminine?"
+                    keys = [base_word]
+
+                    distractor_pool = []
+                    for trait, items in buckets.items():
+                        if trait != baseline_trait:
+                            distractor_pool.extend(items)
+
+                    random.shuffle(distractor_pool)
+                    seen_texts = {base_word}
+
+                    for lem in distractor_pool:
+                        text = lem.lem_canon or lem.lem_text
+                        if text not in seen_texts:
+                            seen_texts.add(text)
+                            distractors.append(text)
+                        if len(distractors) == max_distractors:
+                            break
+
+                    # if len(distractors) < max_distractors:
+                    #     continue
+                    attr_name = self._format_attribute_name(target_attr)
+                    prompt_text = f"Which of these words has the attribute: {trait_str} ({attr_name})?"
+
+            if keys and distractors:
+                blueprints.append(
+                    {
+                        "prompt": prompt_text,
+                        "keys": keys,
+                        "distractors": distractors,
+                        "lem_id": lemma_id,
+                    }
+                )
+
+        return blueprints
 
     def _build_paradigm_drill(
         self,
@@ -168,48 +388,52 @@ class BaseExerciseStrategy(ABC):
         )
         # loop list to analyze, filter, and arrange for list of blueprints
         for lemma_id, forms in paradigms.items():
-            # exit if enough blueprints have been made already
+
             if len(blueprints) == num_items:
                 break
+
             # skip word if forms are insufficient
-            # for an item's total options
             if not forms or len(forms) < (max_keys + max_distractors):
                 continue
-            # TODO: candidate for BKT algo
+
+            # TODO: candidate for bkt
             item_focus = random.choice(allowed_foci)
-            target_attr, static_attrs = self._get_trait_mapping(focus=item_focus)  # type: ignore
+            target_attr, static_attrs = self._get_trait_mapping(pos_target=pos_target, focus=item_focus)  # type: ignore
+
+            # defective form filtering
+            valid_forms = []
+            for f in forms:
+                gp = f[3]
+                if target_attr != "all" and getattr(gp, target_attr) is None:
+                    continue
+                if not all(getattr(gp, attr) is not None for attr in static_attrs):
+                    continue
+                valid_forms.append(f)
+
+            if not valid_forms or len(valid_forms) < (max_keys + max_distractors):
+                continue
 
             baseline_form = random.choice(forms)
             baseline_gp = baseline_form[3]
             lemma_form = forms[0][0].lem_canon or forms[0][0].lem_text
 
-            # -----------------------------------------------------------------
-            # THE DYNAMIC INVERSION SWITCH
-            # Justification: By defining these lambda-like extractors here,
-            # the exact same collision logic works perfectly for BOTH strategies.
-            # -----------------------------------------------------------------
-            if drill_direction == "gram_to_form":
-                # Buttons show Russian words. Prompt shows Grammar rules.
+            # dynamic inversion switch
+            if drill_direction == "form_to_gram":
+                # buttons show Russian words, prompt shows grammar rules.
                 def get_option_text(f):  # type: ignore
                     return f[2].lex_text
 
-                drill_prompt_target = lemma_form  # Prompt asks about the base lemma
+                drill_prompt_target = lemma_form  # prompt asks about the base lemma
             else:
-                # Buttons show Grammar rules. Prompt shows Russian words.
+                # buttons show grammar, prompt shows Russian words.
                 def get_option_text(f):
                     return self._format_grammar_label(f[3], target_attr, static_attrs)
 
-                drill_prompt_target = baseline_form[
-                    2
-                ].lex_text  # Prompt asks about the specific inflected text
-
-            # pedagogical control for item creation
-            baseline_form = random.choice(forms)
-            baseline_gp = baseline_form[3]
+                drill_prompt_target = baseline_form[2].lex_text
 
             # create pool for key and distractor selection
             if target_attr == "all":
-                clean_pool = forms
+                clean_pool = valid_forms
             else:
                 clean_pool = [
                     f
@@ -222,6 +446,9 @@ class BaseExerciseStrategy(ABC):
 
             # TODO: candidate for bkt
             item_is_ooo = random.choice([True, False]) if allow_odd_one_out else False
+
+            if drill_direction == "gram_to_form":
+                item_is_ooo = False
 
             # odd-one-out or multi-key items
             if item_is_ooo or max_keys > 1:
@@ -260,16 +487,14 @@ class BaseExerciseStrategy(ABC):
                 # ooo-specific settings
                 if item_is_ooo:
                     keys = random.sample(buckets[minority_trait], 1)
-                    key_strings = {
-                        get_option_text(k) for k in keys
-                    }  # <-- USING DYNAMIC EXTRACTOR
+                    key_strings = {get_option_text(k) for k in keys}
 
                     pool = list(buckets[majority_trait])
                     random.shuffle(pool)
                     distractors, seen_texts = [], set(key_strings)
 
                     for f in pool:
-                        text = get_option_text(f)  # <-- USING DYNAMIC EXTRACTOR
+                        text = get_option_text(f)
                         if text not in seen_texts:
                             seen_texts.add(text)
                             distractors.append(f)
@@ -287,7 +512,7 @@ class BaseExerciseStrategy(ABC):
                 else:
                     # multi-select
                     keys = random.sample(buckets[majority_trait], max_keys)
-                    key_strings = {k[2].lex_text for k in keys}
+                    key_strings = {get_option_text(k) for k in keys}
                     distractors = []
 
                     # get rid of duplicates
@@ -296,7 +521,7 @@ class BaseExerciseStrategy(ABC):
                     seen_texts = set(key_strings)
 
                     for f in pool:
-                        text = f[2].lex_text
+                        text = get_option_text(f)
                         if text not in seen_texts:
                             seen_texts.add(text)
                             distractors.append(f)
@@ -306,29 +531,31 @@ class BaseExerciseStrategy(ABC):
                     if len(distractors) < max_distractors:
                         continue
 
-                    prompt_text = (
-                        f"Select all {maj_trait_name} forms of '{lemma_form}':"
-                    )
+                    if drill_direction == "form_to_gram":
+                        prompt_text = f"Select all {maj_trait_name} forms of '{drill_prompt_target}':"
+                    else:
+                        # e.g., "Select all grammatical tags that apply to 'книги'" (Requires advanced logic, safe fallback)
+                        prompt_text = f"Select the grammatical tags for the form '{drill_prompt_target}':"
 
-            # # SCENARIO B: TRADITIONAL SINGLE-KEY BLUEPRINTS
+            # scenario b: traditional single-key items
             else:
                 keys = [baseline_form]
                 key_text = baseline_form[2].lex_text
                 distractors = []
                 if target_attr == "all":
-                    raw_pool = [f for f in clean_pool if f[3].id != baseline_gp.id]
+                    short_pool = [f for f in clean_pool if f[3].id != baseline_gp.id]
                 else:
                     baseline_trait_val = getattr(baseline_gp, target_attr)
-                    raw_pool = [
+                    short_pool = [
                         f
                         for f in clean_pool
                         if getattr(f[3], target_attr) != baseline_trait_val
                     ]
 
-                random.shuffle(raw_pool)
+                random.shuffle(short_pool)
                 seen_texts = {key_text}
 
-                for f in raw_pool:
+                for f in short_pool:
                     text = f[2].lex_text
                     if text not in seen_texts:
                         seen_texts.add(text)
@@ -339,37 +566,47 @@ class BaseExerciseStrategy(ABC):
                 if len(distractors) < max_distractors:
                     continue
 
-                if target_attr == "all":
-                    # safe extraction for GramProp values in case they are None
-                    c_val = (
-                        getattr(baseline_gp.subst_case, "value", "")
-                        if baseline_gp.subst_case
-                        else ""
-                    )
-                    n_val = (
-                        getattr(baseline_gp.gram_num, "value", "")
-                        if baseline_gp.gram_num
-                        else ""
-                    )
+                if drill_direction == "gram_to_form":
+                    # Buttons = Grammar Tags (Nominative, Plural). Prompt asks about the word form.
+                    if target_attr == "all":
+                        prompt_text = f"Identify the complete grammatical parsing for the form '{drill_prompt_target}':"
+                    else:
+                        clean_attr = self._format_attribute_name(target_attr)
+                        prompt_text = f"What is the {clean_attr} of the form '{drill_prompt_target}'?"
 
-                    # trim extra spaces if one is missing
-                    desc = f"{c_val} {n_val}".strip()
-                    prompt_text = f"Identify the {desc} form of '{lemma_form}':"
                 else:
-                    baseline_trait_val = getattr(baseline_gp, target_attr)
-                    target_str = getattr(
-                        baseline_trait_val, "value", str(baseline_trait_val)
-                    )
+                    # Buttons = Russian Words. Prompt asks about the grammar.
+                    if target_attr == "all":
+                        # safe extraction for GramProp values in case they are None
+                        c_val = (
+                            getattr(baseline_gp.subst_case, "value", "")
+                            if baseline_gp.subst_case
+                            else ""
+                        )
+                        n_val = (
+                            getattr(baseline_gp.gram_num, "value", "")
+                            if baseline_gp.gram_num
+                            else ""
+                        )
 
-                    # safe extraction for static traits
-                    static_descriptions = ", ".join(
-                        [
-                            getattr(getattr(baseline_gp, attr), "value", "")
-                            for attr in static_attrs
-                            if getattr(baseline_gp, attr)
-                        ]
-                    )
-                    prompt_text = f"Identify the {target_str} of '{lemma_form}' ({static_descriptions}):"
+                        # trim extra spaces if one is missing
+                        desc = f"{c_val} {n_val}".strip()
+                        prompt_text = f"Identify the {desc} form of '{lemma_form}':"
+                    else:
+                        baseline_trait_val = getattr(baseline_gp, target_attr)
+                        target_str = getattr(
+                            baseline_trait_val, "value", str(baseline_trait_val)
+                        )
+
+                        # safe extraction for static traits
+                        static_descriptions = ", ".join(
+                            [
+                                getattr(getattr(baseline_gp, attr), "value", "")
+                                for attr in static_attrs
+                                if getattr(baseline_gp, attr)
+                            ]
+                        )
+                        prompt_text = f"Identify the ({static_descriptions}) {target_str} of '{lemma_form}':"
 
             if keys and distractors:
                 blueprints.append(
@@ -377,6 +614,7 @@ class BaseExerciseStrategy(ABC):
                         "prompt": prompt_text,
                         "keys": [get_option_text(k) for k in keys],
                         "distractors": [get_option_text(d) for d in distractors],
+                        "lem_id": lemma_id,
                     }
                 )
 

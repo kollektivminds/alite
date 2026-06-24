@@ -89,9 +89,7 @@ def _get_curriculum_cache(db: Session) -> dict:
     return _CURRICULUM_CACHE
 
 
-# ==========================================
 # 2. THE LOADER CLASS
-# ==========================================
 class Loader:
     """_summary_"""
 
@@ -153,6 +151,9 @@ class Loader:
 
         return_props = {}
 
+        if all(part_tag in payload_tags for part_tag in ["participle", "adverbial"]):
+            payload_tags.remove("participle")
+            
         for tag in payload_tags:
             # tag = tag.lower()
             # logger.debug("_map_grammar_tags tag: %s", tag)

@@ -1,6 +1,5 @@
 #
-from typing import Literal
-
+from typing import Literal, Any
 from fastapi.testclient import TestClient
 import pytest
 from sqlalchemy import select, func
@@ -18,20 +17,44 @@ from alite_backend.db.tests.factories import UserFactory
 from sqlalchemy.orm.session import Session
 
 CONFIG_MATRIX = [
-    # Test 1: MCQ generation only
+    # Test 1: make paradigm drills
     {
         "exercise_context__ex_formats": [EnumItemFormat.MCQ],
         "type_counts": {
-            EnumWordItemType.NOUN_GRAM_TO_FORM: 5,
-            EnumWordItemType.NOUN_FORM_TO_GRAM: 5,
+            EnumWordItemType.NOUN_GRAM_TO_FORM: 3,
+            EnumWordItemType.NOUN_FORM_TO_GRAM: 3,
+            EnumWordItemType.ADJV_GRAM_TO_FORM: 3,
+            EnumWordItemType.ADJV_FORM_TO_GRAM: 3,
         },
         "grammar_focus": {
             "strategies": {
                 "participles": [],
                 "substantives": [
-                    EnumSubstGramExFocus.GRAM_GENDER,
                     EnumSubstGramExFocus.SUBST_CASE,
+                    EnumSubstGramExFocus.GRAM_NUM,
                 ],
+                "verbs": [],
+            },
+            "allow_odd_one_out": True,
+        },
+    },
+    # Test 2: make single-query drills
+    {
+        "exercise_context__ex_formats": [EnumItemFormat.MCQ],
+        "type_counts": {
+            EnumWordItemType.VERB_TO_ASPT: 5,
+            EnumWordItemType.ASPT_TO_VERB: 5,
+            EnumWordItemType.VERB_TO_TYPE: 5,
+            EnumWordItemType.TYPE_TO_VERB: 5,
+            EnumWordItemType.NOUN_TO_ANIM: 5,
+            EnumWordItemType.ANIM_TO_NOUN: 5,
+            EnumWordItemType.NOUN_TO_GEND: 5,
+            EnumWordItemType.GEND_TO_NOUN: 5,
+        },
+        "grammar_focus": {
+            "strategies": {
+                "participles": [],
+                "substantives": [],
                 "verbs": [],
             },
             "allow_odd_one_out": True,
@@ -76,7 +99,6 @@ def test_exercise_generation_configurations(
     # ASSERT
     assert response.status_code == 200
     data = response.json()
-
     # ensure the requested item count exactly matches the output length
     expected_count = sum(payload["type_counts"].values())
     # assert data["total_questions"] == expected_count

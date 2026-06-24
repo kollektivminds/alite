@@ -215,6 +215,7 @@ class EnumWordItemType(str, enum.Enum):
     VERB_TO_ASPT = "verb_to_aspt"  # "What is the aspect of [verb]?" (FC/MCQ)
     # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id, target_id].lem_canon
     # <-> lemmas(id=lem_id).verb_aspect
+    ASPT_TO_VERB = "aspt_to_verb"
     VERB_PAIR_TO_REL = "verb_pair_to_rel"  # "Which of these verbs is [aspect]?" (MCQ)
     # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id].lem_canon
     # <-> lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[target_id].lem_canon
@@ -223,8 +224,8 @@ class EnumWordItemType(str, enum.Enum):
     )
     # Conjugation Type
     # lemmas.filter(pos==verb).lem_canon <-> lemmas.filter(pos==verb).verb_type
-    LEM_TO_VTYP = "lem_to_vtyp"  # "What type of verb is X?" (MCQ)
-    VTYP_TO_LEM = "vtyp_to_lem"  # "Which lemma(s) is/are type X?" (MCQ)
+    VERB_TO_TYPE = "verb_to_type"  # "What type of verb is X?" (MCQ)
+    TYPE_TO_VERB = "type_to_verb"  # "Which lemma(s) is/are type X?" (MCQ)
     # Conjugation Forms (tense, number, gender, person, mood)
     # word_forms[gram_id=gram_props.[gram_tense, gram_num, gram_gender, conj_person, verb_mood]].lem_id[pos=PRONOUN].lem_canon
     # + lemmas.filter(pos==verb).lem_canon

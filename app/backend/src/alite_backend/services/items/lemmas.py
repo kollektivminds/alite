@@ -6,65 +6,80 @@ from alite_backend.db import models, schemas
 # LEMMA TO POS
 
 
+class LemmaToPosStrategy(BaseExerciseStrategy):
+    def generate_item_blueprints(
+        self, num_items=10, max_keys=1, max_distractors=3, config=None
+    ):
+        allow_ooo = config.allow_odd_one_out if config else False
+
+        return self._build_zero_query_drill(
+            pos_target=None,
+            target_attr="pos",
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allow_odd_one_out=allow_ooo,
+            drill_direction="lemma_to_trait",
+        )
+
+
 # POS TO LEMMA
+
+
+class PosToLemmaStrategy(BaseExerciseStrategy):
+    def generate_item_blueprints(
+        self, num_items=10, max_keys=1, max_distractors=3, config=None
+    ):
+        allow_ooo = config.allow_odd_one_out if config else False
+
+        return self._build_zero_query_drill(
+            pos_target=None,
+            target_attr="pos",
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allow_odd_one_out=allow_ooo,
+            drill_direction="trait_to_lemma",
+        )
 
 
 # LEMMA TO DEFINITION
 
 
 class LemmaToDefinitionStrategy(BaseExerciseStrategy):
-
-    def generate_item_blueprints(
-        self, num_items: int, max_keys: int, max_distractors: int
-    ) -> List[schemas.ItemBlueprint]:
-        blueprints = []
-
-        # 1. Fetch lemmas and their definitions in one go
-        stmt = (
-            self.get_scoped_stmt()
-            .add_columns(models.Definition)
-            .join(
-                models.LemmaDefinition, models.LemmaDefinition.lem_id == models.Lemma.id
-            )
-            .join(
-                models.Definition, models.LemmaDefinition.def_id == models.Definition.id
-            )
-            .limit(num_items)
-        )
-        results = self.db.execute(stmt).all()
-
-        # 2. Build the package
-        for lemma, definition in results:
-            distractors = self._get_random_definitions(
-                max_distractors, exclude_id=definition.id
-            )
-
-            blueprints.append(
-                {
-                    "prompt": f"What is the definition of '{lemma.lem_text}'?",
-                    "key": definition.def_text,
-                    "distractors": distractors,
-                }
-            )
-
-        return blueprints
-
-    def _get_random_definitions(self, limit: int, exclude_id: int):
-        """A private helper method, living ONLY in this child class!"""
-        # Logic to pull random distractors...
-        pass
+    pass
 
 
 # DEFINITION TO LEMMA
 
 
+class DefinitionToLemmaStrategy(BaseExerciseStrategy):
+    pass
+
+
 # LEMMA TO PRONUNCIATION
+
+
+class LemmaToPronunciationStrategy(BaseExerciseStrategy):
+    pass
 
 
 # PRONUNCIATION TO LEMMA
 
 
+class PronunciationToLemmaStrategy(BaseExerciseStrategy):
+    pass
+
+
 # LEMMA + LEMMA TO RELATION
 
 
+class LemLemToRelationStrategy(BaseExerciseStrategy):
+    pass
+
+
 # RELATION TO LEMMA + LEMMA
+
+
+class RelationToLemLemStrategy(BaseExerciseStrategy):
+    pass

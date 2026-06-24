@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 # --- Distractor Formulae ---
 # ZQ = zero-query (Enum-based)
-# SQ = sibling quiery (table-based)
+# SQ = sibling quiery (multitable-based)
 # GQ = grammar query (gram_props-based)
 
 #
@@ -31,8 +31,58 @@ logger = logging.getLogger(__name__)
 # "What is the [gender, number, case] of [adjective form]?" (GQ: MCQ)
 
 
+class AdjvFormToGramStrategy(BaseExerciseStrategy):
+    def generate_item_blueprints(
+        self, num_items=10, max_keys=1, max_distractors=3, config=None
+    ):
+        foci = (
+            config.strategies.get(
+                "substantives", [e.value for e in schemas.EnumGramExFocus]
+            )
+            if config and config.strategies
+            else [e.value for e in schemas.EnumGramExFocus]
+        )
+
+        allow_ooo = config.allow_odd_one_out if config else False
+
+        return self._build_paradigm_drill(
+            pos_target=models.EnumPartOfSpeech.ADJECTIVE,
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allowed_foci=foci,
+            allow_odd_one_out=allow_ooo,
+            drill_direction="form_to_gram",
+        )
+
+
 # ADJECTIVE GRAMMAR TO FORM ("adjv_gram_to_form")
 # "Which of the following adjectival forms is/are an example of [grammar]?" (GQ: MCQ)
+
+
+class AdjvGramToFormStrategy(BaseExerciseStrategy):
+    def generate_item_blueprints(
+        self, num_items=10, max_keys=1, max_distractors=3, config=None
+    ):
+        foci = (
+            config.strategies.get(
+                "substantives", [e.value for e in schemas.EnumGramExFocus]
+            )
+            if config and config.strategies
+            else [e.value for e in schemas.EnumGramExFocus]
+        )
+
+        allow_ooo = config.allow_odd_one_out if config else False
+
+        return self._build_paradigm_drill(
+            pos_target=models.EnumPartOfSpeech.ADJECTIVE,
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allowed_foci=foci,
+            allow_odd_one_out=allow_ooo,
+            drill_direction="gram_to_form",
+        )
 
 
 #
@@ -43,16 +93,84 @@ logger = logging.getLogger(__name__)
 # "What gender is [noun]?" (ZQ: MCQ)
 
 
+class NounToGenderStrategy(BaseExerciseStrategy):
+    def generate_item_blueprints(
+        self, num_items=10, max_keys=1, max_distractors=3, config=None
+    ):
+        allow_ooo = config.allow_odd_one_out if config else False
+
+        return self._build_zero_query_drill(
+            pos_target=models.EnumPartOfSpeech.NOUN,
+            target_attr="noun_gender",
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allow_odd_one_out=allow_ooo,
+            drill_direction="lemma_to_trait",  # Prompts: "Identify the gender of 'книга'"
+        )
+
+
 # GENDER TO NOUN ("gender_to_noun")
 # "Which lemma(s) is/are [noun_gender]?" (ZQ: MCQ)
+
+
+class GenderToNounStrategy(BaseExerciseStrategy):
+    def generate_item_blueprints(
+        self, num_items=10, max_keys=1, max_distractors=3, config=None
+    ):
+        allow_ooo = config.allow_odd_one_out if config else False
+
+        return self._build_zero_query_drill(
+            pos_target=models.EnumPartOfSpeech.NOUN,
+            target_attr="noun_gender",
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allow_odd_one_out=allow_ooo,
+            drill_direction="trait_to_lemma",  # Prompts: "Which of the following is feminine?"
+        )
 
 
 # NOUN TO ANIMACY ("noun_to_anim")
 # "Is [noun] animate or inanimate?" (ZQ: MCQ)
 
 
+class NounToAnimacyStrategy(BaseExerciseStrategy):
+    def generate_item_blueprints(
+        self, num_items=10, max_keys=1, max_distractors=3, config=None
+    ):
+        allow_ooo = config.allow_odd_one_out if config else False
+
+        return self._build_zero_query_drill(
+            pos_target=models.EnumPartOfSpeech.NOUN,
+            target_attr="subst_animacy",
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allow_odd_one_out=allow_ooo,
+            drill_direction="lemma_to_trait",  # Prompts: "Identify the gender of 'книга'"
+        )
+
+
 # ANIMACY TO NOUN ("anim_to_noun")
 # "Which lemma(s) is/are [subst_animacy]?" (ZQ: MCQ)
+
+
+class AnimacyToNounStrategy(BaseExerciseStrategy):
+    def generate_item_blueprints(
+        self, num_items=10, max_keys=1, max_distractors=3, config=None
+    ):
+        allow_ooo = config.allow_odd_one_out if config else False
+
+        return self._build_zero_query_drill(
+            pos_target=models.EnumPartOfSpeech.NOUN,
+            target_attr="subst_animacy",
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allow_odd_one_out=allow_ooo,
+            drill_direction="trait_to_lemma",  # Prompts: "Identify the gender of 'книга'"
+        )
 
 
 # NOUN FORM + LEMMA TO GENDER/NUMBER/CASE ("noun_form_to_gram")
@@ -70,6 +188,8 @@ class NounFormToGramStrategy(BaseExerciseStrategy):
             if config and config.strategies
             else [e.value for e in schemas.EnumGramExFocus]
         )
+        foci = [f for f in foci if f != "subst_gender"]
+
         allow_ooo = config.allow_odd_one_out if config else False
 
         return self._build_paradigm_drill(
@@ -311,6 +431,8 @@ class NounGramToFormStrategy(BaseExerciseStrategy):
             if config and config.strategies
             else [e.value for e in schemas.EnumGramExFocus]
         )
+        foci = [f for f in foci if f != "subst_gender"]
+
         allow_ooo = config.allow_odd_one_out if config else False
 
         return self._build_paradigm_drill(
@@ -334,4 +456,4 @@ class NounGramToFormStrategy(BaseExerciseStrategy):
 
 
 # LEMMA TO PARTICIPLE TYPE ("lem_to_part_type")
-# "What type of participle is [participle]?" (GQ: MCQ)
+# "What type of participle is [participle]?" (SQ: MCQ)

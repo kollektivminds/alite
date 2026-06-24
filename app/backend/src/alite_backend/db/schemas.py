@@ -860,11 +860,12 @@ class ItemBlueprint(BaseModel):
     prompt: str
     key: str | List[str]
     distractors: List[str]
+    lem_id: int
 
 
 class ItemFormatBlueprints(BaseModel):
-    item_bp: ItemBlueprint
     item_format: EnumItemFormat
+    item_bp: ItemBlueprint
 
 
 # Processed Exercise Responses

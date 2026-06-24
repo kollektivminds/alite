@@ -12,9 +12,22 @@ from alite_backend.services.items.base import BaseExerciseStrategy
 from alite_backend.services.items.substantives import (
     NounFormToGramStrategy,
     NounGramToFormStrategy,
+    NounToAnimacyStrategy,
+    AnimacyToNounStrategy,
+    NounToGenderStrategy,
+    GenderToNounStrategy,
+    AdjvFormToGramStrategy,
+    AdjvGramToFormStrategy,
 )
 
-# from alite_backend.services.items.lemmas import
+from alite_backend.services.items.verbs import (
+    VerbToAspectStrategy,
+    AspectToVerbStrategy,
+    VerbToTypeStrategy,
+    TypeToVerbStrategy,
+    VerbToTransReflStrategy,
+    TransReflToVerbStrategy,
+)
 
 # from .items.verbs import
 # from .items.participles import
@@ -36,8 +49,25 @@ class ExerciseRouter:
         # self.context = exercise_request.exercise_context
         self.user_id = user_id
         self.STRATEGY_MAP = {
+            # lemmas
+            # substantives - adjectives
+            EnumWordItemType.ADJV_FORM_TO_GRAM: AdjvFormToGramStrategy,
+            EnumWordItemType.ADJV_GRAM_TO_FORM: AdjvGramToFormStrategy,
+            # substantives - nouns
+            EnumWordItemType.NOUN_TO_GEND: NounToGenderStrategy,
+            EnumWordItemType.GEND_TO_NOUN: GenderToNounStrategy,
+            EnumWordItemType.NOUN_TO_ANIM: NounToAnimacyStrategy,
+            EnumWordItemType.ANIM_TO_NOUN: AnimacyToNounStrategy,
             EnumWordItemType.NOUN_FORM_TO_GRAM: NounFormToGramStrategy,
             EnumWordItemType.NOUN_GRAM_TO_FORM: NounGramToFormStrategy,
+            # substantives - participles
+            # verbs
+            EnumWordItemType.VERB_TO_ASPT: VerbToAspectStrategy,
+            EnumWordItemType.ASPT_TO_VERB: AspectToVerbStrategy,
+            EnumWordItemType.VERB_TO_TYPE: VerbToTypeStrategy,
+            EnumWordItemType.TYPE_TO_VERB: TypeToVerbStrategy,
+            EnumWordItemType.VERB_TO_TNRF: VerbToTransReflStrategy,
+            EnumWordItemType.TNRF_TO_VERB: TransReflToVerbStrategy,
         }
         # create exercise record
         self.exercise_in = models.Exercise(user_id=self.user_id)
@@ -70,7 +100,7 @@ class ExerciseRouter:
                 item_strategy, request.exercise_context
             )
             specific_config = None
-            if request.grammar_focus.strategies:
+            if request.grammar_focus.strategies:  # type: ignore
                 specific_config = request.grammar_focus
             # create blueprints for all items of a strategy
             blueprints = strategy_runner.generate_item_blueprints(
@@ -117,6 +147,10 @@ class ExerciseRouter:
                 settings=item_settings,
             )
             self.db.add(db_item)
+            self.db.flush()
+
+            db_lem_in_item = models.LemmaInItem(item_id=db_item.id, lem_id=pl["item_bp"]["lem_id"])
+            self.db.add(db_lem_in_item)
             self.db.flush()
 
             options = item_key + item_distractors
