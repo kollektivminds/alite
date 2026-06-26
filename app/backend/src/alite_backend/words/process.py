@@ -367,13 +367,12 @@ class ReturnedLemmaProcessor:
                             continue
 
             # pronunciations
-            # these link directly to the lexicon entry
             for pron in entry.pronunciations:
                 sorted_data["pronunciations"].append(
                     {
-                        "entry_key": entry_key,  # For load.py to find lexicon_id
+                        "entry_key": entry_key,
                         "pron_text": pron.text,
-                        "pron_type": EnumPronType.IPA if pron.type == "ipa" else None,
+                        "pron_type": EnumPronType.IPA if pron.type == "ipa" else None, # 'romanization' pronunciations from forms
                         "pron_tags": pron.tags if len(pron.tags) > 0 else None,
                     }
                 )

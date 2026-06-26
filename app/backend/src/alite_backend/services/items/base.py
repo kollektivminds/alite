@@ -165,23 +165,6 @@ class BaseExerciseStrategy(ABC):
         elif pos_target == models.EnumPartOfSpeech.PARTICIPLE:
             return focus, [c for c in participle_cols if c != focus.value]
 
-        # strat_id = r"(\w{4,5}_)(.*)$"
-        # groups = re.findall(strat_id, focus.value)
-        # if groups:
-        #     type_cols = groups[0][0]
-        #     focus_gram = groups[0][1]
-
-        #     # 1. SUBSTANTIVES' FOCI
-        #     if type_cols == "subst_":
-        #         return focus, [c for c in substantive_cols if focus_gram not in c]
-        #     # 2. VERBS' FOCI
-        #     elif type_cols == "verb_":
-        #         return focus, [c for c in verb_cols if focus_gram not in c]
-        #     # 3. PARTICIPLES' FOCI
-        #     elif type_cols == "part_":
-        #         return focus, [c for c in participle_cols if focus_gram not in c]
-        # 4. FALLBACK / MIXED GENERAL STUDY ("ALL")
-        # Returning "all" signals the child generator loop to bypass variable isolation
         else:
             return "all", []
 
@@ -205,8 +188,8 @@ class BaseExerciseStrategy(ABC):
         max_keys: int,
         max_distractors: int,
         allow_odd_one_out: bool,
-        drill_direction: str,  # "word_to_trait" OR "trait_to_word"
-    ) -> list:
+        drill_direction: str,  # "lemma_to_trait" OR "trait_to_lemma"
+    ) -> List[schemas.ItemBlueprint]:
         """
         engine for creating exercises based on the lemma table
         """
@@ -214,10 +197,10 @@ class BaseExerciseStrategy(ABC):
         attr_name = self._format_attribute_name(target_attr)
         # fetch a buffered pool of valid lemmas
         stmt = self._get_scoped_stmt()
-        
+
         if pos_target is not None:
             stmt = stmt.where(models.Lemma.pos == pos_target)
-            
+
         stmt = (
             stmt.where(getattr(models.Lemma, target_attr).isnot(None))  # Ignore nulls
             .order_by(func.random())
@@ -236,7 +219,7 @@ class BaseExerciseStrategy(ABC):
             return blueprints  # not enough variance in the database to form a question
 
         for baseline_lem in lemmas:
-            if len(blueprints) == num_items:
+            if len(blueprints) >= num_items:
                 break
             lemma_id = baseline_lem.id
             baseline_trait = getattr(baseline_lem, target_attr)
@@ -617,6 +600,184 @@ class BaseExerciseStrategy(ABC):
                         "lem_id": lemma_id,
                     }
                 )
+
+        return blueprints
+
+    def _build_sibling_query_drill(
+        self,
+        target_model: Any,
+        fetch_column: str,
+        pos_target: str,
+        num_items: int = 10,
+        max_keys: int = 1,
+        max_distractors: int = 3,
+        allow_odd_one_out: bool = False,
+        drill_direction: str = "lemma_to_sibling",
+    ) -> List[schemas.ItemBlueprint]:
+        """
+        Builds an item by joining the Lemma table to a related 'sibling' table
+        (e.g., Definitions, Pronunciations) via a foreign key.
+        """
+
+        blueprints = []
+
+        stmt = self._get_scoped_stmt()
+        candidates = (
+            stmt.join(target_model)
+            .filter(models.Lemma.pos == pos_target)
+            .order_by(func.random())
+            .limit(num_items * 3)
+            .all()
+        )
+
+        if len(candidates) < num_items:
+            raise ValueError(
+                f"Not enough {pos_target} lemmas with {target_model.__name__} data to generate {num_items} items."
+            )
+
+        for lemma in candidates:
+            if len(blueprints) >= num_items:
+                break
+            # fetch the siblings utilizing the scoped statement
+            siblings = stmt.filter(target_model.lemma_id == lemma.id).all()
+            sibling_values = [getattr(s, fetch_column) for s in siblings]
+
+            # 2. Defensively fetch distractors utilizing the scoped statement
+            distractor_stmt = self._get_scoped_stmt(db, target_model)
+            distractor_entries = (
+                distractor_stmt.join(models.Lemma)
+                .filter(models.Lemma.pos == pos_target, models.Lemma.id != lemma.id)
+                .order_by(func.random())
+                .limit(max_distractors)
+                .all()
+            )
+
+            # 3. Formulate the Item Blueprint
+            if allow_odd_one_out and len(sibling_values) >= 3:
+                # The "distractor" becomes the correct answer to select
+                distractor_val = getattr(distractor_entries[0], fetch_column)
+
+                blueprint = schemas.ItemBlueprint(
+                    prompt=f"Which of these is NOT a {target_model.__name__.lower()} for '{lemma.word}'?",
+                    keys=[distractor_val],
+                    distractors=sibling_values[:3],
+                    metadata={"type": "odd_one_out", "lemma_id": lemma.id},
+                )
+
+            elif drill_direction == "L2S":
+                # Lemma -> Sibling
+                blueprint = schemas.ItemBlueprint(
+                    prompt=lemma.word,
+                    keys=random.sample(
+                        sibling_values, min(max_keys, len(sibling_values))
+                    ),
+                    distractors=[getattr(d, fetch_column) for d in distractor_entries],
+                    metadata={"direction": "L2S", "lemma_id": lemma.id},
+                )
+
+            elif drill_direction == "S2L":
+                # Sibling -> Lemma
+                selected_sibling = random.choice(sibling_values)
+                distractor_lemmas = [d.lemma.word for d in distractor_entries]
+
+                blueprint = schemas.ItemBlueprint(
+                    prompt=selected_sibling,
+                    keys=[lemma.word],
+                    distractors=distractor_lemmas,
+                    metadata={"direction": "S2L", "lemma_id": lemma.id},
+                )
+            else:
+                raise ValueError(f"Invalid drill_direction: {drill_direction}")
+
+            blueprints.append(blueprint)
+
+        return blueprints
+
+    def _build_lemma_relation_drill(
+        self,
+        relation_type: str,  # e.g., 'synonym', 'antonym', 'aspect_pair'
+        pos_target: str,  # e.g., 'verb'
+        num_items: int = 5,
+        max_keys: int = 1,
+        max_distractors: int = 3,
+        allow_odd_one_out: bool = False,
+        drill_direction: str = "forward",
+    ) -> Dict[str, Any]:
+        """
+        Builds an item by traversing the lemma_relations junction table
+        (e.g., finding synonyms, antonyms, or aspect pairs).
+        """
+        blueprints = []
+
+        # 1. Fetch valid relationships using scoped statement
+        rel_stmt = self._get_scoped_stmt(db, models.LemmaRelation)
+        relations_query = rel_stmt.join(
+            models.Lemma, models.LemmaRelation.source_id == models.Lemma.id
+        ).filter(
+            models.LemmaRelation.relation_type == relation_type,
+            models.Lemma.pos == pos_target
+        ).order_by(func.random()).limit(num_items * 2).all()
+
+        # Deduplicate sources
+        unique_sources = list({rel.source_id: rel for rel in relations_query}.values())[:num_items]
+
+        for rel in unique_sources:
+            lemma_stmt = self._get_scoped_stmt()
+            source_lemma = lemma_stmt.get(rel.source_id)
+            
+            # Get all valid targets using scoped statement
+            target_stmt = self._get_scoped_stmt()
+            all_targets = target_stmt.join(
+                models.LemmaRelation, models.LemmaRelation.target_id == models.Lemma.id
+            ).filter(
+                models.LemmaRelation.source_id == source_lemma.id,
+                models.LemmaRelation.rel_type == relation_type
+            ).all()
+
+            target_words = [t.word for t in all_targets]
+
+            # 2. Defensively fetch distractors using scoped statement
+            # We still need the raw db.query for the subquery logic
+            invalid_ids_subquery = db.query(models.LemmaRelation.target_id).filter(
+                models.LemmaRelation.source_id == source_lemma.id,
+                models.LemmaRelation.rel_type == relation_type
+            )
+
+            distractor_stmt = self._get_scoped_stmt(db, models.Lemma)
+            distractor_lemmas = distractor_stmt.filter(
+                models.Lemma.pos == pos_target,
+                models.Lemma.id != source_lemma.id,
+                ~models.Lemma.id.in_(invalid_ids_subquery)
+            ).order_by(func.random()).limit(max_distractors).all()
+
+            distractor_words = [d.word for d in distractor_lemmas]
+
+            # 3. Blueprint Formulation
+            if allow_odd_one_out and len(target_words) >= 3:
+                blueprint = schemas.ItemBlueprint(
+                    prompt=f"Which word is NOT a {relation_type} for '{source_lemma.word}'?",
+                    keys=[distractor_words[0]],
+                    distractors=target_words[:3], 
+                    metadata={"type": "odd_one_out", "relation_type": relation_type}
+                )
+                
+            elif drill_direction == "forward":
+                blueprint = schemas.ItemBlueprint(
+                    prompt=source_lemma.word,
+                    keys=random.sample(target_words, min(max_keys, len(target_words))),
+                    distractors=distractor_words,
+                    metadata={"relation": relation_type, "direction": "forward"}
+                )
+                
+            elif drill_direction == "reverse":
+                blueprint = schemas.ItemBlueprint(
+                    prompt=random.choice(target_words),
+                    keys=[source_lemma.word],
+                    distractors=distractor_words, 
+                    metadata={"relation": relation_type, "direction": "reverse"}
+                )
+                
+            blueprints.append(blueprint)
 
         return blueprints
 

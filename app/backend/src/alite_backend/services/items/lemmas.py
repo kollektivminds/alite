@@ -3,7 +3,8 @@ from typing import List, Dict
 from alite_backend.services.items.base import BaseExerciseStrategy
 from alite_backend.db import models, schemas
 
-# LEMMA TO POS
+# lemam to part of speech ("lemma_to_pos")
+# "What is the part of speech of [lemma]?" (ZQ: MCQ)
 
 
 class LemmaToPosStrategy(BaseExerciseStrategy):
@@ -23,7 +24,8 @@ class LemmaToPosStrategy(BaseExerciseStrategy):
         )
 
 
-# POS TO LEMMA
+# part of speech to lemma ("pos_to_lemma")
+# "Choose the [part_of_speech] from the following." (ZQ: MCQ)
 
 
 class PosToLemmaStrategy(BaseExerciseStrategy):
@@ -43,42 +45,47 @@ class PosToLemmaStrategy(BaseExerciseStrategy):
         )
 
 
-# LEMMA TO DEFINITION
+# lemma to definition ("lem_to_def")
+# "What is a definition of [lemma]?" (SQ: MCQ)
 
 
 class LemmaToDefinitionStrategy(BaseExerciseStrategy):
     pass
 
 
-# DEFINITION TO LEMMA
+# definition to lemma ("def_to_lem")
+# "Choose a word with the following meaning: [definition]." (SQ: MCQ)
 
 
 class DefinitionToLemmaStrategy(BaseExerciseStrategy):
     pass
 
 
-# LEMMA TO PRONUNCIATION
+# lemma to pronunciation ("lem_to_pron")
+# "How do you pronounce [lemma] ([pron_type])?" (SQ: MCQ)
 
 
 class LemmaToPronunciationStrategy(BaseExerciseStrategy):
     pass
 
 
-# PRONUNCIATION TO LEMMA
+# "Which lemma is pronounced [pronunciation] ([pron_type])?" (SQ: MCQ/Cloze)
 
 
 class PronunciationToLemmaStrategy(BaseExerciseStrategy):
     pass
 
 
-# LEMMA + LEMMA TO RELATION
+# lemma + lemma to relation ("lem_lem_to_rel")
+# "[lemma_0] is what to [lemma_1]?" (MCQ)
 
 
 class LemLemToRelationStrategy(BaseExerciseStrategy):
     pass
 
 
-# RELATION TO LEMMA + LEMMA
+# relation to lemma + lemma ("rel_to_lem_lem")
+# "Which of the following pairs is [lemma_relation]?" (MCQ)
 
 
 class RelationToLemLemStrategy(BaseExerciseStrategy):

@@ -4,6 +4,7 @@ from alite_backend.db import models, schemas
 from alite_backend.services.items.base import BaseExerciseStrategy
 
 # verb to aspect
+# "What is the aspect of [lemma_verb]?" (ZQ: MCQ)
 
 
 class VerbToAspectStrategy(BaseExerciseStrategy):
@@ -23,11 +24,12 @@ class VerbToAspectStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="lemma_to_trait",  # Prompts: "Identify the gender of 'книга'"
+            drill_direction="lemma_to_trait",
         )
 
 
 # aspect to verb
+# "Choose a verb that is [aspect]." (ZQ: MCQ)
 
 
 class AspectToVerbStrategy(BaseExerciseStrategy):
@@ -43,17 +45,28 @@ class AspectToVerbStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="trait_to_lemma",  # Prompts: "Identify the gender of 'книга'"
+            drill_direction="trait_to_lemma",
         )
 
 
-# VERB PAIR TO RELATION
+# verb pair to relation
+# "Which of the pair [lemma_verb0] - [lemma_verb1] is [verb_aspect]?"
 
 
-# VERB ASPECT TO PAIR
+class VerbPairToRelationStrategy(BaseExerciseStrategy):
+    pass
 
 
-# LEMMA TO VERB TYPE
+# verb relation to pair
+# "What is the [relation_verb_aspect] partner of [lemma_verb]?" (MCQ/Cloze)
+
+
+class VerbRelationToPairStrategy(BaseExerciseStrategy):
+    pass
+
+
+# verb to type
+# "What is the conjugation type of [lemma_verb]?" (ZQ: MCQ)
 
 
 class VerbToTypeStrategy(BaseExerciseStrategy):
@@ -73,7 +86,8 @@ class VerbToTypeStrategy(BaseExerciseStrategy):
         )
 
 
-# VERB TYPE TO LEMMA
+# type to verb
+# "Pick the [verb_type] verb." (ZQ: MCQ)
 
 
 class TypeToVerbStrategy(BaseExerciseStrategy):
@@ -93,13 +107,16 @@ class TypeToVerbStrategy(BaseExerciseStrategy):
         )
 
 
-# PRONOUN + INFINITIVE TO VERB CONJUGATION
+# pronoun + verb to conjugated form
+# "Conjugate [pronoun] [verb_lemma]:" (GQ: MCQ/Cloze)
 
 
-# VERB CONJUGATION TO PRONOUN + INFINITIVE
+class VerbToConjFormStrategy(BaseExerciseStrategy):
+    pass
 
 
-# VERB TO TRANSITIVITY/REFLEXIVITY
+# verb to transitivity / reflexivity
+# "What is the transitivity / reflexivity of [lemma_verb]?" (ZQ: MCQ)
 
 
 class VerbToTransReflStrategy(BaseExerciseStrategy):
@@ -119,7 +136,8 @@ class VerbToTransReflStrategy(BaseExerciseStrategy):
         )
 
 
-# TRANSITIVITY/REFLEXIVITY TO VERB
+# transitivity / reflexivity to verb
+# "Choose the [transitivity / reflexivity] verb." (ZQ: MCQ)
 
 
 class TransReflToVerbStrategy(BaseExerciseStrategy):

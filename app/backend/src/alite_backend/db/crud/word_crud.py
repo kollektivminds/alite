@@ -37,6 +37,7 @@ from alite_backend.db.models import (
     Pronunciation,
     LemmaDefinition,
     LemmaRelation,
+    LemmaPronunciation,
     LookupQueue,
     LessonList,
     LemmaInLessonList,
@@ -81,6 +82,9 @@ from alite_backend.db.schemas import (
     DefExCreate,
     DefExUpdate,
     DefExReturn,
+    LemPronCreate,
+    LemPronReturn,
+    LemPronUpdate,
     ModuleCreate,
     ModuleUpdate,
     ModuleReturn,
@@ -312,6 +316,18 @@ class CRUDDefEx(CRUDBase[DefinitionExample, DefExCreate, DefExUpdate]):
 
 
 crud_def_ex = CRUDDefEx(DefinitionExample)
+
+
+#
+# LEMMA-PRONUNCIATION RELATIONSHIPS
+#
+
+
+class CRUDLemPron(CRUDBase[LemmaPronunciation, LemPronCreate, LemPronUpdate]):
+    pass
+
+
+crud_lem_pron = CRUDLemPron(LemmaPronunciation)
 
 
 #

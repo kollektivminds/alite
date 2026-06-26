@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 logger.info("Starting run")
 
 
-def feed_data(db: Session, word_s: list[str]):
+def load_words(db: Session, word_s: list[str]):
     """_summary_
 
     Args:

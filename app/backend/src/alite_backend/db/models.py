@@ -152,6 +152,7 @@ class EnumUserRole(str, enum.Enum):
 class EnumLookupStatus(str, enum.Enum):
     UNLINKED = "unlinked"
     LINKED = "linked"
+    FAILED = "failed"
 
 
 class EnumItemFormat(str, enum.Enum):
@@ -164,25 +165,22 @@ class EnumWordItemType(str, enum.Enum):
     # --- LEMMAS ---
     # Part of Speech
     # lemmas.lem_canon <-> lemmas.pos
-    LEM_TO_POS = "lem_to_pos"  # "What part of speech is X?" (FC/MCQ)
-    POS_TO_LEM = "pos_to_lem"  # "Which lemma(s) is/are X?" (FC/MCQ)
+    LEM_TO_POS = "lem_to_pos"
+    POS_TO_LEM = "pos_to_lem"
     # Definitions
     # lemmas.lem_canon <-> definitions.def_text
-    LEM_TO_DEF = "lem_to_def"  # "What is the definition of X?" (FC/MCQ)
-    DEF_TO_LEM = "def_to_lem"  # "Which lemma(s) fit the following definition: X?" (MCQ)
+    LEM_TO_DEF = "lem_to_def"
+    DEF_TO_LEM = "def_to_lem"
     # Pronunciations
     # lemmas.lem_canon <-> pronunciations.pron_text
-    LEM_TO_PRON = "lem_to_pron"  # "What is the pronunciation of X?" (MCQ)
-    PRON_TO_LEM = "pron_to_lem"  # "What is the correct Russian spelling of the word pronounced 'X'?" (FC/MCQ/Cloze)
+    LEM_TO_PRON = "lem_to_pron"
+    PRON_TO_LEM = "pron_to_lem"
     # Lemma Relations
     # lem_rels.source_id(lemmas.lem_canon)
     # + lem_rels.target_id(lemmas.lem_canon)
     # <-> lem_rels.rel_type
-    LEM2_TO_LREL = "lem2_to_lrel"  # "How does X relate to Y?" (MCQ)
-    LREL_TO_LEM2 = (
-        "lrel_to_lem2"
-        # "Which of the following pairs is an example of X?" (MCQ)
-    )
+    LEM_LEM_TO_REL = "lem_lem_to_rel"
+    REL_TO_LEM_LEM = "rel_to_lem_lem"
 
     # --- SUBSTANTIVES ---
     # --- ADJECTIVES ---
@@ -204,10 +202,14 @@ class EnumWordItemType(str, enum.Enum):
     # noun form <-> noun GNC
     NOUN_FORM_TO_GRAM = "noun_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
     NOUN_GRAM_TO_FORM = "noun_gram_to_form"  # "Which of the following noun forms is/are an example of [grammar]?" (MCQ)
+    # noun lemma -> diminutive form
+    NOUN_TO_DMUN_FORM = (
+        "noun_to_dmun_form"  # What is the diminutive form of [lemma]? (MCQ/Cloze)
+    )
     # --- PARTICIPLES ---
     # participle <-> type (tense, mood)
-    PART_TYPE_TO_LEM = "part_type_to_lem"  # "What form is type X?" (MCQ)
-    LEM_TO_PART_TYPE = "lem_to_part_type"  # "What type of participle is X?" (MCQ)
+    PART_TYPE_TO_FORM = "part_type_to_form"  # "What form is type X?" (MCQ)
+    FORM_TO_PART_TYPE = "form_to_part_type"  # "What type of participle is X?" (MCQ)
 
     # --- VERBS ----
     # Aspect
@@ -230,10 +232,7 @@ class EnumWordItemType(str, enum.Enum):
     # word_forms[gram_id=gram_props.[gram_tense, gram_num, gram_gender, conj_person, verb_mood]].lem_id[pos=PRONOUN].lem_canon
     # + lemmas.filter(pos==verb).lem_canon
     # <-> word_forms(lem_id=lem, gram_id=gram_prop).lex_id.lex_text
-    PRON_INFV_TO_VERB_CONJ = (
-        "pron_infv_to_verb_conj"  # "What is the X form of Y?" (MCQ/Cloze)
-    )
-    VERB_CONJ_TO_PRON_INFV = "verb_conj_to_pron_infv"  # "What form of what infinitive verb is [verb lexeme]?" (MCQ)
+    VERB_TO_CONJ_FORM = "verb_to_conj_form"  # "What is the X form of Y?" (MCQ/Cloze)
     # Transitivity & Reflexivity
     # lemmas.filter(pos==verb).lem_canon
     # <-> lemmas.filter(pos==verb).verb_trans_refl
@@ -306,8 +305,12 @@ class Lemma(Base):
     lemma_word_form: Mapped[List["WordForm"]] = relationship(
         back_populates="word_form_lemma"
     )
-    # Relationship for lemma defintion
+    # Relationship for lemma definitions
     definitions: Mapped[List["LemmaDefinition"]] = relationship(back_populates="lemma")
+    # Relationship for lemma pronunciations
+    pronunciations: Mapped[List["LemmaPronunciation"]] = relationship(
+        back_populates="lemma"
+    )
     # Relationship to other lemmas as source
     related_to: Mapped[List["LemmaRelation"]] = relationship(
         foreign_keys="[LemmaRelation.source_id]",
@@ -324,13 +327,6 @@ class Lemma(Base):
     in_item: Mapped[List["Item"]] = relationship(
         secondary="lems_in_items", back_populates="ref_lems"
     )
-    # Relationships for study results
-    # lemma_crws: Mapped["WordForm"] = relationship(
-    #     "ConjugationResultWordStudied", back_populates="crws_lemma"
-    # )
-    # lemma_drws: Mapped["WordForm"] = relationship(
-    #     "DeclensionResultWordStudied", back_populates="drws_lemma"
-    # )
     # Unique pair of "lem_text" and "pos" to prevent duplicates
     __table_args__ = (UniqueConstraint("id", "entry_key", name="unique_lemma"),)
 
@@ -448,6 +444,8 @@ class Pronunciation(Base):
     pron_tags: Mapped[List[str] | None] = mapped_column(ARRAY(String))
     pron_type: Mapped[EnumPronType] = mapped_column(Enum(EnumPronType))
 
+    lemmas: Mapped["LemmaPronunciation"] = relationship(back_populates="pronunciation")
+
 
 # --- Word Junction Tables ---
 
@@ -479,13 +477,13 @@ class LookupQueue(Base):
     target_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
     source_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
     rel_type: Mapped[EnumRelLemType] = mapped_column(Enum(EnumRelLemType))
-    lookup_status: Mapped[EnumLookupStatus] = mapped_column(
+    status: Mapped[EnumLookupStatus] = mapped_column(
         Enum(EnumLookupStatus), default=EnumLookupStatus.UNLINKED
     )
 
 
 class LemmaDefinition(Base):
-    """Junction table for lemma definitions."""
+    """Junction table for lemmas and definitions."""
 
     __tablename__ = "lem_defs"
 
@@ -501,7 +499,7 @@ class LemmaDefinition(Base):
 
 
 class DefinitionExample(Base):
-    """Junction table for lemma definitions."""
+    """Junction table for definitions and examples."""
 
     __tablename__ = "def_exs"
 
@@ -513,6 +511,24 @@ class DefinitionExample(Base):
     )
     example_definition: Mapped["Example"] = relationship(
         foreign_keys=[ex_id], back_populates="definition"
+    )
+
+
+class LemmaPronunciation(Base):
+    """Junction table for lemmas and pronunciations."""
+
+    __tablename__ = "lem_prons"
+
+    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
+    pron_id: Mapped[int] = mapped_column(
+        ForeignKey("pronunciations.id"), primary_key=True
+    )
+
+    lemma: Mapped["Lemma"] = relationship(
+        foreign_keys=[lem_id], back_populates="pronunciations"
+    )
+    pronunciation: Mapped["Pronunciation"] = relationship(
+        foreign_keys=[pron_id], back_populates="lemmas"
     )
 
 

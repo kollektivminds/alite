@@ -18,7 +18,7 @@ from alite_backend.db.models import (
     EnumPartType,
     EnumPartVoice,
     EnumSubstCase,
-    EnumVerbMood
+    EnumVerbMood,
 )
 from alite_backend.db.crud.word_crud import (
     crud_lemma,
@@ -32,6 +32,7 @@ from alite_backend.db.crud.word_crud import (
     crud_lookup_queue,
     crud_lem_def,
     crud_def_ex,
+    crud_lem_pron,
 )
 from alite_backend.db.crud.orgi_crud import crud_less_list, crud_lem_in_less_list
 
@@ -153,7 +154,7 @@ class Loader:
 
         if all(part_tag in payload_tags for part_tag in ["participle", "adverbial"]):
             payload_tags.remove("participle")
-            
+
         for tag in payload_tags:
             # tag = tag.lower()
             # logger.debug("_map_grammar_tags tag: %s", tag)
@@ -170,6 +171,7 @@ class Loader:
         gram_prop_groups = defaultdict(list)
         junction_map = {}
         lem_def_map = {}
+        lem_pron_map = {}
         form_list = []
 
         # create lemma
@@ -287,7 +289,7 @@ class Loader:
             lem_def_map[example.temp_def_id]["ex_ids"].append(new_ex.id)
 
         # logger.debug("After examples Lem_def_map: %s", lem_def_map)
-
+        # create lem_defs
         for temp_def_id, rels in lem_def_map.items():
             lem_def = {"lem_id": rels["lem_id"], "def_id": rels["def_id"]}
             lem_def_in = schemas.LemDefCreate(**lem_def)
@@ -314,8 +316,17 @@ class Loader:
             new_pron = crud_pronunciation.get_or_create(
                 db=self.db, obj_in=pron_in, filter_kwargs=filters
             )
-
+            lem_pron_map[pron.entry_key] = new_pron.id
             # logger.debug("New pron id: %d", new_pron.id)
+
+        # create lem_prons
+        for ek, pron_id in lem_pron_map.items():
+            lem_id = lemma_id_map[ek]
+            filters = {"lem_id": lem_id, "pron_id": pron_id}
+            lem_pron_in = schemas.LemPronCreate(**filters)
+            new_lem_pron = crud_lem_pron.get_or_create(
+                db=self.db, obj_in=lem_pron_in, filter_kwargs=filters
+            )
 
         # create related lemmas
         for relation in payload.rel_lems:
@@ -328,7 +339,7 @@ class Loader:
 
             # new relation
             target_rel_params = {"lem_text": rel_form}
-            target_rel_params = schemas.LemmaSearchParams(**target_rel_params) #type: ignore
+            target_rel_params = schemas.LemmaSearchParams(**target_rel_params)  # type: ignore
             target_rel = crud_lemma.search(db=self.db, params=target_rel_params)
             # logger.debug("target rel: %s", target_rel)
             filters = {"rel_type": relation.rel_type, "source_id": source_id}

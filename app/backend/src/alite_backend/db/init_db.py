@@ -16,7 +16,8 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from alite_backend.db.db_session import SessionLocal
-from alite_backend.words.pipeline import feed_data
+from alite_backend.words.pipeline import load_words
+from alite_backend.words.queue import process_lookup_queue
 from alite_backend.words.funcs import load_json, save_json
 from alite_backend.logging_config import setup_logging
 from alite_backend.config import settings
@@ -185,14 +186,15 @@ def init_database():
     print(f"a total of {str(len(all_words))} words, of which\
             {str(len(set(all_words)))} are unique")
 
-    rand_samp = random.sample(all_words, 77)
+    rand_samp = random.sample(all_words, 7)
 
     logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
 
     with SessionLocal() as db:
         try:
             load_org_tables(db=db)
-            feed_data(db=db, word_s=rand_samp)
+            load_words(db=db, word_s=rand_samp)
+            process_lookup_queue(db=db)
             db.commit()
             logger.info("Data loaded and committed successfully")
 

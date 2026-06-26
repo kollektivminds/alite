@@ -29,12 +29,36 @@ from alite_backend.services.items.verbs import (
     TransReflToVerbStrategy,
 )
 
-# from .items.verbs import
-# from .items.participles import
-
 logger = logging.getLogger(__name__)
 
+STRATEGY_MAP = {
+    # lemmas
+    # substantives - adjectives
+    EnumWordItemType.ADJV_FORM_TO_GRAM: AdjvFormToGramStrategy,
+    EnumWordItemType.ADJV_GRAM_TO_FORM: AdjvGramToFormStrategy,
+    # substantives - nouns
+    EnumWordItemType.NOUN_TO_GEND: NounToGenderStrategy,
+    EnumWordItemType.GEND_TO_NOUN: GenderToNounStrategy,
+    EnumWordItemType.NOUN_TO_ANIM: NounToAnimacyStrategy,
+    EnumWordItemType.ANIM_TO_NOUN: AnimacyToNounStrategy,
+    EnumWordItemType.NOUN_FORM_TO_GRAM: NounFormToGramStrategy,
+    EnumWordItemType.NOUN_GRAM_TO_FORM: NounGramToFormStrategy,
+    # substantives - participles
+    # verbs
+    EnumWordItemType.VERB_TO_ASPT: VerbToAspectStrategy,
+    EnumWordItemType.ASPT_TO_VERB: AspectToVerbStrategy,
+    EnumWordItemType.VERB_TO_TYPE: VerbToTypeStrategy,
+    EnumWordItemType.TYPE_TO_VERB: TypeToVerbStrategy,
+    EnumWordItemType.VERB_TO_TNRF: VerbToTransReflStrategy,
+    EnumWordItemType.TNRF_TO_VERB: TransReflToVerbStrategy,
+}
 
+EXERCISE_CONFIG = {
+    # lemmas
+    EnumWordItemType.LEM_TO_POS: {
+        "strategy_class": 
+    }
+}
 class ExerciseRouter:
     """_summary_"""
 
@@ -48,27 +72,6 @@ class ExerciseRouter:
         # self.exercise_request = exercise_request
         # self.context = exercise_request.exercise_context
         self.user_id = user_id
-        self.STRATEGY_MAP = {
-            # lemmas
-            # substantives - adjectives
-            EnumWordItemType.ADJV_FORM_TO_GRAM: AdjvFormToGramStrategy,
-            EnumWordItemType.ADJV_GRAM_TO_FORM: AdjvGramToFormStrategy,
-            # substantives - nouns
-            EnumWordItemType.NOUN_TO_GEND: NounToGenderStrategy,
-            EnumWordItemType.GEND_TO_NOUN: GenderToNounStrategy,
-            EnumWordItemType.NOUN_TO_ANIM: NounToAnimacyStrategy,
-            EnumWordItemType.ANIM_TO_NOUN: AnimacyToNounStrategy,
-            EnumWordItemType.NOUN_FORM_TO_GRAM: NounFormToGramStrategy,
-            EnumWordItemType.NOUN_GRAM_TO_FORM: NounGramToFormStrategy,
-            # substantives - participles
-            # verbs
-            EnumWordItemType.VERB_TO_ASPT: VerbToAspectStrategy,
-            EnumWordItemType.ASPT_TO_VERB: AspectToVerbStrategy,
-            EnumWordItemType.VERB_TO_TYPE: VerbToTypeStrategy,
-            EnumWordItemType.TYPE_TO_VERB: TypeToVerbStrategy,
-            EnumWordItemType.VERB_TO_TNRF: VerbToTransReflStrategy,
-            EnumWordItemType.TNRF_TO_VERB: TransReflToVerbStrategy,
-        }
         # create exercise record
         self.exercise_in = models.Exercise(user_id=self.user_id)
         self.db.add(self.exercise_in)
@@ -78,7 +81,7 @@ class ExerciseRouter:
         self, exercise_type: EnumWordItemType, exercise_context: schemas.ExerciseContext
     ) -> BaseExerciseStrategy:
 
-        StrategyClass = self.STRATEGY_MAP.get(exercise_type)
+        StrategyClass = STRATEGY_MAP.get(exercise_type)
         if not StrategyClass:
             raise ValueError(f"Unknown exercise type: {exercise_type}")
 
@@ -149,7 +152,9 @@ class ExerciseRouter:
             self.db.add(db_item)
             self.db.flush()
 
-            db_lem_in_item = models.LemmaInItem(item_id=db_item.id, lem_id=pl["item_bp"]["lem_id"])
+            db_lem_in_item = models.LemmaInItem(
+                item_id=db_item.id, lem_id=pl["item_bp"]["lem_id"]
+            )
             self.db.add(db_lem_in_item)
             self.db.flush()
 

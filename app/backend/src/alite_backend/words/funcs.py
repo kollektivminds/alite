@@ -109,7 +109,7 @@ def load_json(file_path):
         return None
 
 
-def remove_accents(input_str):
+def remove_accents(input_str: str) -> str:
     """
     Removes ONLY the acute accent mark (stress mark) from a string,
     while preserving essential diacritics on letters like 'й' and 'ё'.

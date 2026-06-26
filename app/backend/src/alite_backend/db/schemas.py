@@ -486,7 +486,7 @@ class LookupQueueCreate(LookupQueueBase):
 class LookupQueueUpdate(LookupQueueBase):
     id: int
     target_id: int
-    lookup_status: EnumLookupStatus
+    status: EnumLookupStatus
 
 
 class LookupQueueReturn(LookupQueueUpdate):
@@ -513,6 +513,7 @@ class LemDefReturn(LemDefUpdate):
     created_at: datetime
 
 
+
 # Definition-Example Relationships
 
 
@@ -532,6 +533,25 @@ class DefExUpdate(DefExBase):
 class DefExReturn(DefExUpdate):
     created_at: datetime
 
+
+# Lemma-Pronunciation Relationships
+
+
+class LemPronBase(BaseModel):
+    lem_id: int
+    pron_id: int
+
+
+class LemPronCreate(LemPronBase):
+    pass
+
+
+class LemPronUpdate(LemPronBase):
+    id: int
+
+
+class LemPronReturn(LemPronUpdate):
+    created_at: datetime
 
 # Users
 

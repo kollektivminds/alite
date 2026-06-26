@@ -92,10 +92,10 @@ class LookupFDAPI:
                     # 1. Check for word in local cache
                     addendum = self._check_local(word)
                     # 2. Check if the request was successful (i.e., not None).
-                    if addendum:
-                        # 3. If successful, yield the result to the pipeline.
-                        logger.debug("%s was found in the database", word)
-                        yield addendum
+                if addendum:
+                    # 3. If successful, yield the result to the pipeline.
+                    logger.debug("%s was found in the database", word)
+                    yield addendum
                 else:
                     # 3. If unsuccessful, make the request for the current word.
                     logger.debug("need to fetch %s from FDAPI", word)

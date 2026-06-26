@@ -12,22 +12,31 @@ logger = logging.getLogger(__name__)
 
 # --- Distractor Formulae ---
 # ZQ = zero-query (Enum-based)
-# SQ = sibling quiery (multitable-based)
+# SQ = sibling query (lemmas+pronunciations/definitions-based)
 # GQ = grammar query (gram_props-based)
+# RQ = (lemma) relationship query (lem_rels-based)
 
 #
 # ADJECTIVES
 #
 
-# ADJECTIVE + FORM TO TYPE ("adjv_form_to_type")
-# "What is the [comparative | superlative] form of [adjective]?" (SQ: MCQ)
+# adjective + type to form ("adjv_type_to_form")
+# "What is the [comparative | superlative] form of [lemma_adjective]?" (SQ: MCQ/Cloze)
 
 
-# ADJECTIVE TYPE TO LEMMA ("adjv_type_to_lem")
-# "What is the base form of [adjective]?" (SQ: MCQ/Cloze)
+class AdjvTypeToFormStrategy(BaseExerciseStrategy):
+    pass
 
 
-# ADJECTIVE FORM TO GRAMMAR ("adjv_form_to_gram")
+# adjective form to type ("type_form_to_adjv")
+# "What is the base form of [adjective type form]?" (GQ: Cloze)
+
+
+class AdjvFormToTypeStrategy(BaseExerciseStrategy):
+    pass
+
+
+# adjective form to grammar ("adjv_form_to_gram")
 # "What is the [gender, number, case] of [adjective form]?" (GQ: MCQ)
 
 
@@ -56,7 +65,7 @@ class AdjvFormToGramStrategy(BaseExerciseStrategy):
         )
 
 
-# ADJECTIVE GRAMMAR TO FORM ("adjv_gram_to_form")
+# adjective grammar to form ("adjv_gram_to_form")
 # "Which of the following adjectival forms is/are an example of [grammar]?" (GQ: MCQ)
 
 
@@ -89,8 +98,8 @@ class AdjvGramToFormStrategy(BaseExerciseStrategy):
 # NOUNS
 #
 
-# NOUN TO GENDER ("noun_to_gender")
-# "What gender is [noun]?" (ZQ: MCQ)
+# noun to gender ("noun_to_gender")
+# "What is the gender of [lemma_noun]?" (ZQ: MCQ)
 
 
 class NounToGenderStrategy(BaseExerciseStrategy):
@@ -110,7 +119,7 @@ class NounToGenderStrategy(BaseExerciseStrategy):
         )
 
 
-# GENDER TO NOUN ("gender_to_noun")
+# gender to noun ("gender_to_noun")
 # "Which lemma(s) is/are [noun_gender]?" (ZQ: MCQ)
 
 
@@ -131,7 +140,7 @@ class GenderToNounStrategy(BaseExerciseStrategy):
         )
 
 
-# NOUN TO ANIMACY ("noun_to_anim")
+# noun to animacy ("noun_to_anim")
 # "Is [noun] animate or inanimate?" (ZQ: MCQ)
 
 
@@ -152,7 +161,7 @@ class NounToAnimacyStrategy(BaseExerciseStrategy):
         )
 
 
-# ANIMACY TO NOUN ("anim_to_noun")
+# animacy to noun ("anim_to_noun")
 # "Which lemma(s) is/are [subst_animacy]?" (ZQ: MCQ)
 
 
@@ -446,14 +455,30 @@ class NounGramToFormStrategy(BaseExerciseStrategy):
         )
 
 
+# NOUN TO DIMINUTIVE FORM ("noun_to_dmun_form")
+# "What is the diminutive form of [lemma_noun]?" (GQ: MCQ/Cloze)
+
+
+class NounToDiminutiveStrategy(BaseExerciseStrategy):
+    pass
+
+
 #
 # PARTICIPLES
 #
 
 
-# PARTICIPLE TYPE TO LEMMA ("part_type_to_lem")
-# "What form is type X?" (SQ: MCQ)
+# PARTICIPLE TYPE TO FORM ("part_type_to_form")
+# "Which of the following is [participle type] of [verb_lemma]" (GQ: MCQ/Cloze)
 
 
-# LEMMA TO PARTICIPLE TYPE ("lem_to_part_type")
-# "What type of participle is [participle]?" (SQ: MCQ)
+class ParticpleTypeToForm(BaseExerciseStrategy):
+    pass
+
+
+# FORM TO PARTICIPLE TYPE ("form_to_part_type")
+# "What type of participle is [participle form]?" (GQ: MCQ)
+
+
+class ParticipleFormToType(BaseExerciseStrategy):
+    pass

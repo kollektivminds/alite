@@ -5,7 +5,7 @@ from sqlalchemy import select
 from sqlalchemy.orm.session import Session
 from alite_backend.db import models, schemas
 # Import your actual pipeline/loader class here
-from alite_backend.words.pipeline import feed_data 
+from alite_backend.words.pipeline import load_words 
 
 def test_participle_tagging_in_etl(isolated_db):
     """
@@ -24,7 +24,7 @@ def test_participle_tagging_in_etl(isolated_db):
     # Pass the payload (and the injected session, if your function takes it) 
     # directly into your ETL function.
     # =========================================================================
-    feed_data(isolated_db, raw_payload)
+    load_words(isolated_db, raw_payload)
     
     # =========================================================================
     # 3. ASSERT

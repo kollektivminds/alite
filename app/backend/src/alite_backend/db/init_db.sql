@@ -189,7 +189,7 @@ CREATE TABLE
         target_id INT,
         source_id INT NOT NULL,
         rel_type VARCHAR(48) NOT NULL,
-        lookup_status VARCHAR(16),
+        status VARCHAR(16),
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT source_id FOREIGN KEY (source_id) REFERENCES lemmas (id) ON DELETE CASCADE,
         CONSTRAINT target_id FOREIGN KEY (target_id) REFERENCES lemmas (id) ON DELETE CASCADE
@@ -207,7 +207,7 @@ CREATE TABLE
         CONSTRAINT definition_lemma FOREIGN KEY (def_id) REFERENCES definitions (id) ON DELETE CASCADE
     );
 
--- SECONDARY TABLE for word definitions and their example sentences
+-- SECONDARY TABLE for definitions and their example sentences
 -- RELS INCL
 CREATE TABLE
     def_exs (
@@ -217,6 +217,18 @@ CREATE TABLE
         PRIMARY KEY (def_id, ex_id),
         CONSTRAINT definition_example FOREIGN KEY (def_id) REFERENCES definitions (id) ON DELETE CASCADE,
         CONSTRAINT example_definition FOREIGN KEY (ex_id) REFERENCES examples (id) ON DELETE CASCADE
+    );
+
+-- SECONDARY TABLE for lemmas and their pronunciations
+-- RELS INCL
+CREATE TABLE
+    lem_prons (
+        lem_id INT NOT NULL,
+        pron_id INT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (lem_id, pron_id),
+        CONSTRAINT lemma_pronunciation FOREIGN KEY (lem_id) REFERENCES lemmas (id) ON DELETE CASCADE,
+        CONSTRAINT pronunciation_lemma FOREIGN KEY (pron_id) REFERENCES pronunciations (id) ON DELETE CASCADE
     );
 
 --
