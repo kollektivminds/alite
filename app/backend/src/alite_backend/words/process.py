@@ -372,7 +372,9 @@ class ReturnedLemmaProcessor:
                     {
                         "entry_key": entry_key,
                         "pron_text": pron.text,
-                        "pron_type": EnumPronType.IPA if pron.type == "ipa" else None, # 'romanization' pronunciations from forms
+                        "pron_type": (
+                            EnumPronType.IPA if pron.type == "ipa" else None
+                        ),  # 'romanization' pronunciations from forms
                         "pron_tags": pron.tags if len(pron.tags) > 0 else None,
                     }
                 )

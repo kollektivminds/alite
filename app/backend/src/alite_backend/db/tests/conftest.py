@@ -169,8 +169,10 @@ def clone_lexicon_snapshot():
         "examples",
         "pronunciations",
         "lem_rels",
+        "lookup_queue",
         "lem_defs",
         "def_exs",
+        "lem_prons",
         "modules",
         "lessons_lists",
         "lems_in_less_lists",
@@ -237,9 +239,9 @@ def db_session(clone_lexicon_snapshot):
 
     for factory_class in ALL_FACTORIES:
         factory_class._meta.sqlalchemy_session = session
-    
+
     yield session  # Running tests populate transient items here
-    
+
     # Teardown: Safely sever session pointers to prevent cross-test memory contamination
     for factory_class in ALL_FACTORIES:
         factory_class._meta.sqlalchemy_session = None
@@ -258,16 +260,16 @@ def api_client(db_session):
 
     test_user = UserFactory()
     db_session.flush()
-    
+
     def override_get_db():
         yield db_session
-        
+
     def override_get_current_user():
         return test_user
 
     app.dependency_overrides[deps.get_db] = override_get_db
     app.dependency_overrides[deps.get_current_user] = override_get_current_user
-    
+
     client = TestClient(app)
     yield client
 

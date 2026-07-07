@@ -134,6 +134,12 @@ class EnumRelLemType(str, enum.Enum):
     ANTONYM_OF = "antonym_of"
 
 
+class EnumRelLemTypeGroup(str, enum.Enum):
+    SHARED_ROOT = "shared_root"
+    SEMANTIC = "semantic"
+    ASPECTUAL_PAIR = "aspectual_pair"
+
+
 class EnumPronType(str, enum.Enum):
     IPA = "ipa"
     ROMANIZATION = "romanization"
@@ -331,6 +337,9 @@ class Lemma(Base):
     __table_args__ = (UniqueConstraint("id", "entry_key", name="unique_lemma"),)
 
 
+# Morphological Tables
+
+
 class Lexeme(Base):
     """Represents a unique word string as it appears in a text."""
 
@@ -355,7 +364,7 @@ class GramProp(Base):
     # Various grammatical properties that can potentially apply,
     # though table will be largely sparse
 
-    # non-specific grammar
+    # non-pos-specific grammar
     irregular: Mapped[bool] = mapped_column(default=False)
     gram_tense: Mapped[EnumGramTense | None] = mapped_column(Enum(EnumGramTense))
     gram_num: Mapped[EnumGramNum | None] = mapped_column(Enum(EnumGramNum))
@@ -393,7 +402,6 @@ class GramProp(Base):
     )
 
 
-# TODO: go through everything after this to correspond with init_db.sql
 class WordForm(Base):
     """The central junction table linking a lemma to a lexicon entry with specific properties."""
 
@@ -409,6 +417,9 @@ class WordForm(Base):
         back_populates="lexeme_word_form"
     )
     word_form_gram: Mapped["GramProp"] = relationship(back_populates="gram_word_form")
+
+
+# Auxiliary Linguistic Tables
 
 
 class Definition(Base):
@@ -447,7 +458,7 @@ class Pronunciation(Base):
     lemmas: Mapped["LemmaPronunciation"] = relationship(back_populates="pronunciation")
 
 
-# --- Word Junction Tables ---
+# --- Lemma Junction Tables ---
 
 
 class LemmaRelation(Base):

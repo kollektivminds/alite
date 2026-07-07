@@ -513,7 +513,6 @@ class LemDefReturn(LemDefUpdate):
     created_at: datetime
 
 
-
 # Definition-Example Relationships
 
 
@@ -552,6 +551,7 @@ class LemPronUpdate(LemPronBase):
 
 class LemPronReturn(LemPronUpdate):
     created_at: datetime
+
 
 # Users
 
@@ -878,7 +878,7 @@ class ExerciseRequest(BaseModel):
 
 class ItemBlueprint(BaseModel):
     prompt: str
-    key: str | List[str]
+    keys: str | List[str]
     distractors: List[str]
     lem_id: int
 

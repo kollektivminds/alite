@@ -38,18 +38,18 @@ CONFIG_MATRIX = [
             "allow_odd_one_out": True,
         },
     },
-    # Test 2: make single-query drills
+    # Test 2: make zero-query drills
     {
         "exercise_context__ex_formats": [EnumItemFormat.MCQ],
         "type_counts": {
-            EnumWordItemType.VERB_TO_ASPT: 5,
-            EnumWordItemType.ASPT_TO_VERB: 5,
-            EnumWordItemType.VERB_TO_TYPE: 5,
-            EnumWordItemType.TYPE_TO_VERB: 5,
-            EnumWordItemType.NOUN_TO_ANIM: 5,
-            EnumWordItemType.ANIM_TO_NOUN: 5,
-            EnumWordItemType.NOUN_TO_GEND: 5,
-            EnumWordItemType.GEND_TO_NOUN: 5,
+            EnumWordItemType.VERB_TO_ASPT: 3,
+            EnumWordItemType.ASPT_TO_VERB: 3,
+            EnumWordItemType.VERB_TO_TYPE: 3,
+            EnumWordItemType.TYPE_TO_VERB: 3,
+            EnumWordItemType.NOUN_TO_ANIM: 3,
+            EnumWordItemType.ANIM_TO_NOUN: 3,
+            EnumWordItemType.NOUN_TO_GEND: 3,
+            EnumWordItemType.GEND_TO_NOUN: 3,
         },
         "grammar_focus": {
             "strategies": {
@@ -60,19 +60,42 @@ CONFIG_MATRIX = [
             "allow_odd_one_out": True,
         },
     },
-    # Test 2: Highly constrained distractors
-    # {
-    #     "exercise_context__max_distractors": 1,
-    #     "exercise_context__num_items": 5,
-    # },
-    # Test 3: Mixed strategy distribution
-    # {
-    #     "type_counts": {
-    #         EnumWordItemType.NOUN_FORM_TO_GRAM: 2,
-    #         # EnumWordItemType.LEM_TO_DEF: 2
-    #     },
-    #     "exercise_context__num_items": 4,
-    # },
+    # Test 3: make sibling-query drills
+    {
+        "exercise_context__ex_formats": [EnumItemFormat.MCQ],
+        "type_counts": {
+            EnumWordItemType.LEM_TO_DEF: 3,
+            EnumWordItemType.DEF_TO_LEM: 3,
+            EnumWordItemType.LEM_TO_PRON: 3,
+            EnumWordItemType.PRON_TO_LEM: 3,
+        },
+        "grammar_focus": {
+            "strategies": {
+                "participles": [],
+                "substantives": [],
+                "verbs": [],
+            },
+            "allow_odd_one_out": True,
+        },
+    },
+    # Test 3: make lemma-relation-query drills
+    {
+        "exercise_context__ex_formats": [EnumItemFormat.MCQ],
+        "type_counts": {
+            EnumWordItemType.LEM_TO_DEF: 3,
+            EnumWordItemType.DEF_TO_LEM: 3,
+            EnumWordItemType.LEM_TO_PRON: 3,
+            EnumWordItemType.PRON_TO_LEM: 3,
+        },
+        "grammar_focus": {
+            "strategies": {
+                "participles": [],
+                "substantives": [],
+                "verbs": [],
+            },
+            "allow_odd_one_out": True,
+        },
+    },
 ]
 
 

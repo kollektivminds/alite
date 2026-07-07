@@ -1,64 +1,198 @@
 # app/backend/services/exercise_router.py
 import logging
 import random
+from typing import Tuple, Any, Dict
 from sqlalchemy.orm import Session
 from fastapi import APIRouter, Depends, HTTPException
 from alite_backend.db import schemas, models
 from alite_backend.api import deps
 from alite_backend.db.schemas import EnumWordItemType
 from alite_backend.services.items.base import BaseExerciseStrategy
-
-# from alite_backend.services.items.lemmas import
-from alite_backend.services.items.substantives import (
-    NounFormToGramStrategy,
-    NounGramToFormStrategy,
-    NounToAnimacyStrategy,
-    AnimacyToNounStrategy,
-    NounToGenderStrategy,
-    GenderToNounStrategy,
-    AdjvFormToGramStrategy,
-    AdjvGramToFormStrategy,
-)
-
-from alite_backend.services.items.verbs import (
-    VerbToAspectStrategy,
-    AspectToVerbStrategy,
-    VerbToTypeStrategy,
-    TypeToVerbStrategy,
-    VerbToTransReflStrategy,
-    TransReflToVerbStrategy,
+from alite_backend.services.items.subclasses import (
+    StandaloneAttributeStrategy,
+    SiblingAttributeStrategy,
+    MorphologicalStrategy,
+    LemmaRelationStrategy,
 )
 
 logger = logging.getLogger(__name__)
 
-STRATEGY_MAP = {
-    # lemmas
-    # substantives - adjectives
-    EnumWordItemType.ADJV_FORM_TO_GRAM: AdjvFormToGramStrategy,
-    EnumWordItemType.ADJV_GRAM_TO_FORM: AdjvGramToFormStrategy,
-    # substantives - nouns
-    EnumWordItemType.NOUN_TO_GEND: NounToGenderStrategy,
-    EnumWordItemType.GEND_TO_NOUN: GenderToNounStrategy,
-    EnumWordItemType.NOUN_TO_ANIM: NounToAnimacyStrategy,
-    EnumWordItemType.ANIM_TO_NOUN: AnimacyToNounStrategy,
-    EnumWordItemType.NOUN_FORM_TO_GRAM: NounFormToGramStrategy,
-    EnumWordItemType.NOUN_GRAM_TO_FORM: NounGramToFormStrategy,
-    # substantives - participles
-    # verbs
-    EnumWordItemType.VERB_TO_ASPT: VerbToAspectStrategy,
-    EnumWordItemType.ASPT_TO_VERB: AspectToVerbStrategy,
-    EnumWordItemType.VERB_TO_TYPE: VerbToTypeStrategy,
-    EnumWordItemType.TYPE_TO_VERB: TypeToVerbStrategy,
-    EnumWordItemType.VERB_TO_TNRF: VerbToTransReflStrategy,
-    EnumWordItemType.TNRF_TO_VERB: TransReflToVerbStrategy,
+EXERCISE_CONFIG = {
+    # zero-query types
+    EnumWordItemType.LEM_TO_POS: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": None,
+            "target_column": "pos",
+            "drill_direction": "lemma_to_trait",
+        },
+    },
+    EnumWordItemType.POS_TO_LEM: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": None,
+            "target_column": "pos",
+            "drill_direction": "trait_to_lemma",
+        },
+    },
+    EnumWordItemType.NOUN_TO_GEND: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.NOUN,
+            "target_column": "noun_gender",
+            "drill_direction": "lemma_to_trait",
+        },
+    },
+    EnumWordItemType.GEND_TO_NOUN: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.NOUN,
+            "target_column": "noun_gender",
+            "drill_direction": "trait_to_lemma",
+        },
+    },
+    EnumWordItemType.NOUN_TO_ANIM: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.NOUN,
+            "target_column": "subst_animacy",
+            "drill_direction": "lemma_to_trait",
+        },
+    },
+    EnumWordItemType.ANIM_TO_NOUN: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.NOUN,
+            "target_column": "subst_animacy",
+            "drill_direction": "trait_to_lemma",
+        },
+    },
+    EnumWordItemType.VERB_TO_ASPT: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "target_column": "verb_aspect",
+            "drill_direction": "lemma_to_trait",
+        },
+    },
+    EnumWordItemType.ASPT_TO_VERB: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "target_column": "verb_aspect",
+            "drill_direction": "trait_to_lemma",
+        },
+    },
+    EnumWordItemType.VERB_TO_TYPE: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "target_column": "verb_type",
+            "drill_direction": "lemma_to_trait",
+        },
+    },
+    EnumWordItemType.TYPE_TO_VERB: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "target_column": "verb_type",
+            "drill_direction": "trait_to_lemma",
+        },
+    },
+    EnumWordItemType.VERB_TO_TNRF: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "target_column": "verb_trans_refl",
+            "drill_direction": "lemma_to_trait",
+        },
+    },
+    EnumWordItemType.TNRF_TO_VERB: {
+        "strategy_class": StandaloneAttributeStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "target_column": "verb_trans_refl",
+            "drill_direction": "trait_to_lemma",
+        },
+    },
+    # sibling-query types
+    EnumWordItemType.LEM_TO_DEF: {
+        "strategy_class": SiblingAttributeStrategy,
+        "kwargs": {
+            "target_pos": None,
+            "target_model": models.Definition,
+            "target_column": "def_text",
+            "junction_model": models.LemmaDefinition,
+            "junction_column": "def_id",
+            "drill_direction": "lemma_to_sibling",
+        },
+    },
+    EnumWordItemType.DEF_TO_LEM: {
+        "strategy_class": SiblingAttributeStrategy,
+        "kwargs": {
+            "target_pos": None,
+            "target_model": models.Definition,
+            "target_column": "def_text",
+            "junction_model": models.LemmaDefinition,
+            "junction_column": "def_id",
+            "drill_direction": "sibling_to_lemma",
+        },
+    },
+    EnumWordItemType.LEM_TO_PRON: {
+        "strategy_class": SiblingAttributeStrategy,
+        "kwargs": {
+            "target_pos": None,
+            "target_model": models.Pronunciation,
+            "target_column": "pron_text",
+            "junction_model": models.LemmaPronunciation,
+            "junction_column": "pron_id",
+            "drill_direction": "lemma_to_sibling",
+        },
+    },
+    EnumWordItemType.PRON_TO_LEM: {
+        "strategy_class": SiblingAttributeStrategy,
+        "kwargs": {
+            "target_pos": None,
+            "target_model": models.Pronunciation,
+            "target_column": "pron_text",
+            "junction_model": models.LemmaPronunciation,
+            "junction_column": "pron_id",
+            "drill_direction": "sibling_to_lemma",
+        },
+    },
+    # morphology types
+    EnumWordItemType.NOUN_GRAM_TO_FORM: {
+        "strategy_class": MorphologicalStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.NOUN,
+            "drill_direction": "gram_to_form",
+        },
+    },
+    EnumWordItemType.NOUN_FORM_TO_GRAM: {
+        "strategy_class": MorphologicalStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.NOUN,
+            "drill_direction": "form_to_gram",
+        },
+    },
+    EnumWordItemType.ADJV_GRAM_TO_FORM: {
+        "strategy_class": MorphologicalStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
+            "drill_direction": "gram_to_form",
+        },
+    },
+    EnumWordItemType.ADJV_FORM_TO_GRAM: {
+        "strategy_class": MorphologicalStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
+            "drill_direction": "form_to_gram",
+        },
+    },
+    # lemma-relation types
 }
 
-EXERCISE_CONFIG = {
-    # lemmas
-    EnumWordItemType.LEM_TO_POS: {
-        "strategy_class": 
-    }
-}
+
 class ExerciseRouter:
     """_summary_"""
 
@@ -77,15 +211,19 @@ class ExerciseRouter:
         self.db.add(self.exercise_in)
         self.db.flush()
 
-    def get_exercise_generator(
-        self, exercise_type: EnumWordItemType, exercise_context: schemas.ExerciseContext
-    ) -> BaseExerciseStrategy:
+    def get_exercise_generator(self, exercise_type: EnumWordItemType) -> Tuple[
+        StandaloneAttributeStrategy
+        | SiblingAttributeStrategy
+        | MorphologicalStrategy
+        | LemmaRelationStrategy,
+        Dict[str, Any],
+    ]:
 
-        StrategyClass = STRATEGY_MAP.get(exercise_type)
+        StrategyClass = EXERCISE_CONFIG.get(exercise_type)
         if not StrategyClass:
             raise ValueError(f"Unknown exercise type: {exercise_type}")
 
-        return StrategyClass(db_session=self.db, request_context=exercise_context)
+        return StrategyClass["strategy_class"], StrategyClass["kwargs"]
 
     def generate_exercise(
         self, request: schemas.ExerciseRequest
@@ -99,14 +237,18 @@ class ExerciseRouter:
             if requested_qty <= 0:
                 continue
             # instantiate the class
-            strategy_runner = self.get_exercise_generator(
-                item_strategy, request.exercise_context
+            strategy_class, strategy_kwargs = self.get_exercise_generator(item_strategy)
+            strategy_instance = strategy_class(
+                db_session=self.db,
+                request_context=request.exercise_context,
+                **strategy_kwargs,
             )
-            specific_config = None
-            if request.grammar_focus.strategies:  # type: ignore
-                specific_config = request.grammar_focus
+            # specific_config = None
+            specific_config = (
+                request.grammar_focus if request.grammar_focus.strategies else None
+            )
             # create blueprints for all items of a strategy
-            blueprints = strategy_runner.generate_item_blueprints(
+            blueprints = strategy_instance.generate_item_blueprints(
                 num_items=requested_qty,
                 max_keys=request.exercise_context.max_keys,
                 max_distractors=request.exercise_context.max_distractors,
@@ -125,22 +267,22 @@ class ExerciseRouter:
                     }
                 )
         # add to database
-        db_exercise = models.Exercise(user_id=self.user_id)
-        self.db.add(db_exercise)
-        self.db.flush()
+        # db_exercise = models.Exercise(user_id=self.user_id)
+        # self.db.add(db_exercise)
+        # self.db.flush()
 
         response_items = []
 
         for idx, pl in enumerate(exercise_payload):
             item_format = pl["item_format"]
-            item_prompt = pl["item_bp"]["prompt"]
-            item_key = pl["item_bp"]["keys"]
-            item_distractors = pl["item_bp"]["distractors"]
+            item_prompt = pl["item_bp"].prompt
+            item_key = pl["item_bp"].keys
+            item_distractors = pl["item_bp"].distractors
             item_settings = (
                 pl["settings"].model_dump(mode="json") if pl["settings"] else None
             )
             db_item = models.Item(
-                ex_id=db_exercise.id,
+                ex_id=self.exercise_in.id,
                 order_in_ex=idx,
                 item_type=pl["item_type"],
                 item_format=item_format,
@@ -153,7 +295,7 @@ class ExerciseRouter:
             self.db.flush()
 
             db_lem_in_item = models.LemmaInItem(
-                item_id=db_item.id, lem_id=pl["item_bp"]["lem_id"]
+                item_id=db_item.id, lem_id=pl["item_bp"].lem_id
             )
             self.db.add(db_lem_in_item)
             self.db.flush()
@@ -188,11 +330,7 @@ class ExerciseRouter:
         self.db.commit()  # Save transaction securely
 
         return schemas.ExerciseResponse(
-            exercise_id=db_exercise.id,
+            exercise_id=self.exercise_in.id,
             num_questions=len(response_items),
             response_data=response_items,
         )
-
-    # Usage in API endpoint:
-    # generator = get_exercise_generator(db, request.context, request.type)
-    # exercise_data = generator.generate(request.criteria, request.context)
