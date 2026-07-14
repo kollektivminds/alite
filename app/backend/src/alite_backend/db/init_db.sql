@@ -6,32 +6,30 @@ DROP TABLE IF EXISTS lookup_queue;
 
 DROP TABLE IF EXISTS lem_rels;
 
-DROP TABLE IF EXISTS lesslists_in_modules;
-
 DROP TABLE IF EXISTS less_lists_in_mods;
 
 DROP TABLE IF EXISTS lems_in_less_lists;
 
-DROP TABLE IF EXISTS lems_in_lesslists;
-
-DROP TABLE IF EXISTS sent_docs;
+DROP TABLE IF EXISTS lem_prons;
 
 DROP TABLE IF EXISTS lem_defs;
 
 DROP TABLE IF EXISTS def_exs;
 
-DROP TABLE IF EXISTS word_forms;
-
 -- Next, drop the primary tables that are referenced by the ones above
-DROP TABLE IF EXISTS skills;
+DROP TABLE IF EXISTS lessons_lists;
+
+DROP TABLE IF EXISTS modules;
 
 DROP TABLE IF EXISTS user_groups;
 
-DROP TABLE IF EXISTS lessons_lists;
-
 DROP TABLE IF EXISTS users;
 
-DROP TABLE IF EXISTS modules;
+DROP TABLE IF EXISTS sentence_tokens;
+
+DROP TABLE IF EXISTS sentences;
+
+DROP TABLE IF EXISTS documents;
 
 DROP TABLE IF EXISTS pronunciations;
 
@@ -39,9 +37,9 @@ DROP TABLE IF EXISTS examples;
 
 DROP TABLE IF EXISTS definitions;
 
-DROP TABLE IF EXISTS gram_props;
+DROP TABLE IF EXISTS word_forms;
 
-DROP TABLE IF EXISTS word_questions;
+DROP TABLE IF EXISTS gram_props;
 
 DROP TABLE IF EXISTS lexicon;
 
@@ -66,7 +64,7 @@ CREATE TABLE
         pos VARCHAR(48) NOT NULL,
         -- SPARSE
         noun_gender VARCHAR(48),
-        subst_animacy BOOLEAN,
+        noun_animacy BOOLEAN,
         verb_aspect VARCHAR(48),
         verb_conj VARCHAR(16), -- ZALIZNIAK'S CLASSIFICATION
         verb_type VARCHAR(8), -- TYPE-I / TYPE-II FROM verb_conj
@@ -229,6 +227,50 @@ CREATE TABLE
         PRIMARY KEY (lem_id, pron_id),
         CONSTRAINT lemma_pronunciation FOREIGN KEY (lem_id) REFERENCES lemmas (id) ON DELETE CASCADE,
         CONSTRAINT pronunciation_lemma FOREIGN KEY (pron_id) REFERENCES pronunciations (id) ON DELETE CASCADE
+    );
+
+--
+-- SENTENCES AND DOCUMENTS
+--
+CREATE TABLE
+    documents (
+        id SERIAL PRIMARY KEY,
+        title TEXT NOT NULL,
+        author TEXT,
+        source TEXT,
+        date TIMESTAMP,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    );
+
+CREATE TABLE
+    sentences (
+        id SERIAL PRIMARY KEY,
+        doc_id INT NOT NULL,
+        raw_text TEXT NOT NULL,
+        sent_idx INT NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT document FOREIGN KEY (doc_id) REFERENCES documents (id) ON DELETE CASCADE
+    );
+
+CREATE TABLE
+    sentence_tokens (
+        id SERIAL PRIMARY KEY,
+        sent_id INT NOT NULL,
+        token_idx INT NOT NULL,
+        lex_raw VARCHAR(48) NOT NULL,
+        lem_raw VARCHAR(48) NOT NULL,
+        lem_id INT,
+        wf_id INT,
+        head_idx INT,
+        dep_rel VARCHAR(48),
+        semantic_tag VARCHAR(48),
+        is_capitalized BOOLEAN DEFAULT FALSE NOT NULL,
+        punctuation_before VARCHAR(8),
+        punctuation_after VARCHAR(8),
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT sentence FOREIGN KEY (sent_id) REFERENCES sentences (id) ON DELETE CASCADE,
+        CONSTRAINT lemma FOREIGN KEY (lem_id) REFERENCES lemmas (id) ON DELETE CASCADE,
+        CONSTRAINT word_form FOREIGN KEY (wf_id) REFERENCES word_forms (id) ON DELETE CASCADE
     );
 
 --

@@ -55,7 +55,7 @@ EXERCISE_CONFIG = {
         "strategy_class": StandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
-            "target_column": "subst_animacy",
+            "target_column": "noun_animacy",
             "drill_direction": "lemma_to_trait",
         },
     },
@@ -63,7 +63,7 @@ EXERCISE_CONFIG = {
         "strategy_class": StandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
-            "target_column": "subst_animacy",
+            "target_column": "noun_animacy",
             "drill_direction": "trait_to_lemma",
         },
     },
@@ -190,6 +190,20 @@ EXERCISE_CONFIG = {
         },
     },
     # lemma-relation types
+    EnumWordItemType.VERB_PAIR_TO_REL: {
+        "strategy_class": LemmaRelationStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "rel_type": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
+        },
+    },
+    EnumWordItemType.VERB_TO_ASPT_PAIR: {
+        "strategy_class": LemmaRelationStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "rel_type": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
+        },
+    },
 }
 
 

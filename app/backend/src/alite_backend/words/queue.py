@@ -9,7 +9,7 @@ from alite_backend.words.pipeline import load_words
 logger = logging.getLogger(__name__)
 
 
-def process_lookup_queue(db: Session, batch_size: int = 10):
+def process_lookup_queue(db: Session, batch_size: int = 25):
     """
     Iterates over the lookup_queue table to process pending lemmas.
 
@@ -18,12 +18,20 @@ def process_lookup_queue(db: Session, batch_size: int = 10):
     and then creates a relationship mapping in the related_lemmas table.
     """
 
+    # track attempts
+    attempted_ids = set()
+
     # while loop to fetch batches until empty
-    while True:
+    while len(attempted_ids) < batch_size:
         # fetch unprocessed item.
         queue_item = (
             db.query(models.LookupQueue)
-            .filter(models.LookupQueue.status == models.EnumLookupStatus.UNLINKED)
+            .filter(
+                models.LookupQueue.status.in_(
+                    [models.EnumLookupStatus.LINKED, models.EnumLookupStatus.FAILED]
+                ),
+                models.LookupQueue.id.notin_(attempted_ids),
+            )
             .first()
         )
 
@@ -32,12 +40,34 @@ def process_lookup_queue(db: Session, batch_size: int = 10):
 
         # extract primitive ID for safe error handling
         item_id = queue_item.id
+        attempted_ids.add(item_id)
 
         try:
-            target_lem = str(queue_item.target_lem)
-            clean_lem = [remove_accents(target_lem)]
+            target_lem = str(queue_item.target_lem).strip()
+            clean_lem = remove_accents(target_lem)
+
+            new_lemma = None
+
+            # check local db
+            existing_lemma = (
+                db.query(models.Lemma)
+                .filter(
+                    (models.Lemma.lem_canon == target_lem)
+                    | (models.Lemma.lem_text == clean_lem)
+                )
+                .first()
+            )
+            
+            if existing_lemma:
+                logger.info(f"Found '{clean_lem}' in local DB. Skipping pipeline.")
+                new_lemma = existing_lemma
+            else:
+                # fallback to the pipeline
+                logger.info(f"'{clean_lem}' not found locally. Running pipeline...")
+                new_lemma = load_words(db, [clean_lem])
+
             # re-use existing pipeline
-            new_lemma = load_words(db, clean_lem)
+            # new_lemma = load_words(db, clean_lem)
 
             if new_lemma:
                 # create the new lemma relation
@@ -60,7 +90,7 @@ def process_lookup_queue(db: Session, batch_size: int = 10):
 
             else:
                 # handle cases where the lookup pipeline couldn't find the word
-                logger.warning(f"Pipeline returned None for word '{new_lemma}'")
+                logger.warning(f"Pipeline returned None for word '{clean_lem}'")
                 queue_item.status = models.EnumLookupStatus.FAILED
                 db.commit()
 

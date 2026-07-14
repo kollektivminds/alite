@@ -134,7 +134,7 @@ class LemmasRecord(BaseModel):
     pos: EnumPartOfSpeech
     entry_key: UUID5
     noun_gender: Optional[EnumGramGender]
-    subst_animacy: Optional[bool]
+    noun_animacy: Optional[bool]
     verb_aspect: Optional[EnumVerbAspect]
     verb_conj: Optional[str]
     verb_type: Optional[EnumVerbType]
@@ -218,7 +218,7 @@ class ProcessedPayload(BaseModel):
 #     hard_stem: Optional[bool] = None
 
 #     # Nouns
-#     subst_animacy: Optional[bool] = None
+#     noun_animacy: Optional[bool] = None
 #     subst_gender: Optional[str] = None
 #     subst_number: Optional[str] = None
 
@@ -260,7 +260,7 @@ class LemmaBase(BaseModel):
 class LemmaProps(BaseModel):
     pos: Optional[EnumPartOfSpeech] = None
     noun_gender: Optional[EnumGramGender] = None
-    subst_animacy: Optional[bool] = None
+    noun_animacy: Optional[bool] = None
     verb_aspect: Optional[EnumVerbAspect] = None
     verb_conj: Optional[str] = None
     verb_type: Optional[EnumVerbType] = None
@@ -301,7 +301,7 @@ class LemmaSearchParams(BaseModel):
     pos: Optional[EnumPartOfSpeech] = None
     entry_key: Optional[UUID5] = None
     noun_gender: Optional[EnumGramGender] = None
-    subst_animacy: Optional[bool] = None
+    noun_animacy: Optional[bool] = None
     verb_aspect: Optional[EnumVerbAspect] = None
     verb_conj: Optional[str] = None
     verb_type: Optional[EnumVerbType] = None

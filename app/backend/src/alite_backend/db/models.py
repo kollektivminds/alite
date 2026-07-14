@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from datetime import datetime
 from uuid import UUID
 import enum
@@ -204,7 +204,7 @@ class EnumWordItemType(str, enum.Enum):
     GEND_TO_NOUN = "gender_to_noun"  # "Which lemma(s) is/are [noun_gender]?" (MCQ)
     # lemma (noun) <-> animacy (bool)
     NOUN_TO_ANIM = "noun_to_anim"  # "Is [noun] animate or inanimate?" (MCQ)
-    ANIM_TO_NOUN = "anim_to_noun"  # "Which lemma(s) is/are [subst_animacy]?" (MCQ)
+    ANIM_TO_NOUN = "anim_to_noun"  # "Which lemma(s) is/are ["verb_aspect"]?" (MCQ)
     # noun form <-> noun GNC
     NOUN_FORM_TO_GRAM = "noun_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
     NOUN_GRAM_TO_FORM = "noun_gram_to_form"  # "Which of the following noun forms is/are an example of [grammar]?" (MCQ)
@@ -223,12 +223,13 @@ class EnumWordItemType(str, enum.Enum):
     VERB_TO_ASPT = "verb_to_aspt"  # "What is the aspect of [verb]?" (FC/MCQ)
     # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id, target_id].lem_canon
     # <-> lemmas(id=lem_id).verb_aspect
-    ASPT_TO_VERB = "aspt_to_verb"
-    VERB_PAIR_TO_REL = "verb_pair_to_rel"  # "Which of these verbs is [aspect]?" (MCQ)
+    ASPT_TO_VERB = "aspt_to_verb"  # "Which of these verbs is [aspect]?" (MCQ)
+    # Aspectual pairs
+    VERB_PAIR_TO_REL = "verb_pair_to_rel"  # "Choose the [aspect] verb(s) of the aspectual group." (MCQ)
     # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id].lem_canon
     # <-> lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[target_id].lem_canon
-    VERB_ASPT_TO_PAIR = (
-        "verb_to_aspt_pair"  # "What is the aspectual partner of [verb]?" (FC/MCQ/Cloze)
+    VERB_TO_ASPT_PAIR = (
+        "verb_to_aspt_pair"  # "What is the [aspect] partner of [verb]?" (FC/MCQ/Cloze)
     )
     # Conjugation Type
     # lemmas.filter(pos==verb).lem_canon <-> lemmas.filter(pos==verb).verb_type
@@ -295,7 +296,7 @@ class Lemma(Base):
     # nominal gender
     noun_gender: Mapped[EnumGramGender | None] = mapped_column(Enum(EnumGramGender))
     # substantive animacy
-    subst_animacy: Mapped[bool | None] = mapped_column()
+    noun_animacy: Mapped[bool | None] = mapped_column()
     # verb aspect
     verb_aspect: Mapped[EnumVerbAspect | None] = mapped_column(Enum(EnumVerbAspect))
     # verb conj (Zalizniak's)
@@ -605,56 +606,77 @@ class LessonListInModule(Base):
 # --- Sentence Tables ---
 
 
-# class Sentence(Base):
-#     ___tablename__ = "sentences"
+class Sentence(Base):
+    __tablename__ = "sentences"
 
-#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-#     raw_text: Mapped[str] = mapped_column(Text, nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    doc_id: Mapped[int] = mapped_column(
+        ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    )
+    raw_text: Mapped[str] = mapped_column(Text, nullable=False)
 
-#     tokens = relationship(
-#         "SentenceToken",
-#         back_populates="sentence",
-#         order_by="SentenceToken.position_index",  # Guarantees order when fetched!
-#         cascade="all, delete-orphan",
-#     )
+    sent_idx: Mapped[int] = mapped_column(Integer)
+
+    document: Mapped["Document"] = relationship(back_populates="sentences")
+    tokens: Mapped["SentenceToken"] = relationship(
+        back_populates="sentence",
+        order_by="SentenceToken.token_idx",
+        cascade="all, delete-orphan",
+    )
 
 
-# class WordFormInSentence(Base):
-#     """Junction table mapping a WordForm to a specific position in a Sentence."""
+class SentenceToken(Base):
+    """Junction table mapping a WordForm to a specific position in a Sentence."""
 
-#     __tablename__ = "word_forms_in_sentences"
+    __tablename__ = "sentence_tokens"
 
-#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-#     sentence_id: Mapped[int] = mapped_column(
-#         Integer, ForeignKey("sentences.id", ondelete="CASCADE"), nullable=False
-#     )
-#     word_form_id: Mapped[int] = mapped_column(Integer, ForeignKey("word_forms.id"), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    sent_id: Mapped[int] = mapped_column(
+        ForeignKey("sentences.id", ondelete="CASCADE"), index=True
+    )
 
-#     position_index: Mapped[int] = mapped_column(Integer, nullable=False)
+    token_idx: Mapped[int] = mapped_column(Integer)
 
-#     # context-specific lexeme orthography
-#     is_capitalized = mapped_column()
-#     punctuation_after = mapped_column(String(5), nullable=True)
-#     punctuation_before = mapped_column(String(5), nullable=True)
+    lex_raw: Mapped[str] = mapped_column(String(48))
+    lem_raw: Mapped[str] = mapped_column(String(48))
 
-#     # relationships
-#     sentence = relationship("Sentence", back_populates="tokens")
-#     word_form = relationship("WordForm")
+    lem_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    wf_id: Mapped[int | None] = mapped_column(ForeignKey("word_forms.id"), index=True)
+
+    head_idx: Mapped[int | None] = mapped_column(Integer)
+
+    dep_rel: Mapped[str | None] = mapped_column(String(100))
+
+    semantic_tag: Mapped[str | None] = mapped_column(String(100))
+
+    # context-specific lexeme orthography
+    is_capitalized: Mapped[bool] = mapped_column()
+    punctuation_before: Mapped[str | None] = mapped_column(String(8))
+    punctuation_after: Mapped[str | None] = mapped_column(String(8))
+
+    # relationships
+    sentence: Mapped["Sentence"] = relationship(back_populates="tokens")
+    lemma: Mapped[Optional["Lemma"]] = relationship()
+    word_form: Mapped[Optional["WordForm"]] = relationship()
 
 
 # --- Sentence Organization Tables ---
 
 
-# class Document(Base):
-#     __tablename__ = "documents"
+class Document(Base):
+    __tablename__ = "documents"
 
-#     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-#     author: Mapped[int] = mapped_column(String(48), nullable=False)
-#     date: Mapped[int] = mapped_column(DateTime, nullable=True)
-#     source: Mapped[int] = mapped_column(Text, nullable=False)
-#     title: Mapped[int] = mapped_column(String(48), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[int] = mapped_column(String(48))
+    author: Mapped[str | None] = mapped_column()
+    source: Mapped[str | None] = mapped_column()
+    date: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
 
-#     sentences = relationship("Sentence", back_populates="in_document")
+    sentences: Mapped[List["Sentence"]] = relationship(
+        back_populates="document",
+        order_by="Sentence.sent_idx",
+        cascade="all, delete-orphan",
+    )
 
 
 # --- Users ---

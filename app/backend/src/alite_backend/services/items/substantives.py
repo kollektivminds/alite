@@ -152,7 +152,7 @@ class NounToAnimacyStrategy(BaseExerciseStrategy):
 
         return self._build_zero_query_drill(
             pos_target=models.EnumPartOfSpeech.NOUN,
-            target_attr="subst_animacy",
+            target_attr="noun_animacy",
             num_items=num_items,
             max_keys=max_keys,
             max_distractors=max_distractors,
@@ -162,7 +162,7 @@ class NounToAnimacyStrategy(BaseExerciseStrategy):
 
 
 # animacy to noun ("anim_to_noun")
-# "Which lemma(s) is/are [subst_animacy]?" (ZQ: MCQ)
+# "Which lemma(s) is/are [noun_animacy]?" (ZQ: MCQ)
 
 
 class AnimacyToNounStrategy(BaseExerciseStrategy):
@@ -173,7 +173,7 @@ class AnimacyToNounStrategy(BaseExerciseStrategy):
 
         return self._build_zero_query_drill(
             pos_target=models.EnumPartOfSpeech.NOUN,
-            target_attr="subst_animacy",
+            target_attr="noun_animacy",
             num_items=num_items,
             max_keys=max_keys,
             max_distractors=max_distractors,

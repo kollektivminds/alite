@@ -84,7 +84,7 @@ class BaseExerciseStrategy(ABC):
         attribute_map = {
             "pos": "part of speech",
             "noun_gender": "grammatical gender",
-            "subst_animacy": "animacy",
+            "noun_animacy": "animacy",
             "verb_aspect": "verbal aspect",
             "verb_type": "conjugation type",
             "verb_person": "person",

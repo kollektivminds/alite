@@ -60,7 +60,7 @@ Base forms with part of speech
 | lem_canon       | INT         |                 | part of speech |
 | pos             | VARCHAR(48) | *controlled*    | part of speech |
 | noun_gender     | VARCHAR(48) | *controlled*    | part of speech |
-| subst_animacy   | BOOLEAN     |                 | part of speech |
+| noun_animacy   | BOOLEAN     |                 | part of speech |
 | verb_aspect     | VARCHAR(48) | *controlled*    | part of speech |
 | verb_conj       | VARCHAR(16) |                 | part of speech |
 | verb_type       | VARCHAR(8)  | *controlled*    | part of speech |
@@ -129,7 +129,7 @@ Grammar property combinations of lemmas
 | part_voice       | INT        | *controlled* | voice of participle                 |
 | part_parent_verb | INT        | <lemmas(id)> | participle's parent (verb) id       |
 | subst_case       | INT        | *controlled* | grammatical case                    |
-| subst_animacy    | BOOLEAN    |              | animate nouns                       |
+| noun_animacy    | BOOLEAN    |              | animate nouns                       |
 | adjv_short       | BOOLEAN    |              | short adjectives                    |
 | conj_gender      | INT        | *controlled* | grammatical gender                  |
 | gram_number      | INT        | *controlled* | grammatical number                  |

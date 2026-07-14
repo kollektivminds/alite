@@ -58,9 +58,9 @@ class ReturnedLemmaProcessor:
             # gram_num
             "singular": {"gram_num": EnumGramNum.SINGULAR},
             "plural": {"gram_num": EnumGramNum.PLURAL},
-            # subst_animacy
-            "inanimate": {"subst_animacy": False},
-            "animate": {"subst_animacy": True},
+            # noun_animacy
+            "inanimate": {"noun_animacy": False},
+            "animate": {"noun_animacy": True},
         }
         verb_chars_map = {
             # verb_aspect
@@ -127,7 +127,7 @@ class ReturnedLemmaProcessor:
                 "entry_key": entry_key,
                 # TO BE FILLED IN AS NEEDED
                 "noun_gender": None,
-                "subst_animacy": None,
+                "noun_animacy": None,
                 "verb_aspect": None,
                 "verb_conj": None,
                 "verb_type": None,

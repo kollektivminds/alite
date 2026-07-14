@@ -16,11 +16,12 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 from alite_backend.db.db_session import SessionLocal
+from alite_backend.logging_config import setup_logging
 from alite_backend.words.pipeline import load_words
 from alite_backend.words.queue import process_lookup_queue
 from alite_backend.words.funcs import load_json, save_json
-from alite_backend.logging_config import setup_logging
 from alite_backend.config import settings
+from alite_backend.sentences.write_sentences import run_syntagrus_pipeline
 import alite_backend.db.schemas as schemas
 from alite_backend.db.crud.word_crud import (
     crud_module,
@@ -38,7 +39,7 @@ load_dotenv()
 VOCAB_LIST_LOC = os.getenv("VOCAB_LIST_LOC")
 APP_DIR = os.getenv("APP_DIR")
 INIT_DB_LOC = APP_DIR + "backend/src/alite_backend/db/init_db.sql"  # type: ignore
-
+corpus_location = APP_DIR + "backend/src/alite_backend/sentences/raw/SynTagRus2022/"  # type: ignore
 bodyLibDfLoc = "../syntagrus/bodyLibDf.json"
 bodyTextDfLoc = "../syntagrus/bodyTextDf.json"
 infDictLoc = "../syntagrus/infDict.json"
@@ -195,6 +196,7 @@ def init_database():
             load_org_tables(db=db)
             load_words(db=db, word_s=rand_samp)
             process_lookup_queue(db=db)
+            run_syntagrus_pipeline(db=db, corpus_directory=corpus_location)
             db.commit()
             logger.info("Data loaded and committed successfully")
 
