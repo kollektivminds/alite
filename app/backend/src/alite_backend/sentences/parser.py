@@ -233,7 +233,7 @@ def parse_tgt_file(
                         "sent_idx": sent_idx,
                         "token_idx": int(w_node.get("ID", 0)),
                         "lex_raw": lexeme,
-                        "lem_raw": w_node.get("LEMMA"),
+                        "lem_raw": w_node.get("LEMMA").lower(),  # type: ignore
                         "head_idx": head_index,
                         "dep_rel": w_node.get("LINK"),
                         "semantic_tag": w_node.get("KSNAME"),

@@ -45,6 +45,7 @@ def load_parsed_data(
         
         lemma_map = {}
         word_form_map = {}
+        lexeme_map = {}
         
         if unique_lemmas:
             lem_stmt = select(Lemma.id, Lemma.lem_text).where(Lemma.lem_text.in_(unique_lemmas))
@@ -52,24 +53,26 @@ def load_parsed_data(
             lemma_map = {row.lem_text: row.id for row in lem_results}
             
         if unique_lexemes:
-            wf_stmt = select(Lexeme.id, Lexeme.lex_text_clean).where(Lexeme.lex_text_clean.in_(unique_lexemes))
+            wf_stmt = select(Lexeme.id, Lexeme.lex_text_clean, Lexeme.lexeme_word_form, Lexeme.lexeme_word_form).where(Lexeme.lex_text_clean.in_(unique_lexemes))
             wf_results = session.execute(wf_stmt).all()
             word_form_map = {row.lex_text_clean: row.id for row in wf_results}
 
-    # map & insert tokens
-    for token in tokens_data:
-        # .pop() removes 'sent_idx' (which isn't a DB column in SentenceToken)
-        # while simultaneously returning its value for the map
-        s_idx = token.pop("sent_idx")
+        # map & insert tokens
+        for token in tokens_data:
+            # .pop() removes 'sent_idx' (which isn't a DB column in SentenceToken)
+            # while simultaneously returning its value for the map
+            s_idx = token.pop("sent_idx")
 
-        # inject the true Foreign Key
-        token["sent_id"] = sent_id_map.get(s_idx)
-        
-        # map foreign keys
-        raw_lem = token.get("lem_raw").lower()
-        raw_lex = token.get("lex_raw").lower()
-        
-        token["lem_id"] = lemma_map.get(raw_lem)
+            # inject the true Foreign Key
+            token["sent_id"] = sent_id_map.get(s_idx)
+            
+            # map foreign keys
+            raw_lem = token.get("lem_raw")
+            raw_lex = token.get("lex_raw")
+            
+            token["lem_id"] = lemma_map.get(raw_lem)
+            token["lex_id"] = lexeme_map.get(raw_lem)
+            token["wf_id"] = word_form_map.get(raw_lem)
 
     # bulk insert all tokens for the entire document in one massive query
     if tokens_data:

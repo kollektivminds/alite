@@ -641,6 +641,7 @@ class SentenceToken(Base):
     lem_raw: Mapped[str] = mapped_column(String(48))
 
     lem_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    lex_id: Mapped[int | None] = mapped_column(ForeignKey("lexicon.id"), index=True)
     wf_id: Mapped[int | None] = mapped_column(ForeignKey("word_forms.id"), index=True)
 
     head_idx: Mapped[int | None] = mapped_column(Integer)

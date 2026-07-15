@@ -8,8 +8,6 @@ from alite_backend.sentences.parser import parse_tgt_file
 
 logger = logging.getLogger(__name__)
 
-# file_list = list_files_recursive(corpus_location, ff=True, sort=True)
-
 
 def run_syntagrus_pipeline(db: Session, corpus_directory: str):
     """
@@ -51,5 +49,5 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
 
     # Run the pipeline
-    corpus_location = "./raw/SynTagRus2022/"
-    run_syntagrus_pipeline(corpus_location)
+    corpus_location = "/Users/aaron.thompson/code/alite/app/backend/src/alite_backend/sentences/raw/SynTagRus2022"
+    run_syntagrus_pipeline(SessionLocal(), corpus_location)
