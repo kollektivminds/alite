@@ -35,6 +35,7 @@ def run_syntagrus_pipeline(db: Session, corpus_directory: str):
 
                 # commit
                 session.commit()
+                logger.info(f"Successfully loaded {file_path}")
 
             except Exception as e:
                 session.rollback()

@@ -1,20 +1,12 @@
 # schemas.py
-# Pydantic models for API data validation and response shaping.
+# pydantic models for API data validation and response shaping
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 from enum import Enum
 from alite_backend.db.models import (
-    EnumAltAdjvType,
-    EnumAltNounType,
     EnumGramGender,
-    EnumConjPerson,
-    EnumGramTense,
-    EnumPartType,
-    EnumPartVoice,
     EnumPartOfSpeech,
-    EnumSubstCase,
     EnumVerbAspect,
-    EnumVerbMood,
     EnumVerbTransRefl,
     EnumVerbType,
     EnumRelLemType,
@@ -23,8 +15,6 @@ from alite_backend.db.models import (
     EnumUserRole,
     EnumItemFormat,
     EnumWordItemType,
-    EnumItemDifficulty,
-    EnumTargetLanguage,
 )
 from pydantic import (
     BaseModel,
@@ -200,47 +190,6 @@ class ProcessedPayload(BaseModel):
     def_examples: List[DefExamplesRecord]
     pronunciations: List[PronunciationsRecord]
     rel_lems: List[RelatedLemmaRecord]
-
-
-# --- Wiki Pre-Processing Schema ---
-
-
-# class UnprocessedWikiWord(BaseModel):
-#     """Pydantic model for validating raw scraped data."""
-
-#     # General fields
-#     pos: Optional[str] = None
-#     definitions: Optional[Dict] = None
-#     inflections: Dict[str, Dict] = Field(default_factory=dict)
-
-#     # Adjectives
-#     has_short: Optional[bool] = None
-#     hard_stem: Optional[bool] = None
-
-#     # Nouns
-#     noun_animacy: Optional[bool] = None
-#     subst_gender: Optional[str] = None
-#     subst_number: Optional[str] = None
-
-#     # Verbs
-#     verb_aspect: Optional[str] = None
-#     verb_conj: Optional[str] = None
-#     verb_conj_type: Optional[int] = None
-#     verb_pair: Optional[str | List[str]] = None
-#     verb_trans_refl: Optional[Tuple[Optional[bool], Optional[bool]]] = None
-
-#     class Config:
-#         """This helps prevent errors if your scraper passes extra,
-#         unexpected fields that are not defined in the model."""
-
-#         extra = "ignore"
-
-
-# class RawWikiLemma(BaseModel):
-#     """"""
-
-#     lemma: Optional[str] = None
-#     parts_of_speech: Dict[str, List[UnprocessedWikiWord]]
 
 
 #
@@ -825,24 +774,6 @@ class EnumGramExFocus(str, Enum):
     PART_TENSE = "part_tense"
 
 
-# Define our modular configuration models
-# class NounStrategyConfig(BaseModel):
-#     # Users can pick specific sub-facets, or leave empty/default to ALL
-#     focus_props: List[EnumGramExFocus] = [
-#         EnumGramExFocus.SUBST_CASE,
-#         EnumGramExFocus.SUBST_GENDER,
-#         EnumGramExFocus.SUBST_NUM,
-#     ]
-
-
-# class VerbStrategyConfig(BaseModel):
-#     focus_props: List[EnumGramExFocus] = [
-#         EnumGramExFocus.VERB_MOOD,
-#         EnumGramExFocus.VERB_PERSON,
-#         EnumGramExFocus.VERB_TENSE,
-#     ]
-
-
 class StrategyConfigs(BaseModel):
     # Use optional attributes mapped directly to your core strategy enums
     allow_odd_one_out: bool = False
@@ -852,8 +783,6 @@ class StrategyConfigs(BaseModel):
         | List[EnumVerbGramExFocus]
         | List[EnumPartGramExFocus],
     ]
-    # noun_form_to_gram: Optional[NounStrategyConfig] = None
-    # verb_conjugation: Optional[VerbStrategyConfig] = None
 
 
 class ExerciseRequest(BaseModel):
@@ -864,16 +793,6 @@ class ExerciseRequest(BaseModel):
 
 
 # Raw Exercise Responses
-
-
-# class KeysReponse(BaseModel):
-#     item_id: int
-#     key_text: str | Dict[str, Any]
-
-
-# class DistractorsResponse(BaseModel):
-#     item_id: int
-#     dist_text: str | Dict[str, Any]
 
 
 class ItemBlueprint(BaseModel):

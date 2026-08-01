@@ -181,9 +181,8 @@ def parse_tgt_file(
     source = inf_node.findtext("source")  # type: ignore
     date_str = inf_node.findtext("date")  # type: ignore
 
-    # use dateparser to normalize the date
+    # use dateparser to try to normalize the date
     clean_date = normalize_syntagrus_date(date_str)  # type: ignore
-
     date = clean_date or date_str
 
     # collate document data
@@ -199,12 +198,10 @@ def parse_tgt_file(
         sent_idx = int(s_node.get("ID", 0))
 
         # .itertext() grabs all raw text recursively, bypassing the <W> XML nodes
-        # This gives us the clean, readable sentence.
         raw_text = "".join(s_node.itertext()).replace("\n", "").strip()
 
         sentences_data.append(
             {
-                # document_id will be injected in the load script after Doc insertion
                 "sent_idx": sent_idx,
                 "raw_text": raw_text,
             }
@@ -237,7 +234,7 @@ def parse_tgt_file(
                         "head_idx": head_index,
                         "dep_rel": w_node.get("LINK"),
                         "semantic_tag": w_node.get("KSNAME"),
-                        "is_uppercase": lexeme[0].isupper(),
+                        "is_capitalized": lexeme[0].isupper(),
                         "punctuation_before": punc_before or None,
                         "punctuation_after": punc_after or None,
                         "features": features,

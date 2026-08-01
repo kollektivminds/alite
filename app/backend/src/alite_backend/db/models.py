@@ -1,4 +1,4 @@
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from uuid import UUID
 import enum
@@ -14,10 +14,11 @@ from sqlalchemy import (
     UniqueConstraint,
     JSON,
     Enum,
+    Index,
 )
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 
 
 class EnumTargetLanguage(str, enum.Enum):
@@ -159,6 +160,8 @@ class EnumLookupStatus(str, enum.Enum):
     UNLINKED = "unlinked"
     LINKED = "linked"
     FAILED = "failed"
+    IGNORED = "ignored"
+    NOT_IN_DICT = "not_in_dict"
 
 
 class EnumItemFormat(str, enum.Enum):
@@ -267,9 +270,7 @@ class EnumItemDifficulty(str, enum.Enum):
 
 class Base(DeclarativeBase):
     """
-    All your database models will inherit from this class.
-    You can also put global helpers or common columns here
-    (like a created_at timestamp).
+    All database models
     """
 
     created_at: Mapped[datetime] = mapped_column(
@@ -279,6 +280,8 @@ class Base(DeclarativeBase):
 
 
 # --- Word Primary Tables ---
+
+
 class Lemma(Base):
     """Represents a dictionary base form (lemma) of a word."""
 
@@ -288,7 +291,7 @@ class Lemma(Base):
     # UUID5 entry key
     entry_key: Mapped[UUID] = mapped_column()
     # text of the lemma
-    lem_text: Mapped[str] = mapped_column(String(48))
+    lem_text: Mapped[str] = mapped_column(String(48), index=True)
     # canonical of the lemma
     lem_canon: Mapped[str | None] = mapped_column(String(48))
     # part of speech of the lemma
@@ -362,9 +365,6 @@ class GramProp(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
 
-    # Various grammatical properties that can potentially apply,
-    # though table will be largely sparse
-
     # non-pos-specific grammar
     irregular: Mapped[bool] = mapped_column(default=False)
     gram_tense: Mapped[EnumGramTense | None] = mapped_column(Enum(EnumGramTense))
@@ -409,9 +409,9 @@ class WordForm(Base):
     __tablename__ = "word_forms"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"))
-    lex_id: Mapped[int] = mapped_column(ForeignKey("lexicon.id"))
-    gram_id: Mapped[int] = mapped_column(ForeignKey("gram_props.id"))
+    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    lex_id: Mapped[int] = mapped_column(ForeignKey("lexicon.id"), index=True)
+    gram_id: Mapped[int] = mapped_column(ForeignKey("gram_props.id"), index=True)
 
     word_form_lemma: Mapped["Lemma"] = relationship(back_populates="lemma_word_form")
     word_form_lexicon: Mapped["Lexeme"] = relationship(
@@ -614,9 +614,7 @@ class Sentence(Base):
         ForeignKey("documents.id", ondelete="CASCADE"), index=True
     )
     raw_text: Mapped[str] = mapped_column(Text, nullable=False)
-
     sent_idx: Mapped[int] = mapped_column(Integer)
-
     document: Mapped["Document"] = relationship(back_populates="sentences")
     tokens: Mapped["SentenceToken"] = relationship(
         back_populates="sentence",
@@ -634,20 +632,14 @@ class SentenceToken(Base):
     sent_id: Mapped[int] = mapped_column(
         ForeignKey("sentences.id", ondelete="CASCADE"), index=True
     )
-
     token_idx: Mapped[int] = mapped_column(Integer)
 
     lex_raw: Mapped[str] = mapped_column(String(48))
     lem_raw: Mapped[str] = mapped_column(String(48))
-
-    lem_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
-    lex_id: Mapped[int | None] = mapped_column(ForeignKey("lexicon.id"), index=True)
-    wf_id: Mapped[int | None] = mapped_column(ForeignKey("word_forms.id"), index=True)
+    features: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
 
     head_idx: Mapped[int | None] = mapped_column(Integer)
-
     dep_rel: Mapped[str | None] = mapped_column(String(100))
-
     semantic_tag: Mapped[str | None] = mapped_column(String(100))
 
     # context-specific lexeme orthography
@@ -655,10 +647,22 @@ class SentenceToken(Base):
     punctuation_before: Mapped[str | None] = mapped_column(String(8))
     punctuation_after: Mapped[str | None] = mapped_column(String(8))
 
+    # associated form(s)
+    status: Mapped[EnumLookupStatus] = mapped_column(
+        Enum(EnumLookupStatus), default=EnumLookupStatus.UNLINKED, index=True
+    )
+    lem_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    lex_id: Mapped[int | None] = mapped_column(ForeignKey("lexicon.id"), index=True)
+    wf_id: Mapped[int | None] = mapped_column(ForeignKey("word_forms.id"), index=True)
+
     # relationships
     sentence: Mapped["Sentence"] = relationship(back_populates="tokens")
     lemma: Mapped[Optional["Lemma"]] = relationship()
     word_form: Mapped[Optional["WordForm"]] = relationship()
+
+    __table_args__ = (
+        Index("ix_sentence_token_features_gin", "features", postgresql_using="gin"),
+    )
 
 
 # --- Sentence Organization Tables ---
@@ -668,7 +672,7 @@ class Document(Base):
     __tablename__ = "documents"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[int] = mapped_column(String(48))
+    title: Mapped[str] = mapped_column()
     author: Mapped[str | None] = mapped_column()
     source: Mapped[str | None] = mapped_column()
     date: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
@@ -690,10 +694,15 @@ class User(Base):
     username: Mapped[str | None] = mapped_column(String(48), unique=True)
     alias: Mapped[str | None] = mapped_column(String(25))
     user_role: Mapped[EnumUserRole] = mapped_column(Enum(EnumUserRole))
+    settings: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
     # target_lang: Mapped[EnumTargetLanguage] = mapped_column(Enum(EnumTargetLanguage))
     # email: Mapped[str] = mapped_column()
     in_group: Mapped["UserInGroup"] = relationship(back_populates="group_user")
     exercises: Mapped[List["Exercise"]] = relationship(back_populates="user")
+
+    __table_args__ = (
+        Index("ix_user_settings_gin", "settings", postgresql_using="gin"),
+    )
 
 
 class UserGroup(Base):

@@ -157,7 +157,7 @@ CREATE TABLE
     pronunciations (
         id SERIAL PRIMARY KEY,
         pron_text TEXT NOT NULL,
-        pron_tags TEXT,
+        pron_tags TEXT[],
         pron_type VARCHAR(48) NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
@@ -259,14 +259,17 @@ CREATE TABLE
         token_idx INT NOT NULL,
         lex_raw VARCHAR(48) NOT NULL,
         lem_raw VARCHAR(48) NOT NULL,
-        lem_id INT,
-        wf_id INT,
+        features JSONB,
         head_idx INT,
         dep_rel VARCHAR(48),
         semantic_tag VARCHAR(48),
         is_capitalized BOOLEAN DEFAULT FALSE NOT NULL,
         punctuation_before VARCHAR(8),
         punctuation_after VARCHAR(8),
+        status VARCHAR(16),
+        lem_id INT,
+        lex_id INT,
+        wf_id INT,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT sentence FOREIGN KEY (sent_id) REFERENCES sentences (id) ON DELETE CASCADE,
         CONSTRAINT lemma FOREIGN KEY (lem_id) REFERENCES lemmas (id) ON DELETE CASCADE,

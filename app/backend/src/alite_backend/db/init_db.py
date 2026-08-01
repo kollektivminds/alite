@@ -9,19 +9,25 @@ set up database
 import os
 import random
 import logging
-import json
+
+# import json
 from collections import defaultdict
 from cytoolz import concat
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
-from alite_backend.db.db_session import SessionLocal
+
+
+from alite_backend.db.db_session import SessionLocal, engine
+from alite_backend.db.models import Base
 from alite_backend.logging_config import setup_logging
 from alite_backend.words.pipeline import load_words
 from alite_backend.words.queue import process_lookup_queue
 from alite_backend.words.funcs import load_json, save_json
-from alite_backend.config import settings
-from alite_backend.sentences.write_sentences import run_syntagrus_pipeline
+
+from alite_backend.sentences.write_sentences_parallel import (
+    run_parallel_sentence_pipeline,
+)
 import alite_backend.db.schemas as schemas
 from alite_backend.db.crud.word_crud import (
     crud_module,
@@ -142,17 +148,17 @@ def get_all_words(vocab_list_path: str = VOCAB_LIST_LOC):  # type: ignore
     return [x["lemma"] for x in rows]
 
 
-def make_tables(init_db_loc: str = INIT_DB_LOC):
+def make_tables(db: Session, init_db_loc: str = INIT_DB_LOC):
     # logger.debug("Attempting to execute SQL from %s...", init_db_loc)
 
     try:
-        # Read all commands from the SQL file
+        # read all commands from the SQL file
         with open(init_db_loc, "r") as f:
-            # Split commands by semicolon for more robust execution
+            # split commands by semicolon for more robust execution
             sql_commands = [cmd.strip() for cmd in f.read().split(";") if cmd.strip()]
 
-        # Connect to the database and execute commands within a transaction
-        with SessionLocal() as connection:
+        # connect to the database and execute commands within a transaction
+        with db as connection:
             with connection.begin():
                 print(f"Executing {len(sql_commands)} commands...")
                 for command in sql_commands:
@@ -174,31 +180,78 @@ def make_tables(init_db_loc: str = INIT_DB_LOC):
         print(f"An error occurred during database initialization: {e}")
         raise e
     finally:
-        # Dispose of the engine connection pool
+        # dispose of the engine connection pool
         print("Engine disposed.")
 
 
-def init_database():
-    # Create tables in db
-    make_tables()
+def create_tables_from_models():
+    """
+    Replaces the raw SQL file execution with SQLAlchemy's native schema generation.
+    This guarantees your database tables perfectly match models.py.
+    """
+    try:
+        logger.info("Dropping all existing tables...")
+        # completely wipes the database, taking the place of your manual DROP statements
+        Base.metadata.drop_all(bind=engine)
 
+        logger.info("Creating tables from models.py...")
+        # reads models.py and issues the CREATE TABLE commands automatically
+        Base.metadata.create_all(bind=engine)
+
+        logger.info("Database schema successfully synchronized with models.")
+
+    except Exception as e:
+        logger.error(f"An error occurred during database initialization: {e}")
+        raise e
+    finally:
+        # dispose of the engine connection pool
+        engine.dispose()
+        logger.info("Engine disposed.")
+
+
+def init_database():
+
+    # get all words from curriculum
     all_words = get_all_words()
 
-    print(f"a total of {str(len(all_words))} words, of which\
-            {str(len(set(all_words)))} are unique")
+    print(
+        f"gathered a total of {str(len(all_words))} words,"
+        f"of which {str(len(set(all_words)))} are unique"
+    )
 
-    rand_samp = random.sample(all_words, 117)
+    rand_samp = random.sample(all_words, 11)
 
     logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
 
     with SessionLocal() as db:
         try:
+            # create tables in db
+            # make_tables(db=db)
+            create_tables_from_models()
             load_org_tables(db=db)
-            load_words(db=db, word_s=rand_samp)
-            process_lookup_queue(db=db)
-            run_syntagrus_pipeline(db=db, corpus_directory=corpus_location)
             db.commit()
-            logger.info("Data loaded and committed successfully")
+            logger.info("Database tables loaded and committed successfully")
+
+        except Exception as e:
+            db.rollback()
+            logger.error("Error while loading data: %s", e)
+            raise e
+
+        try:
+            load_words(db=db, word_s=all_words)
+            process_lookup_queue(db=db)
+            db.commit()
+            logger.info("Lemma data loaded and committed successfully")
+
+        except Exception as e:
+            db.rollback()
+            logger.error("Error while loading data: %s", e)
+            raise e
+
+        try:
+            run_parallel_sentence_pipeline(db=db, corpus_directory=corpus_location)
+            db.commit()
+            logger.info("Sentences data loaded and committed successfully")
 
         except Exception as e:
             db.rollback()
