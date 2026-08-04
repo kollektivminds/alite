@@ -1,44 +1,55 @@
-version: '3.8'
+# version: "3.8"
 
 services:
+  db:
+    image: postgres:15-alpine
+    container_name: alite-db-dev
+    environment:
+      # Maps Docker environment variables to match Pydantic settings keys
+      POSTGRES_USER: ${DB_USER:-alite_user}
+      POSTGRES_PASSWORD: ${DB_PW:-alite_pass}
+      POSTGRES_DB: ${DB_NAME:-dev_alite}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
-      context: .
-      dockerfile: backend.dev.Dockerfile
+      context: ./app/backend
+      dockerfile: Dockerfile.dev
+    container_name: alite-backend-dev
     ports:
-    # expose uvicorn port
       - "8000:8000"
+      - "5678:5678"
     volumes:
-      # mount local backend to app container
       - ./app/backend:/app
-    environment:
-      # get db url from env
-      - DATABASE_URL=${DATABASE_URL}
+    env_file:
+      - app/backend/src/alite_backend/.env
     depends_on:
-      # require db (defined below) before fully executing
-      - db
+      db:
+        condition: service_healthy
+    command: >
+      python -m debugpy --listen 0.0.0.0:5678 
+      -m uvicorn alite_backend.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build:
-      context: .
-      dockerfile: frontend.dev.Dockerfile
+      context: ./app/frontend
+      dockerfile: Dockerfile.dev
+    container_name: alite-frontend-dev
     ports:
-      # expose Vite port
       - "5173:5173"
     volumes:
-      # mount local frontend code to container
+      # mount frontend source code for Vite HMR
       - ./app/frontend:/app
-
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DN_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data/
-    ports:
-      - "5432:5432"
+      # anonymous volume prevents host node_modules from overwriting container node_modules
+      - /app/node_modules
 
 volumes:
-  postgres_data:
+  postgres_dev_data:

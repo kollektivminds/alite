@@ -1,0 +1,23 @@
+# app/frontend/Dockerfile.dev
+
+FROM node:23.11.0-slim
+
+WORKDIR /app
+
+RUN corepack enable
+
+# copy dependency manifests first for layer caching
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN corepack prepare --activate && pnpm install
+
+# install dependencies using pnpm
+# RUN pnpm install --frozen-lockfile
+
+# copy application source
+COPY . ./
+
+EXPOSE 5173
+
+# expose Vite dev server on all network interfaces
+CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]

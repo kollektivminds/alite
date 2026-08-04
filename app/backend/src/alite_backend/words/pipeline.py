@@ -96,7 +96,7 @@ def load_words(
     processor = ReturnedLemmaProcessor()
     loader = Loader(db_session=db)
 
-    # 1. BIFURCATION: Separate the fast path from the slow path
+    # separate cache and uncached words
     cached_words = [w for w in word_s if w in fetcher.cache_data]
     uncached_words = [w for w in word_s if w not in fetcher.cache_data]
 
@@ -114,20 +114,20 @@ def load_words(
             if processed_payload:
                 batch_payloads.append(processed_payload)
 
-            # Flush batch if threshold is met
+            # flush batch if threshold is met
             if len(batch_payloads) >= batch_size:
                 _flush_vocab_batch(db, loader, batch_payloads)
                 batch_payloads.clear()
         except Exception as e:
             logger.error(f"Processing failed: {e}", exc_info=True)
 
-    # 2. THE FAST PATH (Cache)
+    # get cached words
     for word in cached_words:
         _process_and_batch(fetcher.cache_data[word])
 
-    # 3. THE SLOW PATH (Network)
+    # get uncached words from the internet
     if uncached_words:
-        with ThreadPoolExecutor(max_threads=max_threads) as executor:
+        with ThreadPoolExecutor(max_threads=max_threads) as executor:  # type: ignore
             # Submit uncached words to the thread pool
             future_to_word = {
                 executor.submit(_network_worker, w, fetcher): w for w in uncached_words
@@ -144,7 +144,7 @@ def load_words(
                     # Process the newly fetched data
                     _process_and_batch(raw_data)
 
-    # 4. FINAL CLEANUP
+    # cleanup
     if batch_payloads:
         _flush_vocab_batch(db, loader, batch_payloads)
 

@@ -27,9 +27,10 @@ def process_lookup_queue(db: Session, batch_size: int = 25):
         queue_item = (
             db.query(models.LookupQueue)
             .filter(
-                models.LookupQueue.status.in_(
-                    [models.EnumLookupStatus.LINKED, models.EnumLookupStatus.FAILED]
-                ),
+                models.LookupQueue.status == models.EnumLookupStatus.UNLINKED,
+                # models.LookupQueue.status.in_(
+                #     [models.EnumLookupStatus.UNLINKED, models.EnumLookupStatus.FAILED]
+                # ),
                 models.LookupQueue.id.notin_(attempted_ids),
             )
             .first()
@@ -57,7 +58,7 @@ def process_lookup_queue(db: Session, batch_size: int = 25):
                 )
                 .first()
             )
-            
+
             if existing_lemma:
                 logger.info(f"Found '{clean_lem}' in local DB. Skipping pipeline.")
                 new_lemma = existing_lemma

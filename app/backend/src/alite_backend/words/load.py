@@ -224,19 +224,17 @@ class Loader:
             # logger.debug("k: %s, v: %s", k, v)
             # logger.debug("v.props: %s", v["props"])
             junc_props = self._map_grammar_tags(v["props"])
-            # if len(junc_props.items()) > 0:
             # logger.debug("junc_props: %d", len(junc_props.items()))
-            if len(junc_props.items()) > 0:
-                # validate
-                gram_prop_in = schemas.GramPropCreate(**junc_props)
-                # new_gram_prop = word_crud.goc_gramprop(
-                #     db=self.db, incoming_props=junc_props
-                # )
+            # validate
+            gram_prop_in = schemas.GramPropCreate(**junc_props)
 
-                new_gram_prop = crud_gram_prop.get_or_create(
-                    db=self.db, obj_in=gram_prop_in, filter_kwargs=junc_props
-                )
-                v["gram_id"] = new_gram_prop.id
+            # dump model to force nulls
+            search_kwargs = gram_prop_in.model_dump()
+
+            new_gram_prop = crud_gram_prop.get_or_create(
+                db=self.db, obj_in=gram_prop_in, filter_kwargs=search_kwargs
+            )
+            v["gram_id"] = new_gram_prop.id
 
         # logger.debug("gram_props mapped junction_map: %s", junction_map.items())
 
@@ -246,7 +244,7 @@ class Loader:
             # logger.debug("v: %s", v)
             # validate
             word_form_in = schemas.WordFormCreate(**v)
-            # new_word_form = word_crud.goc_wordform(db=self.db, form_ids=v)
+            # create word form
             new_word_form = crud_word_form.get_or_create(
                 db=self.db, obj_in=word_form_in, filter_kwargs=v
             )

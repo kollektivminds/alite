@@ -219,9 +219,9 @@ def init_database():
         f"of which {str(len(set(all_words)))} are unique"
     )
 
-    rand_samp = random.sample(all_words, 11)
+    # rand_samp = random.sample(all_words, 11)
 
-    logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
+    # logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
 
     with SessionLocal() as db:
         try:
@@ -234,7 +234,7 @@ def init_database():
 
         except Exception as e:
             db.rollback()
-            logger.error("Error while loading data: %s", e)
+            logger.error("Error while loading tables data: %s", e)
             raise e
 
         try:
@@ -245,7 +245,7 @@ def init_database():
 
         except Exception as e:
             db.rollback()
-            logger.error("Error while loading data: %s", e)
+            logger.error("Error while loading lemma data: %s", e)
             raise e
 
         try:
@@ -255,7 +255,7 @@ def init_database():
 
         except Exception as e:
             db.rollback()
-            logger.error("Error while loading data: %s", e)
+            logger.error("Error while loading sentence data: %s", e)
             raise e
 
 
