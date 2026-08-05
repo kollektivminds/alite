@@ -239,7 +239,7 @@ def init_database():
 
         try:
             load_words(db=db, word_s=all_words)
-            process_lookup_queue(db=db)
+            # process_lookup_queue(db=db)
             db.commit()
             logger.info("Lemma data loaded and committed successfully")
 

@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import UUID
 import enum
 from sqlalchemy import (
@@ -19,6 +19,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
+from sqlmodel import Field, SQLModel, Relationship
 
 
 class EnumTargetLanguage(str, enum.Enum):
@@ -265,77 +266,163 @@ class EnumItemDifficulty(str, enum.Enum):
 # Declarative Base for Models
 #
 
+
+def get_utc_now() -> datetime:
+    """
+    returns the current, timezone-aware UTC datetime.
+    used as the default factory for model creation timestamps.
+    """
+    return datetime.now(timezone.utc)
+
+
 # Base = declarative_base()
 
 
-class Base(DeclarativeBase):
+class Base(SQLModel):
     """
     All database models
     """
 
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+    id: Optional[int] = Field(
+        default=None,
+        primary_key=True,
+        nullable=True,
+        description="Auto-incrementing surrogate primary key",
     )
-    pass
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        # sa_column=Column(DateTime(timezone=True), nullable=False),
+        nullable=False,
+        description="Timezone-aware UTC timestamp when the record was created",
+    )
 
 
 # --- Word Primary Tables ---
 
 
-class Lemma(Base):
+class Lemma(Base, table=True):
     """Represents a dictionary base form (lemma) of a word."""
 
-    __tablename__ = "lemmas"
+    __tablename__: str = "lemmas"  # pyright: ignore
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    # id: Mapped[int] = mapped_column(primary_key=True)
     # UUID5 entry key
-    entry_key: Mapped[UUID] = mapped_column()
-    # text of the lemma
-    lem_text: Mapped[str] = mapped_column(String(48), index=True)
-    # canonical of the lemma
-    lem_canon: Mapped[str | None] = mapped_column(String(48))
-    # part of speech of the lemma
-    pos: Mapped[EnumPartOfSpeech] = mapped_column(Enum(EnumPartOfSpeech))
-    # nominal gender
-    noun_gender: Mapped[EnumGramGender | None] = mapped_column(Enum(EnumGramGender))
-    # substantive animacy
-    noun_animacy: Mapped[bool | None] = mapped_column()
-    # verb aspect
-    verb_aspect: Mapped[EnumVerbAspect | None] = mapped_column(Enum(EnumVerbAspect))
-    # verb conj (Zalizniak's)
-    verb_conj: Mapped[str | None] = mapped_column(String(16))
-    # verb type
-    verb_type: Mapped[EnumVerbType | None] = mapped_column(Enum(EnumVerbType))
-    # verb transivity/reflexivity
-    verb_trans_refl: Mapped[EnumVerbTransRefl | None] = mapped_column(
-        Enum(EnumVerbTransRefl)
-    )
+    # entry_key: Mapped[UUID] = mapped_column()
+    # # text of the lemma
+    # lem_text: Mapped[str] = mapped_column(String(48), index=True)
+    # # canonical of the lemma
+    # lem_canon: Mapped[str | None] = mapped_column(String(48))
+    # # part of speech of the lemma
+    # pos: Mapped[EnumPartOfSpeech] = mapped_column(Enum(EnumPartOfSpeech))
+    # # nominal gender
+    # noun_gender: Mapped[EnumGramGender | None] = mapped_column(Enum(EnumGramGender))
+    # # substantive animacy
+    # noun_animacy: Mapped[bool | None] = mapped_column()
+    # # verb aspect
+    # verb_aspect: Mapped[EnumVerbAspect | None] = mapped_column(Enum(EnumVerbAspect))
+    # # verb conj (Zalizniak's)
+    # verb_conj: Mapped[str | None] = mapped_column(String(16))
+    # # verb type
+    # verb_type: Mapped[EnumVerbType | None] = mapped_column(Enum(EnumVerbType))
+    # # verb transivity/reflexivity
+    # verb_trans_refl: Mapped[EnumVerbTransRefl | None] = mapped_column(
+    #     Enum(EnumVerbTransRefl)
+    # )
 
     # A single lemma has many inflected word forms
-    lemma_word_form: Mapped[List["WordForm"]] = relationship(
-        back_populates="word_form_lemma"
+    # lemma_word_form: Mapped[List["WordForm"]] = relationship(
+    #     back_populates="word_form_lemma"
+    # )
+    # # Relationship for lemma definitions
+    # definitions: Mapped[List["LemmaDefinition"]] = relationship(back_populates="lemma")
+    # # Relationship for lemma pronunciations
+    # pronunciations: Mapped[List["LemmaPronunciation"]] = relationship(
+    #     back_populates="lemma"
+    # )
+    # # Relationship to other lemmas as source
+    # related_to: Mapped[List["LemmaRelation"]] = relationship(
+    #     foreign_keys="[LemmaRelation.source_id]",
+    #     back_populates="source_lemma",
+    # )
+    # # Relationship to other lemmas as target
+    # related_from: Mapped[List["LemmaRelation"]] = relationship(
+    #     foreign_keys="[LemmaRelation.target_id]",
+    #     back_populates="target_lemma",
+    # )
+    # in_less_list: Mapped[List["LessonList"]] = relationship(
+    #     secondary="lems_in_less_lists", back_populates="has_lemma"
+    # )
+    # in_item: Mapped[List["Item"]] = relationship(
+    #     secondary="lems_in_items", back_populates="ref_lems"
+    # )
+
+    # UUID5 entry key
+    entry_key: UUID = Field(index=True, unique=True, nullable=False)
+    # text of the lemma
+    lem_text: str = Field(index=True, unique=False, nullable=False)
+    # canonical of the lemma
+    lem_canon: str | None = Field(index=True, unique=False, nullable=True)
+    # part of speech of the lemma
+    pos: EnumPartOfSpeech = Field(index=False, unique=False, nullable=False)
+    # nominal gender
+    noun_gender: EnumGramGender | None = Field(index=False, unique=False, nullable=True)
+    # substantive animacy
+    noun_animacy: bool | None = Field(index=False, unique=False, nullable=True)
+    # verb aspect
+    verb_aspect: EnumVerbAspect | None = Field(index=False, unique=False, nullable=True)
+    # verb conj (Zalizniak's)
+    verb_conj: str | None = Field(index=False, unique=False, nullable=True)
+    # verb type
+    verb_type: EnumVerbType | None = Field(index=False, unique=False, nullable=True)
+    # verb transivity/reflexivity
+    verb_trans_refl: EnumVerbTransRefl | None = Field(
+        index=False, unique=False, nullable=True
     )
-    # Relationship for lemma definitions
-    definitions: Mapped[List["LemmaDefinition"]] = relationship(back_populates="lemma")
-    # Relationship for lemma pronunciations
-    pronunciations: Mapped[List["LemmaPronunciation"]] = relationship(
-        back_populates="lemma"
+
+    # a single lemma has many inflected word forms
+    lemma_word_form: List["WordForm"] = Relationship(
+        back_populates="word_form_lemma",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
-    # Relationship to other lemmas as source
-    related_to: Mapped[List["LemmaRelation"]] = relationship(
-        foreign_keys="[LemmaRelation.source_id]",
+    # relationship for lemma definitions
+    definitions: List["LemmaDefinition"] = Relationship(
+        back_populates="lemma", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    # relationship for lemma pronunciations
+    pronunciations: List["LemmaPronunciation"] = Relationship(
+        back_populates="lemma", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    # relationship to other lemmas as source
+    related_to: List["LemmaRelation"] = Relationship(
+        # foreign_keys="[LemmaRelation.source_id]",
         back_populates="source_lemma",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "foreign_keys": "[LemmaRelation.source_id]",
+        },
     )
     # Relationship to other lemmas as target
-    related_from: Mapped[List["LemmaRelation"]] = relationship(
-        foreign_keys="[LemmaRelation.target_id]",
+    related_from: List["LemmaRelation"] = Relationship(
+        # foreign_keys="[LemmaRelation.target_id]",
         back_populates="target_lemma",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "foreign_keys": "[LemmaRelation.target_id]",
+        },
     )
-    in_less_list: Mapped[List["LessonList"]] = relationship(
-        secondary="lems_in_less_lists", back_populates="has_lemma"
+    in_less_list: List["LessonList"] = Relationship(
+        # secondary="lems_in_less_lists",
+        back_populates="has_lemma",
+        sa_relationship_kwargs={
+            "secondary": "lems_in_less_lists",
+        },
     )
-    in_item: Mapped[List["Item"]] = relationship(
-        secondary="lems_in_items", back_populates="ref_lems"
+    in_item: List["Item"] = Relationship(
+        # secondary="lems_in_items",
+        back_populates="ref_lems",
+        sa_relationship_kwargs={
+            "secondary": "lems_in_items",
+        },
     )
     # Unique pair of "lem_text" and "pos" to prevent duplicates
     __table_args__ = (UniqueConstraint("id", "entry_key", name="unique_lemma"),)
@@ -344,47 +431,77 @@ class Lemma(Base):
 # Morphological Tables
 
 
-class Lexeme(Base):
+class Lexeme(Base, table=True):
     """Represents a unique word string as it appears in a text."""
 
-    __tablename__ = "lexicon"
+    __tablename__: str = "lexicon"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    lex_text: Mapped[str] = mapped_column(String(48), unique=True)
-    lex_text_clean: Mapped[str] = mapped_column(String(48))
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # lex_text: Mapped[str] = mapped_column(String(48), unique=True)
+    # lex_text_clean: Mapped[str] = mapped_column(String(48))
 
-    lexeme_word_form: Mapped[List["WordForm"]] = relationship(
+    # lexeme_word_form: Mapped[List["WordForm"]] = relationship(
+    #     back_populates="word_form_lexicon"
+    # )
+
+    lex_text: str = Field(index=True, unique=True, nullable=False, max_length=48)
+    lex_text_clean: str = Field(index=True, unique=False, nullable=False, max_length=48)
+
+    lexeme_word_form: List["WordForm"] = Relationship(
         back_populates="word_form_lexicon"
     )
 
 
-class GramProp(Base):
+class GramProp(Base, table=True):
     """Represents a unique combination of grammatical properties."""
 
-    __tablename__ = "gram_props"
+    __tablename__: str = "gram_props"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    # id: Mapped[int] = mapped_column(primary_key=True)
 
     # non-pos-specific grammar
-    irregular: Mapped[bool] = mapped_column(default=False)
-    gram_tense: Mapped[EnumGramTense | None] = mapped_column(Enum(EnumGramTense))
-    gram_num: Mapped[EnumGramNum | None] = mapped_column(Enum(EnumGramNum))
-    # Verbs
-    gram_gender: Mapped[EnumGramGender | None] = mapped_column(Enum(EnumGramGender))
-    conj_person: Mapped[EnumConjPerson | None] = mapped_column(Enum(EnumConjPerson))
-    verb_mood: Mapped[EnumVerbMood | None] = mapped_column(Enum(EnumVerbMood))
-    # Substantives (nouns, adjectives, numerals, participles)
-    subst_case: Mapped[EnumSubstCase | None] = mapped_column(Enum(EnumSubstCase))
-    alt_adjv_type: Mapped[EnumAltAdjvType | None] = mapped_column(Enum(EnumAltAdjvType))
-    alt_noun_type: Mapped[EnumAltNounType | None] = mapped_column(Enum(EnumAltNounType))
-    # Participles
-    part_type: Mapped[EnumPartType | None] = mapped_column(Enum(EnumPartType))
-    part_voice: Mapped[EnumPartVoice | None] = mapped_column(Enum(EnumPartVoice))
+    # irregular: Mapped[bool] = mapped_column(default=False)
+    # gram_tense: Mapped[EnumGramTense | None] = mapped_column(Enum(EnumGramTense))
+    # gram_num: Mapped[EnumGramNum | None] = mapped_column(Enum(EnumGramNum))
+    # # Verbs
+    # gram_gender: Mapped[EnumGramGender | None] = mapped_column(Enum(EnumGramGender))
+    # conj_person: Mapped[EnumConjPerson | None] = mapped_column(Enum(EnumConjPerson))
+    # verb_mood: Mapped[EnumVerbMood | None] = mapped_column(Enum(EnumVerbMood))
+    # # Substantives (nouns, adjectives, numerals, participles)
+    # subst_case: Mapped[EnumSubstCase | None] = mapped_column(Enum(EnumSubstCase))
+    # alt_adjv_type: Mapped[EnumAltAdjvType | None] = mapped_column(Enum(EnumAltAdjvType))
+    # alt_noun_type: Mapped[EnumAltNounType | None] = mapped_column(Enum(EnumAltNounType))
+    # # Participles
+    # part_type: Mapped[EnumPartType | None] = mapped_column(Enum(EnumPartType))
+    # part_voice: Mapped[EnumPartVoice | None] = mapped_column(Enum(EnumPartVoice))
 
     # Relationship for a word form's grammatical properties
-    gram_word_form: Mapped[List["WordForm"]] = relationship(
-        back_populates="word_form_gram"
+    # gram_word_form: List["WordForm"] = relationship(
+    #     back_populates="word_form_gram"
+    # )
+
+    # non-pos-specific grammar
+    irregular: bool = Field(default=False)
+    gram_tense: EnumGramTense | None = Field(index=False, unique=False, nullable=True)
+    gram_num: EnumGramNum | None = Field(index=False, unique=False, nullable=True)
+    # Verbs
+    gram_gender: EnumGramGender | None = Field(index=False, unique=False, nullable=True)
+    conj_person: EnumConjPerson | None = Field(index=False, unique=False, nullable=True)
+    verb_mood: EnumVerbMood | None = Field(index=False, unique=False, nullable=True)
+    # Substantives (nouns, adjectives, numerals, participles)
+    subst_case: EnumSubstCase | None = Field(index=False, unique=False, nullable=True)
+    alt_adjv_type: EnumAltAdjvType | None = Field(
+        index=False, unique=False, nullable=True
     )
+    alt_noun_type: EnumAltNounType | None = Field(
+        index=False, unique=False, nullable=True
+    )
+    # Participles
+    part_type: EnumPartType | None = Field(index=False, unique=False, nullable=True)
+    part_voice: EnumPartVoice | None = Field(index=False, unique=False, nullable=True)
+
+    # Relationship for a word form's grammatical properties
+    gram_word_form: List["WordForm"] = Relationship(back_populates="word_form_gram")
     # Unique set of grammatical properties to prevent duplicates
     __table_args__ = (
         UniqueConstraint(
@@ -403,262 +520,475 @@ class GramProp(Base):
     )
 
 
-class WordForm(Base):
+class WordForm(Base, table=True):
     """The central junction table linking a lemma to a lexicon entry with specific properties."""
 
-    __tablename__ = "word_forms"
+    __tablename__: str = "word_forms"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
-    lex_id: Mapped[int] = mapped_column(ForeignKey("lexicon.id"), index=True)
-    gram_id: Mapped[int] = mapped_column(ForeignKey("gram_props.id"), index=True)
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    # lex_id: Mapped[int] = mapped_column(ForeignKey("lexicon.id"), index=True)
+    # gram_id: Mapped[int] = mapped_column(ForeignKey("gram_props.id"), index=True)
 
-    word_form_lemma: Mapped["Lemma"] = relationship(back_populates="lemma_word_form")
-    word_form_lexicon: Mapped["Lexeme"] = relationship(
-        back_populates="lexeme_word_form"
+    # word_form_lemma: Mapped["Lemma"] = relationship(back_populates="lemma_word_form")
+    # word_form_lexicon: Mapped["Lexeme"] = relationship(
+    #     back_populates="lexeme_word_form"
+    # )
+    # word_form_gram: Mapped["GramProp"] = relationship(back_populates="gram_word_form")
+
+    lem_id: int = Field(foreign_key="lemmas.id", index=True)
+    lex_id: int = Field(foreign_key="lexicon.id", index=True)
+    gram_id: int = Field(foreign_key="gram_props.id", index=True)
+
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        nullable=False,
+        description="UTC creation timestamp"
     )
-    word_form_gram: Mapped["GramProp"] = relationship(back_populates="gram_word_form")
+    
+    word_form_lemma: Lemma = Relationship(back_populates="lemma_word_form")
+    word_form_lexicon: Lexeme = Relationship(back_populates="lexeme_word_form")
+    word_form_gram: GramProp = Relationship(back_populates="gram_word_form")
 
 
 # Auxiliary Linguistic Tables
 
 
-class Definition(Base):
-    __tablename__ = "definitions"
+class Definition(Base, table=True):
+    __tablename__: str = "definitions"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    def_text: Mapped[str] = mapped_column(unique=True)
-    def_tags: Mapped[List[str] | None] = mapped_column(ARRAY(String))
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # def_text: Mapped[str] = mapped_column(unique=True)
+    # def_tags: Mapped[List[str] | None] = mapped_column(ARRAY(String))
 
-    lemmas: Mapped[List["LemmaDefinition"]] = relationship(back_populates="definition")
+    # lemmas: Mapped[List["LemmaDefinition"]] = relationship(back_populates="definition")
 
-    example: Mapped[List["DefinitionExample"]] = relationship(
+    # example: Mapped[List["DefinitionExample"]] = relationship(
+    #     back_populates="definition_example"
+    # )
+
+    def_text: str = Field(index=False, unique=True, nullable=False)
+    def_tags: List[str] | None = Field(
+        sa_column=Column(ARRAY(String), index=False, unique=False, nullable=True)
+    )
+
+    lemmas: List["LemmaDefinition"] = Relationship(back_populates="definition")
+
+    example: List["DefinitionExample"] = Relationship(
         back_populates="definition_example"
     )
 
 
-class Example(Base):
-    __tablename__ = "examples"
+class Example(Base, table=True):
+    __tablename__: str = "examples"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    ex_text: Mapped[str] = mapped_column(unique=True)
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # ex_text: Mapped[str] = mapped_column(unique=True)
 
-    definition: Mapped["DefinitionExample"] = relationship(
-        back_populates="example_definition"
+    # definition: Mapped["DefinitionExample"] = relationship(
+    #     back_populates="example_definition"
+    # )
+
+    ex_text: str = Field(unique=True)
+
+    definition: "DefinitionExample" = Relationship(back_populates="example_definition")
+
+
+class Pronunciation(Base, table=True):
+    __tablename__: str = "pronunciations"
+
+    # id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # pron_text: Mapped[str] = mapped_column(unique=True)
+    # pron_tags: Mapped[List[str] | None] = mapped_column(ARRAY(String))
+    # pron_type: Mapped[EnumPronType] = mapped_column(Enum(EnumPronType))
+
+    # lemmas: Mapped["LemmaPronunciation"] = relationship(back_populates="pronunciation")
+
+    pron_text: str = Field(index=False, unique=True, nullable=False)
+    pron_tags: List[str] | None = Field(
+        sa_column=Column(ARRAY(String), index=False, unique=False, nullable=True)
     )
+    pron_type: EnumPronType = Field(index=False, unique=False, nullable=False)
 
-
-class Pronunciation(Base):
-    __tablename__ = "pronunciations"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    pron_text: Mapped[str] = mapped_column(unique=True)
-    pron_tags: Mapped[List[str] | None] = mapped_column(ARRAY(String))
-    pron_type: Mapped[EnumPronType] = mapped_column(Enum(EnumPronType))
-
-    lemmas: Mapped["LemmaPronunciation"] = relationship(back_populates="pronunciation")
+    lemmas: "LemmaPronunciation" = Relationship(back_populates="pronunciation")
 
 
 # --- Lemma Junction Tables ---
 
 
-class LemmaRelation(Base):
+class LemmaRelation(Base, table=True):
     """Junction table for relating lemmas to each other"""
 
-    __tablename__ = "lem_rels"
+    __tablename__: str = "lem_rels"
 
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    source_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
-    target_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
-    rel_type: Mapped[EnumRelLemType] = mapped_column(Enum(EnumRelLemType))
+    # id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    # source_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    # target_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    # rel_type: Mapped[EnumRelLemType] = mapped_column(Enum(EnumRelLemType))
 
-    source_lemma: Mapped["Lemma"] = relationship(
-        foreign_keys=[source_id], back_populates="related_to"
-    )
-    target_lemma: Mapped["Lemma"] = relationship(
-        foreign_keys=[target_id], back_populates="related_from"
-    )
+    # source_lemma: Mapped["Lemma"] = relationship(
+    #     foreign_keys=[source_id], back_populates="related_to"
+    # )
+    # target_lemma: Mapped["Lemma"] = relationship(
+    #     foreign_keys=[target_id], back_populates="related_from"
+    # )
 
+    source_id: int = Field(foreign_key="lemmas.id", index=True, nullable=False)
+    target_id: int = Field(foreign_key="lemmas.id", index=True)
+    rel_type: EnumRelLemType = Field(index=False, unique=False, nullable=False)
 
-class LookupQueue(Base):
-
-    __tablename__ = "lookup_queue"
-
-    id: Mapped[int] = mapped_column(primary_key=True, index=True)
-    target_lem: Mapped[int] = mapped_column(String(48))
-    target_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
-    source_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
-    rel_type: Mapped[EnumRelLemType] = mapped_column(Enum(EnumRelLemType))
-    status: Mapped[EnumLookupStatus] = mapped_column(
-        Enum(EnumLookupStatus), default=EnumLookupStatus.UNLINKED
+    source_lemma: "Lemma" = Relationship(
+        back_populates="related_to",
+        sa_relationship_kwargs={"foreign_keys": "[LemmaRelation.source_id]"},
     )
 
+    target_lemma: "Lemma" = Relationship(
+        back_populates="related_from",
+        sa_relationship_kwargs={"foreign_keys": "[LemmaRelation.target_id]"},
+    )
 
-class LemmaDefinition(Base):
+
+class LookupQueue(Base, table=True):
+
+    __tablename__: str = "lookup_queue"
+
+    # id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    # target_lem: Mapped[int] = mapped_column(String(48))
+    # target_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    # source_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    # rel_type: Mapped[EnumRelLemType] = mapped_column(Enum(EnumRelLemType))
+    # status: Mapped[EnumLookupStatus] = mapped_column(
+    #     Enum(EnumLookupStatus), default=EnumLookupStatus.UNLINKED
+    # )
+
+    target_lem: str = Field(index=False, unique=False, nullable=False)
+    target_id: int | None = Field(foreign_key="lemmas.id", index=True)
+    source_id: int | None = Field(foreign_key="lemmas.id", index=True)
+    rel_type: EnumRelLemType = Field(index=True, unique=False, nullable=False)
+    status: EnumLookupStatus = Field(
+        default=EnumLookupStatus.UNLINKED, index=True, nullable=False
+    )
+
+
+class LemmaDefinition(SQLModel, table=True):
     """Junction table for lemmas and definitions."""
 
-    __tablename__ = "lem_defs"
+    __tablename__: str = "lem_defs"
 
-    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
-    def_id: Mapped[int] = mapped_column(ForeignKey("definitions.id"), primary_key=True)
+    # lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
+    # def_id: Mapped[int] = mapped_column(ForeignKey("definitions.id"), primary_key=True)
 
-    lemma: Mapped["Lemma"] = relationship(
-        foreign_keys=[lem_id], back_populates="definitions"
+    # lemma: Mapped["Lemma"] = relationship(
+    #     foreign_keys=[lem_id], back_populates="definitions"
+    # )
+    # definition: Mapped["Definition"] = relationship(
+    #     foreign_keys=[def_id], back_populates="lemmas"
+    # )
+
+    lem_id: int = Field(
+        foreign_key="lemmas.id",
+        primary_key=True,
+        index=True,
+        nullable=False,
     )
-    definition: Mapped["Definition"] = relationship(
-        foreign_keys=[def_id], back_populates="lemmas"
+    def_id: int = Field(
+        foreign_key="definitions.id",
+        primary_key=True,
+        index=True,
+        nullable=False,
     )
 
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        nullable=False,
+        description="UTC creation timestamp"
+    )
+    
+    lemma: "Lemma" = Relationship(back_populates="definitions")
+    definition: "Definition" = Relationship(back_populates="lemmas")
 
-class DefinitionExample(Base):
+
+class DefinitionExample(SQLModel, table=True):
     """Junction table for definitions and examples."""
 
-    __tablename__ = "def_exs"
+    __tablename__: str = "def_exs"
 
-    def_id: Mapped[int] = mapped_column(ForeignKey("definitions.id"), primary_key=True)
-    ex_id: Mapped[int] = mapped_column(ForeignKey("examples.id"), primary_key=True)
+    # def_id: Mapped[int] = mapped_column(ForeignKey("definitions.id"), primary_key=True)
+    # ex_id: Mapped[int] = mapped_column(ForeignKey("examples.id"), primary_key=True)
 
-    definition_example: Mapped["Definition"] = relationship(
-        foreign_keys=[def_id], back_populates="example"
+    # definition_example: Mapped["Definition"] = relationship(
+    #     foreign_keys=[def_id], back_populates="example"
+    # )
+    # example_definition: Mapped["Example"] = relationship(
+    #     foreign_keys=[ex_id], back_populates="definition"
+    # )
+
+    def_id: int = Field(
+        foreign_key="definitions.id",
+        primary_key=True,
+        index=True,
+        nullable=False,
     )
-    example_definition: Mapped["Example"] = relationship(
-        foreign_keys=[ex_id], back_populates="definition"
+    ex_id: int = Field(
+        foreign_key="examples.id",
+        primary_key=True,
+        index=True,
+        nullable=False,
     )
 
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        nullable=False,
+        description="UTC creation timestamp"
+    )
+    
+    definition_example: "Definition" = Relationship(back_populates="example")
+    example_definition: "Example" = Relationship(back_populates="definition")
 
-class LemmaPronunciation(Base):
+
+class LemmaPronunciation(SQLModel, table=True):
     """Junction table for lemmas and pronunciations."""
 
-    __tablename__ = "lem_prons"
+    __tablename__: str = "lem_prons"
 
-    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
-    pron_id: Mapped[int] = mapped_column(
-        ForeignKey("pronunciations.id"), primary_key=True
+    # lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
+    # pron_id: Mapped[int] = mapped_column(
+    #     ForeignKey("pronunciations.id"), primary_key=True
+    # )
+
+    # lemma: Mapped["Lemma"] = relationship(
+    #     foreign_keys=[lem_id], back_populates="pronunciations"
+    # )
+    # pronunciation: Mapped["Pronunciation"] = relationship(
+    #     foreign_keys=[pron_id], back_populates="lemmas"
+    # )
+
+    lem_id: int = Field(
+        foreign_key="lemmas.id",
+        primary_key=True,
+        index=True,
+        nullable=False,
+    )
+    pron_id: int = Field(
+        foreign_key="pronunciations.id",
+        primary_key=True,
+        index=True,
+        nullable=False,
     )
 
-    lemma: Mapped["Lemma"] = relationship(
-        foreign_keys=[lem_id], back_populates="pronunciations"
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        nullable=False,
+        description="UTC creation timestamp"
     )
-    pronunciation: Mapped["Pronunciation"] = relationship(
-        foreign_keys=[pron_id], back_populates="lemmas"
-    )
+    
+    lemma: "Lemma" = Relationship(back_populates="pronunciations")
+    pronunciation: "Pronunciation" = Relationship(back_populates="lemmas")
 
 
 # --- Lemma Container Organization Tables ---
 
 
-class Module(Base):
-    __tablename__ = "modules"
+class Module(Base, table=True):
+    __tablename__: str = "modules"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    module_name: Mapped[str] = mapped_column(String(10))
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # module_name: Mapped[str] = mapped_column(String(10))
 
-    has_less_list: Mapped[List["LessonListInModule"]] = relationship(
-        back_populates="in_module"
-    )
+    # has_less_list: Mapped[List["LessonListInModule"]] = relationship(
+    #     back_populates="in_module"
+    # )
+
+    module_name: str = Field(index=False, unique=True, nullable=False)
+
+    has_less_list: List["LessonListInModule"] = Relationship(back_populates="in_module")
 
 
-class LessonList(Base):
-    __tablename__ = "lessons_lists"
+class LessonList(Base, table=True):
+    __tablename__: str = "lessons_lists"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
-    title: Mapped[str] = mapped_column(String(48), unique=True)
-    topic: Mapped[str | None] = mapped_column(String)
-    owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    # id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    # title: Mapped[str] = mapped_column(String(48), unique=True)
+    # topic: Mapped[str | None] = mapped_column(String)
+    # owner_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
 
-    in_module: Mapped[List["LessonListInModule"]] = relationship(
-        back_populates="less_list_in"
-    )
-    has_lemma: Mapped[List["Lemma"]] = relationship(
-        secondary="lems_in_less_lists", back_populates="in_less_list"
+    # in_module: Mapped[List["LessonListInModule"]] = relationship(
+    #     back_populates="less_list_in"
+    # )
+    # has_lemma: Mapped[List["Lemma"]] = relationship(
+    #     secondary="lems_in_less_lists", back_populates="in_less_list"
+    # )
+
+    title: str = Field(index=True, unique=True, nullable=False, max_length=48)
+    topic: str | None = Field(index=False, unique=False, nullable=True)
+    owner_id: int | None = Field(foreign_key="users.id", nullable=True)
+
+    in_module: List["LessonListInModule"] = Relationship(back_populates="less_list_in")
+    has_lemma: List["Lemma"] = Relationship(
+        back_populates="in_less_list",
+        sa_relationship_kwargs={"secondary": "lems_in_less_lists"},
     )
 
 
 # --- Secondary Organization Tables ---
 
 
-class LemmaInLessonList(Base):
-    __tablename__ = "lems_in_less_lists"
+class LemmaInLessonList(SQLModel, table=True):
+    __tablename__: str = "lems_in_less_lists"
 
-    lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
-    less_list_id: Mapped[int] = mapped_column(
-        ForeignKey("lessons_lists.id"), primary_key=True
-    )
+    # lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
+    # less_list_id: Mapped[int] = mapped_column(
+    #     ForeignKey("lessons_lists.id"), primary_key=True
+    # )
 
     # lemma_in = relationship("Lemma", back_populates="in_less_list")
     # in_less_list = relationship("LessonList", back_populates="has_lemma")
 
+    lem_id: int = Field(foreign_key="lemmas.id", primary_key=True)
+    less_list_id: int = Field(foreign_key="lessons_lists.id", primary_key=True)
 
-class LessonListInModule(Base):
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        nullable=False,
+        description="UTC creation timestamp"
+    )
+    
+
+class LessonListInModule(SQLModel, table=True):
     """Junction table for lessons and modules"""
 
-    __tablename__ = "less_lists_in_mods"
+    __tablename__: str = "less_lists_in_mods"
 
-    less_list_id: Mapped[int] = mapped_column(
-        ForeignKey("lessons_lists.id"), primary_key=True
+    # less_list_id: Mapped[int] = mapped_column(
+    #     ForeignKey("lessons_lists.id"), primary_key=True
+    # )
+    # mod_id: Mapped[int] = mapped_column(ForeignKey("modules.id"), primary_key=True)
+
+    # less_list_in: Mapped["LessonList"] = relationship(back_populates="in_module")
+    # in_module: Mapped["Module"] = relationship(back_populates="has_less_list")
+
+    less_list_id: int = Field(foreign_key="lessons_lists.id", primary_key=True)
+    mod_id: int = Field(foreign_key="modules.id", primary_key=True)
+
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        nullable=False,
+        description="UTC creation timestamp"
     )
-    mod_id: Mapped[int] = mapped_column(ForeignKey("modules.id"), primary_key=True)
-
-    less_list_in: Mapped["LessonList"] = relationship(back_populates="in_module")
-    in_module: Mapped["Module"] = relationship(back_populates="has_less_list")
+    
+    less_list_in: "LessonList" = Relationship(back_populates="in_module")
+    in_module: "Module" = Relationship(back_populates="has_less_list")
 
 
 # --- Sentence Tables ---
 
 
-class Sentence(Base):
-    __tablename__ = "sentences"
+class Sentence(Base, table=True):
+    __tablename__: str = "sentences"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    doc_id: Mapped[int] = mapped_column(
-        ForeignKey("documents.id", ondelete="CASCADE"), index=True
-    )
-    raw_text: Mapped[str] = mapped_column(Text, nullable=False)
-    sent_idx: Mapped[int] = mapped_column(Integer)
-    document: Mapped["Document"] = relationship(back_populates="sentences")
-    tokens: Mapped["SentenceToken"] = relationship(
+    # id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # doc_id: Mapped[int] = mapped_column(
+    #     ForeignKey("documents.id", ondelete="CASCADE"), index=True
+    # )
+    # raw_text: Mapped[str] = mapped_column(Text, nullable=False)
+    # sent_idx: Mapped[int] = mapped_column(Integer)
+    # document: Mapped["Document"] = relationship(back_populates="sentences")
+    # tokens: Mapped["SentenceToken"] = relationship(
+    #     back_populates="sentence",
+    #     order_by="SentenceToken.token_idx",
+    #     cascade="all, delete-orphan",
+    # )
+
+    doc_id: int = Field(foreign_key="documents.id", index=True)
+    raw_text: str = Field(nullable=False)
+    sent_idx: int = Field()
+    document: "Document" = Relationship(back_populates="sentences")
+    tokens: "SentenceToken" = Relationship(
         back_populates="sentence",
-        order_by="SentenceToken.token_idx",
-        cascade="all, delete-orphan",
+        # order_by="SentenceToken.token_idx",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
 
-class SentenceToken(Base):
+class SentenceToken(Base, table=True):
     """Junction table mapping a WordForm to a specific position in a Sentence."""
 
-    __tablename__ = "sentence_tokens"
+    __tablename__: str = "sentence_tokens"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    sent_id: Mapped[int] = mapped_column(
-        ForeignKey("sentences.id", ondelete="CASCADE"), index=True
+    # id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # sent_id: Mapped[int] = mapped_column(
+    #     ForeignKey("sentences.id", ondelete="CASCADE"), index=True
+    # )
+    # token_idx: Mapped[int] = mapped_column(Integer)
+
+    # lex_raw: Mapped[str] = mapped_column(String(48))
+    # lem_raw: Mapped[str] = mapped_column(String(48))
+    # features: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
+
+    # head_idx: Mapped[int | None] = mapped_column(Integer)
+    # dep_rel: Mapped[str | None] = mapped_column(String(100))
+    # semantic_tag: Mapped[str | None] = mapped_column(String(100))
+
+    # # context-specific lexeme orthography
+    # is_capitalized: Mapped[bool] = mapped_column()
+    # punctuation_before: Mapped[str | None] = mapped_column(String(8))
+    # punctuation_after: Mapped[str | None] = mapped_column(String(8))
+
+    # # associated form(s)
+    # status: Mapped[EnumLookupStatus] = mapped_column(
+    #     Enum(EnumLookupStatus), default=EnumLookupStatus.UNLINKED, index=True
+    # )
+    # lem_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
+    # lex_id: Mapped[int | None] = mapped_column(ForeignKey("lexicon.id"), index=True)
+    # wf_id: Mapped[int | None] = mapped_column(ForeignKey("word_forms.id"), index=True)
+
+    # # relationships
+    # sentence: Mapped["Sentence"] = relationship(back_populates="tokens")
+    # lemma: Mapped[Optional["Lemma"]] = relationship()
+    # word_form: Mapped[Optional["WordForm"]] = relationship()
+
+    sent_id: int = Field(foreign_key="sentences.id", index=True)
+    token_idx: int = Field(index=False, unique=False, nullable=False)
+
+    lex_raw: str = Field(index=False, unique=False, nullable=False)
+    lem_raw: str = Field(index=False, unique=False, nullable=False)
+    features: List[Any] | None = Field(
+        sa_column=Column(JSONB, index=False, unique=False, nullable=True)
     )
-    token_idx: Mapped[int] = mapped_column(Integer)
 
-    lex_raw: Mapped[str] = mapped_column(String(48))
-    lem_raw: Mapped[str] = mapped_column(String(48))
-    features: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
-
-    head_idx: Mapped[int | None] = mapped_column(Integer)
-    dep_rel: Mapped[str | None] = mapped_column(String(100))
-    semantic_tag: Mapped[str | None] = mapped_column(String(100))
+    head_idx: int | None = Field(index=False, unique=False, nullable=True)
+    dep_rel: str | None = Field(index=False, unique=False, nullable=True)
+    semantic_tag: str | None = Field(index=False, unique=False, nullable=True)
 
     # context-specific lexeme orthography
-    is_capitalized: Mapped[bool] = mapped_column()
-    punctuation_before: Mapped[str | None] = mapped_column(String(8))
-    punctuation_after: Mapped[str | None] = mapped_column(String(8))
+    is_capitalized: bool = Field(
+        default=False, index=False, unique=False, nullable=False
+    )
+    punctuation_before: str | None = Field(
+        max_length=8, index=False, unique=False, nullable=True
+    )
+    punctuation_after: str | None = Field(
+        max_length=8, index=False, unique=False, nullable=True
+    )
 
     # associated form(s)
-    status: Mapped[EnumLookupStatus] = mapped_column(
-        Enum(EnumLookupStatus), default=EnumLookupStatus.UNLINKED, index=True
+    status: EnumLookupStatus = Field(
+        default=EnumLookupStatus.UNLINKED, index=True, unique=False, nullable=False
     )
-    lem_id: Mapped[int | None] = mapped_column(ForeignKey("lemmas.id"), index=True)
-    lex_id: Mapped[int | None] = mapped_column(ForeignKey("lexicon.id"), index=True)
-    wf_id: Mapped[int | None] = mapped_column(ForeignKey("word_forms.id"), index=True)
+    lem_id: int | None = Field(
+        foreign_key="lemmas.id", index=True, unique=False, nullable=True
+    )
+    lex_id: int | None = Field(
+        foreign_key="lexicon.id", index=True, unique=False, nullable=True
+    )
+    wf_id: int | None = Field(
+        foreign_key="word_forms.id", index=True, unique=False, nullable=True
+    )
 
     # relationships
-    sentence: Mapped["Sentence"] = relationship(back_populates="tokens")
-    lemma: Mapped[Optional["Lemma"]] = relationship()
-    word_form: Mapped[Optional["WordForm"]] = relationship()
+    sentence: "Sentence" = Relationship(back_populates="tokens")
+    lemma: Optional["Lemma"] = Relationship()
+    word_form: Optional["WordForm"] = Relationship()
 
     __table_args__ = (
         Index("ix_sentence_token_features_gin", "features", postgresql_using="gin"),
@@ -668,138 +998,246 @@ class SentenceToken(Base):
 # --- Sentence Organization Tables ---
 
 
-class Document(Base):
+class Document(Base, table=True):
     __tablename__ = "documents"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column()
-    author: Mapped[str | None] = mapped_column()
-    source: Mapped[str | None] = mapped_column()
-    date: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
+    # id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # title: Mapped[str] = mapped_column()
+    # author: Mapped[str | None] = mapped_column()
+    # source: Mapped[str | None] = mapped_column()
+    # date: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
 
-    sentences: Mapped[List["Sentence"]] = relationship(
+    # sentences: Mapped[List["Sentence"]] = relationship(
+    #     back_populates="document",
+    #     order_by="Sentence.sent_idx",
+    #     cascade="all, delete-orphan",
+    # )
+
+    title: str = Field(index=False, unique=False, nullable=False)
+    author: str | None = Field(index=False, unique=False, nullable=True)
+    source: str | None = Field(index=False, unique=False, nullable=True)
+    date: datetime | None = Field(index=False, unique=False, nullable=True)
+
+    sentences: List["Sentence"] = Relationship(
         back_populates="document",
-        order_by="Sentence.sent_idx",
-        cascade="all, delete-orphan",
+        # order_by="Sentence.sent_idx",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
 
 # --- Users ---
 
 
-class User(Base):
-    __tablename__ = "users"
+class User(Base, table=True):
+    __tablename__: str = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    username: Mapped[str | None] = mapped_column(String(48), unique=True)
-    alias: Mapped[str | None] = mapped_column(String(25))
-    user_role: Mapped[EnumUserRole] = mapped_column(Enum(EnumUserRole))
-    settings: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
-    # target_lang: Mapped[EnumTargetLanguage] = mapped_column(Enum(EnumTargetLanguage))
-    # email: Mapped[str] = mapped_column()
-    in_group: Mapped["UserInGroup"] = relationship(back_populates="group_user")
-    exercises: Mapped[List["Exercise"]] = relationship(back_populates="user")
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # username: Mapped[str | None] = mapped_column(String(48), unique=True)
+    # alias: Mapped[str | None] = mapped_column(String(25))
+    # user_role: Mapped[EnumUserRole] = mapped_column(Enum(EnumUserRole))
+    # settings: Mapped[Dict[str, Any]] = mapped_column(JSONB, default=dict)
+    # # target_lang: Mapped[EnumTargetLanguage] = mapped_column(Enum(EnumTargetLanguage))
+    # # email: Mapped[str] = mapped_column()
+    # in_group: Mapped["UserInGroup"] = relationship(back_populates="group_user")
+    # exercises: Mapped[List["Exercise"]] = relationship(back_populates="user")
+
+    username: str | None = Field(index=True, unique=True, nullable=False)
+    alias: str | None = Field(index=False, unique=True, nullable=True)
+    user_role: EnumUserRole = Field(index=False, unique=False, nullable=False)
+    settings: List[Any] | None = Field(
+        sa_column=Column(JSONB, index=False, unique=False, nullable=False)
+    )
+    email: str = Field(index=False, unique=False, nullable=False)
+    in_group: "UserInGroup" = Relationship(back_populates="group_user")
+    exercises: List["Exercise"] = Relationship(back_populates="user")
 
     __table_args__ = (
         Index("ix_user_settings_gin", "settings", postgresql_using="gin"),
     )
 
 
-class UserGroup(Base):
-    __tablename__ = "user_groups"
+class UserGroup(Base, table=True):
+    __tablename__: str = "user_groups"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    group_name: Mapped[str | None] = mapped_column(String(48), unique=True)
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # group_name: Mapped[str | None] = mapped_column(String(48), unique=True)
 
-    users: Mapped[List["UserInGroup"]] = relationship(back_populates="user_group")
+    # users: Mapped[List["UserInGroup"]] = relationship(back_populates="user_group")
+
+    group_name: str = Field(index=True, unique=True, nullable=False)
+
+    users: List["UserInGroup"] = Relationship(back_populates="user_group")
 
 
-class UserInGroup(Base):
-    __tablename__ = "users_in_groups"
+class UserInGroup(SQLModel, table=True):
+    __tablename__: str = "users_in_groups"
 
-    user_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("users.id"), primary_key=True
+    # user_id: Mapped[int] = mapped_column(
+    #     Integer, ForeignKey("users.id"), primary_key=True
+    # )
+    # group_id: Mapped[int] = mapped_column(
+    #     Integer, ForeignKey("user_groups.id"), primary_key=True
+    # )
+
+    # group_user: Mapped["User"] = relationship(back_populates="in_group")
+    # user_group: Mapped["UserGroup"] = relationship(back_populates="users")
+
+    user_id: int = Field(foreign_key="users.id", primary_key=True)
+    group_id: int = Field(foreign_key="user_groups.id", primary_key=True)
+
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        nullable=False,
+        description="UTC creation timestamp"
     )
-    group_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("user_groups.id"), primary_key=True
-    )
-
-    group_user: Mapped["User"] = relationship(back_populates="in_group")
-    user_group: Mapped["UserGroup"] = relationship(back_populates="users")
+    
+    group_user: "User" = Relationship(back_populates="in_group")
+    user_group: "UserGroup" = Relationship(back_populates="users")
 
 
 # --- Questions, Sessions, and Responses ---
 
 
-class Exercise(Base):
-    __tablename__ = "exercises"
+class Exercise(Base, table=True):
+    __tablename__: str = "exercises"
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    # id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    # user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
+    # # TODO: set this up to start at load
+    # start_time: Mapped[datetime | None] = mapped_column(
+    #     DateTime(timezone=True), server_default=func.now()
+    # )
+    # finish_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # has_item: Mapped[List["Item"]] = relationship(
+    #     back_populates="in_ex", cascade="all, delete-orphan"
+    # )
+    # user: Mapped["User"] = relationship(back_populates="exercises")
+
+    user_id: int = Field(foreign_key="users.id", index=True)
     # TODO: set this up to start at load
-    start_time: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+    start_time: datetime | None = Field(
+        default_factory=get_utc_now,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
     )
-    finish_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-
-    has_item: Mapped[List["Item"]] = relationship(
-        back_populates="in_ex", cascade="all, delete-orphan"
+    finish_time: datetime | None = Field(
+        default_factory=get_utc_now,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
     )
-    user: Mapped["User"] = relationship(back_populates="exercises")
+    has_item: List["Item"] = Relationship(
+        back_populates="in_ex",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    user: "User" = Relationship(back_populates="exercises")
 
 
-class Item(Base):
-    __tablename__ = "items"
+class Item(Base, table=True):
+    __tablename__: str = "items"
     # id, type
-    id: Mapped[int] = mapped_column(primary_key=True)
-    ex_id: Mapped[int] = mapped_column(
-        ForeignKey("exercises.id", ondelete="CASCADE"), index=True
-    )
-    order_in_ex: Mapped[int] = mapped_column()
-    item_type: Mapped[EnumWordItemType] = mapped_column(Enum(EnumWordItemType))
-    item_format: Mapped[EnumItemFormat] = mapped_column(Enum(EnumItemFormat))
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # ex_id: Mapped[int] = mapped_column(
+    #     ForeignKey("exercises.id", ondelete="CASCADE"), index=True
+    # )
+    # order_in_ex: Mapped[int] = mapped_column()
+    # item_type: Mapped[EnumWordItemType] = mapped_column(Enum(EnumWordItemType))
+    # item_format: Mapped[EnumItemFormat] = mapped_column(Enum(EnumItemFormat))
+    # # content
+    # prompt: Mapped[str | None] = mapped_column()
+    # settings: Mapped[dict | None] = mapped_column(JSON)
+    # key: Mapped[str | List[str]] = mapped_column(ARRAY(String))
+    # distractors: Mapped[List[str] | None] = mapped_column(ARRAY(String))
+    # difficulty: Mapped[EnumItemDifficulty | None] = mapped_column(
+    #     Enum(EnumItemDifficulty)
+    # )
+    # responses: Mapped[List["ItemResponse"]] = relationship(back_populates="item")
+    # # meta
+    # # TODO: set up to record times
+    # start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # finish_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    # ref_lems: Mapped[List["Lemma"]] = relationship(
+    #     secondary="lems_in_items", back_populates="in_item"
+    # )
+    # in_ex: Mapped["Exercise"] = relationship(back_populates="has_item")
+
+    ex_id: int = Field(foreign_key="exercises.id", index=True, nullable=False)
+    order_in_ex: int = Field()
+    item_type: EnumWordItemType = Field(index=True, unique=False, nullable=False)
+    item_format: EnumItemFormat = Field(index=True, unique=False, nullable=False)
     # content
-    prompt: Mapped[str | None] = mapped_column()
-    settings: Mapped[dict | None] = mapped_column(JSON)
-    key: Mapped[str | List[str]] = mapped_column(ARRAY(String))
-    distractors: Mapped[List[str] | None] = mapped_column(ARRAY(String))
-    difficulty: Mapped[EnumItemDifficulty | None] = mapped_column(
-        Enum(EnumItemDifficulty)
+    prompt: str | None = Field(index=False, unique=False, nullable=False)
+    settings: Dict[str, Any] = Field(
+        default_factory=dict,
+        sa_column=Column(JSONB, nullable=False),
+        description="Dynamic difficulty and item configuration settings",
     )
-    responses: Mapped[List["ItemResponse"]] = relationship(back_populates="item")
+    key: List[str] = Field(
+        sa_column=Column(ARRAY(String), nullable=False),
+        description="List of correct answer strings",
+    )
+    distractors: Optional[List[str]] = Field(
+        default=None,
+        sa_column=Column(ARRAY(String), nullable=True),
+        description="List of distractor options for multiple-choice formats",
+    )
+    difficulty: EnumItemDifficulty | None = Field(
+        index=True, unique=False, nullable=False
+    )
+    responses: List["ItemResponse"] = Relationship(back_populates="item")
     # meta
     # TODO: set up to record times
-    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    finish_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    start_time: datetime | None = Field(index=False, unique=False, nullable=False)
+    finish_time: datetime | None = Field(index=False, unique=False, nullable=False)
 
-    ref_lems: Mapped[List["Lemma"]] = relationship(
-        secondary="lems_in_items", back_populates="in_item"
+    ref_lems: List[Lemma] = Relationship(
+        back_populates="in_item", sa_relationship_kwargs={"secondary": "lems_in_items"}
     )
-    in_ex: Mapped["Exercise"] = relationship(back_populates="has_item")
+    in_ex: "Exercise" = Relationship(back_populates="has_item")
 
 
-class LemmaInItem(Base):
-    __tablename__ = "lems_in_items"
+class LemmaInItem(SQLModel, table=True):
+    __tablename__: str = "lems_in_items"
 
-    item_id: Mapped[int] = mapped_column(
-        ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+    # item_id: Mapped[int] = mapped_column(
+    #     ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
+    # )
+    # lem_id: Mapped[int] = mapped_column(
+    #     ForeignKey("lemmas.id", ondelete="CASCADE"), primary_key=True
+    # )
+
+    item_id: int = Field(foreign_key="items.id", primary_key=True)
+    lem_id: int = Field(foreign_key="lemmas.id", primary_key=True)
+
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        nullable=False,
+        description="UTC creation timestamp"
     )
-    lem_id: Mapped[int] = mapped_column(
-        ForeignKey("lemmas.id", ondelete="CASCADE"), primary_key=True
+    
+
+class ItemResponse(Base, table=True):
+    __tablename__: str = "student_responses"
+
+    # id: Mapped[int] = mapped_column(primary_key=True)
+    # user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    # item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
+    # selection: Mapped[str] = mapped_column()
+    # is_correct: Mapped[bool] = mapped_column()
+    # response_time_ms: Mapped[int] = mapped_column()
+
+    # item: Mapped["Item"] = relationship(back_populates="responses")
+
+    user_id: int = Field(
+        foreign_key="users.id", index=True, unique=False, nullable=False
     )
+    item_id: int = Field(
+        foreign_key="items.id", index=True, unique=False, nullable=False
+    )
+    selection: str = Field(index=False, unique=False, nullable=False)
+    is_correct: bool = Field(index=False, unique=False, nullable=False)
+    response_time_ms: int = Field(index=False, unique=False, nullable=False)
 
-
-class ItemResponse(Base):
-    __tablename__ = "student_responses"
-
-    id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
-    item_id: Mapped[int] = mapped_column(ForeignKey("items.id"))
-    selection: Mapped[str] = mapped_column()
-    is_correct: Mapped[bool] = mapped_column()
-    response_time_ms: Mapped[int] = mapped_column()
-
-    item: Mapped["Item"] = relationship(back_populates="responses")
+    item: "Item" = Relationship(back_populates="responses")
 
 
 """
