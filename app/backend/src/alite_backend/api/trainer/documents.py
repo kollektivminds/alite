@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/{document_id}", response_model=schemas.SentenceReturn)
+@router.get("/{document_id}", response_model=schemas.DocumentReturn)
 def read_document(document_id: int, db: Session = Depends(deps.get_db)):
     """Fetch a specific document by ID."""
     document = sent_crud.crud_document.get(db=db, id=document_id)

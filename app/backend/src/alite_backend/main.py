@@ -16,13 +16,11 @@ app = FastAPI(
     title="ALITE Backend API",
     description="Autonomous Learning and Informed Teaching Engine - Statistical & Item Analytics Core",
     version="0.1.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
 )
 
-origins = [
-    settings.VITE_API_BASE_URL,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173"
-]
+origins = [settings.VITE_API_BASE_URL, "http://localhost:5173", "http://127.0.0.1:5173"]
 
 if settings.ENV_MODE == "dev":
     app.add_middleware(

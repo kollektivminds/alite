@@ -27,6 +27,7 @@ pydantic-settings = "^2.6.0"
 alembic = "^1.13.3"
 cytoolz = "^1.0.0"
 dateparser = "^1.2.0"
+sqladmin = {version = "^0.20.1", extras = ["auth"]}
 
 [tool.poetry.group.dev.dependencies]
 jupyterlab = "^4.0.0"

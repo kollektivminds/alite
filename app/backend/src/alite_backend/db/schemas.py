@@ -654,14 +654,14 @@ class DocumentCreate(DocumentBase):
     title: str
     author: str
     source: str
-    date: datetime
+    date: Any
 
 
 class DocumentUpdate(DocumentBase):
     id: int
 
 
-class DocumentReturn(DocumentUpdate):
+class DocumentReturn(DocumentCreate, DocumentUpdate):
     created_at: datetime
 
 
