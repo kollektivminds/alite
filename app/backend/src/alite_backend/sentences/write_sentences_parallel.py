@@ -11,7 +11,7 @@ from alite_backend.sentences.loader import load_parsed_data
 
 logger = logging.getLogger(__name__)
 
-# Type alias for readability
+# type alias for readability
 ParsedData = Tuple[Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]]]
 
 
@@ -22,7 +22,6 @@ def _parsing_worker(file_path: Path) -> ParsedData | None:
     Strictly performs NO database operations to prevent connection pool corruption.
     """
     try:
-        # Calls your existing, Pandas-free XML parser
         return parse_tgt_file(str(file_path))
     except Exception as e:
         logger.error(f"Worker failed to parse {file_path.name}: {e}")
@@ -48,10 +47,10 @@ def run_parallel_sentence_pipeline(
         f"Starting parallel ETL for {total_files} files using {max_workers} workers."
     )
 
-    # We use a context manager for the executor to guarantee process cleanup
+    # use a context manager for the executor to guarantee process cleanup
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        # Scatter: Submit all file paths to the process pool
-        # future_to_file maps the Future object back to the file path for error logging
+        # scatter: submit all file paths to the process pool
+        # future_to_file maps the future object back to the file path for error logging
         future_to_file = {
             executor.submit(_parsing_worker, filepath): filepath
             for filepath in tgt_files
@@ -74,29 +73,29 @@ def run_parallel_sentence_pipeline(
 
                 doc_data, sents_data, tokens_data = result
 
-                # Aggregate the data
+                # aggregate the data
                 batch_docs.append(doc_data)
                 batch_sents.append(sents_data)
                 batch_tokens.append(tokens_data)
 
                 files_processed += 1
 
-                # If our batch has reached the target size, flush it to the DB
+                # if the batch has reached the target size, flush it to the DB
                 if len(batch_docs) >= batch_size:
-                    _flush_batch_to_db(db, batch_docs, batch_sents, batch_tokens)
+                    _flush_batch_to_db(db, batch_docs, batch_sents, batch_tokens)  # type: ignore
                     logger.info(
                         f"Processed and loaded {files_processed}/{total_files} documents."
                     )
 
-                    # Clear the batch aggregators to free up RAM
+                    # clear the batch aggregators to free up RAM
                     batch_docs, batch_sents, batch_tokens = [], [], []
 
             except Exception as e:
                 logger.error(f"Fatal error retrieving result for {file_path.name}: {e}")
 
-        # Flush any remaining documents in the final, partial batch
+        # flush any remaining documents in the final, partial batch
         if batch_docs:
-            _flush_batch_to_db(db, batch_docs, batch_sents, batch_tokens)
+            _flush_batch_to_db(db, batch_docs, batch_sents, batch_tokens)  # type: ignore
             logger.info(
                 f"Final batch processed. Total: {files_processed}/{total_files} documents."
             )
@@ -114,16 +113,12 @@ def _flush_batch_to_db(
     """
     with db as session:
         try:
-            # loop through the batch and load them.
             for doc, sent_list, token_list in zip(docs, sents, tokens):
-                load_parsed_data(session, doc, sent_list, token_list)
+                load_parsed_data(session, doc, sent_list, token_list)  # type: ignore
 
-            # Commit the entire batch as a single atomic transaction
             session.commit()
 
         except SQLAlchemyError as e:
-            # If any document in the batch causes an integrity error,
-            # the entire batch is rolled back to preserve DB cleanliness.
             session.rollback()
             logger.error(
                 f"Database insertion failed for batch. Rolling back. Error: {e}"

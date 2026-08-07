@@ -1,18 +1,6 @@
 import logging
-from typing import List, Optional, Sequence
-from uuid import UUID
-from functools import wraps
-from sqlalchemy import select, update, delete
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-from sqlalchemy.exc import (
-    SQLAlchemyError,
-    IntegrityError,
-    ProgrammingError,
-    DBAPIError,
-    NoResultFound,
-    StatementError,
-)
-from fastapi import HTTPException, status
 from alite_backend.db.models import (
     LessonList,
     LemmaInLessonList,
@@ -32,9 +20,7 @@ from alite_backend.db.schemas import (
     LemInLessListCreate,
     LemInLessListUpdate,
 )
-from alite_backend.words.funcs import remove_accents
 from alite_backend.db.crud.crud_base import CRUDBase
-from alite_backend.db import models, schemas
 
 logger = logging.getLogger(__name__)
 

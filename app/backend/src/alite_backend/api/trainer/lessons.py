@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException
 import logging
 from typing import List
 from sqlalchemy.orm import Session
-from alite_backend.db import schemas, models
-from alite_backend.db.crud import orgi_crud, word_crud
+from alite_backend.db import schemas
+from alite_backend.db.crud import orgi_crud
 from alite_backend.api import deps
 
 logger = logging.getLogger(__name__)

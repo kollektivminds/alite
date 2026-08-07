@@ -64,7 +64,7 @@ const submenuColors = {
       <h1 className="text-3xl font-bold mb-6">{t('wordsMenu.wordForms')}</h1>
       <button onClick={onBack} className="text-sm font-semibold bg-gray-300 hover:bg-gray-400 px-3 py-1 rounded">← {t('back')}</button>
       <FileDropdown />
-      <input type="text" placeholder="Add a Sentence..." className="border p-2 rounded w-64" />
+      <input type="text" placeholder="Add a Word..." className="border p-2 rounded w-64" />
       <div className="grid grid-cols-4 gap-4 mt-6">
         {categories.map((category) => {
           const key = category.toLowerCase();

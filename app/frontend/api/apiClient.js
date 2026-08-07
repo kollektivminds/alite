@@ -31,7 +31,7 @@ async function request(endpoint, options = {}) {
   return response.json();
 }
 
-// --- Define your specific API functions here ---
+// --- API functions ---
 
 export const apiClient = {
   lookupWord: (word, lang) => {

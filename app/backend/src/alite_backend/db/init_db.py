@@ -44,11 +44,11 @@ load_dotenv()
 
 VOCAB_LIST_LOC = os.getenv("VOCAB_LIST_LOC")
 APP_DIR = os.getenv("APP_DIR")
-INIT_DB_LOC = APP_DIR + "backend/src/alite_backend/db/init_db.sql"  # type: ignore
-corpus_location = APP_DIR + "backend/src/alite_backend/sentences/raw/SynTagRus2022/"  # type: ignore
-bodyLibDfLoc = "../syntagrus/bodyLibDf.json"
-bodyTextDfLoc = "../syntagrus/bodyTextDf.json"
-infDictLoc = "../syntagrus/infDict.json"
+INIT_DB_LOC = APP_DIR + "/app/src/alite_backend/db/init_db.sql"  # type: ignore
+corpus_location = "/app/src/alite_backend/sentences/raw/SynTagRus2022/"  # type: ignore
+# bodyLibDfLoc = "../syntagrus/bodyLibDf.json"
+# bodyTextDfLoc = "../syntagrus/bodyTextDf.json"
+# infDictLoc = "../syntagrus/infDict.json"
 
 
 def load_org_tables(db: Session, vocab_list_path: str = VOCAB_LIST_LOC):  # type: ignore

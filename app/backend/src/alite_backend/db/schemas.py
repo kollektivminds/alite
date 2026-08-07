@@ -645,11 +645,107 @@ class LemInLessListReturn(LemInLessListUpdate):
 
 # Documents
 
+
+class DocumentBase(BaseModel):
+    pass
+
+
+class DocumentCreate(DocumentBase):
+    title: str
+    author: str
+    source: str
+    date: datetime
+
+
+class DocumentUpdate(DocumentBase):
+    id: int
+
+
+class DocumentReturn(DocumentUpdate):
+    created_at: datetime
+
+
 # Sentences
 
-# Sentences in Documents
 
-# Words in Sentences
+class SentenceBase(BaseModel):
+    pass
+
+
+class SentenceCreate(SentenceBase):
+    doc_id: int
+    raw_text: str
+    sent_idx: int
+
+
+class SentenceUpdate(SentenceBase):
+    id: int
+
+
+class SentenceReturn(SentenceCreate, SentenceUpdate):
+    created_at: datetime
+
+
+# Sentence Tokens
+
+
+class SentenceTokenBase(BaseModel):
+    """
+    Base schema for sentence token attributes shared across requests and responses.
+    """
+    sent_id: int = Field(description="Foreign key referencing the parent sentence")
+    token_idx: int = Field(description="0-indexed position of token in the sentence")
+    lex_raw: str = Field(description="Surface string as it appears in source text")
+    lem_raw: str = Field(description="Raw dictionary lemma string")
+    
+    # FIX 1: Change from List[Any] to Optional[Dict[str, Any]] to match the JSONB dictionary payload
+    features: Optional[Dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Morphological and syntactic feature map from NLP pipeline",
+    )
+    
+    is_capitalized: bool = Field(default=False, description="Orthographic capitalization flag")
+    
+    # FIX 2: Allow None/NULL for optional punctuation surroundings
+    punctuation_before: Optional[str] = Field(
+        default=None, 
+        description="Punctuation attached before the token word boundary"
+    )
+    punctuation_after: Optional[str] = Field(
+        default=None, 
+        description="Punctuation attached after the token word boundary"
+    )
+    
+    status: EnumLookupStatus = Field(
+        default=EnumLookupStatus.UNLINKED,
+        description="Lookup status against dictionary tables"
+    )
+    lem_id: Optional[int] = Field(default=None, description="Linked Lemma surrogate key")
+    lex_id: Optional[int] = Field(default=None, description="Linked Lexeme surrogate key")
+    wf_id: Optional[int] = Field(default=None, description="Linked WordForm surrogate key")
+
+
+class SentenceTokenCreate(SentenceTokenBase):
+    """Schema for creating a new SentenceToken entry."""
+    pass
+
+
+class SentenceTokenUpdate(SentenceTokenBase):
+    """Schema for updating an existing SentenceToken entry."""
+    id: int
+
+
+class SentenceTokenReturn(SentenceTokenBase):
+    """
+    Schema for API response serialization of sentence tokens.
+    Inherits field definitions from SentenceTokenBase to maintain DRY principles.
+    """
+    id: int
+    created_at: datetime
+
+    # Pydantic V2 configuration for ORM/SQLModel attribute extraction
+    model_config = ConfigDict(from_attributes=True)
+
 
 # Items
 

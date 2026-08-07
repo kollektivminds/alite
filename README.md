@@ -4,7 +4,7 @@
 
 ALITE is an educational data analytics platform that combines learning science principles and learner-centered design to give students and instructors alike informed decisions about their education-related questions.
 
-*Slovozhor* (from the Russian for "vocab trainer") is the learner-facing portal where students create and work through their own study materials. Their selections and results are analyzed by ALITE before being delivered to the students' and instructors' respective dashboards.
+*Slovozhor* (from the Russian for "vocab trainer" or "word eater") is the learner-facing portal where students create and work through their own study materials. Their selections and results are analyzed by ALITE before being delivered to the students' and instructors' respective dashboards.
 
 ## Stack
 

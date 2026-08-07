@@ -213,13 +213,13 @@ class EnumWordItemType(str, enum.Enum):
     NOUN_FORM_TO_GRAM = "noun_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
     NOUN_GRAM_TO_FORM = "noun_gram_to_form"  # "Which of the following noun forms is/are an example of [grammar]?" (MCQ)
     # noun lemma -> diminutive form
-    NOUN_TO_DMUN_FORM = (
-        "noun_to_dmun_form"  # What is the diminutive form of [lemma]? (MCQ/Cloze)
+    NOUN_TO_DMIN_FORM = (
+        "noun_to_dmin_form"  # What is the diminutive form of [lemma]? (MCQ/Cloze)
     )
     # --- PARTICIPLES ---
     # participle <-> type (tense, mood)
     PART_TYPE_TO_FORM = "part_type_to_form"  # "What form is type X?" (MCQ)
-    FORM_TO_PART_TYPE = "form_to_part_type"  # "What type of participle is X?" (MCQ)
+    PART_FORM_TO_TYPE = "part_form_to_type"  # "What type of participle is X?" (MCQ)
 
     # --- VERBS ----
     # Aspect
@@ -252,8 +252,10 @@ class EnumWordItemType(str, enum.Enum):
 
 
 class EnumSentItemType(str, enum.Enum):
-    # how to organize these items?
-    pass
+    FILL_IN_THE_FORM = "fill_in_the_form"
+    TAG_METADATA = "tag metadata"
+    UNSCRAMBLE = "unscramble"
+    FILL_IN_THE_LEMMA = "fill_in_the_lemma"
 
 
 class EnumItemDifficulty(str, enum.Enum):
@@ -434,7 +436,7 @@ class Lemma(Base, table=True):
 class Lexeme(Base, table=True):
     """Represents a unique word string as it appears in a text."""
 
-    __tablename__: str = "lexicon"
+    __tablename__: str = "lexicon"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # lex_text: Mapped[str] = mapped_column(String(48), unique=True)
@@ -455,7 +457,7 @@ class Lexeme(Base, table=True):
 class GramProp(Base, table=True):
     """Represents a unique combination of grammatical properties."""
 
-    __tablename__: str = "gram_props"
+    __tablename__: str = "gram_props"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
 
@@ -523,7 +525,7 @@ class GramProp(Base, table=True):
 class WordForm(Base, table=True):
     """The central junction table linking a lemma to a lexicon entry with specific properties."""
 
-    __tablename__: str = "word_forms"
+    __tablename__: str = "word_forms"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
@@ -543,9 +545,9 @@ class WordForm(Base, table=True):
     created_at: datetime = Field(
         default_factory=get_utc_now,
         nullable=False,
-        description="UTC creation timestamp"
+        description="UTC creation timestamp",
     )
-    
+
     word_form_lemma: Lemma = Relationship(back_populates="lemma_word_form")
     word_form_lexicon: Lexeme = Relationship(back_populates="lexeme_word_form")
     word_form_gram: GramProp = Relationship(back_populates="gram_word_form")
@@ -555,7 +557,7 @@ class WordForm(Base, table=True):
 
 
 class Definition(Base, table=True):
-    __tablename__: str = "definitions"
+    __tablename__: str = "definitions"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # def_text: Mapped[str] = mapped_column(unique=True)
@@ -580,7 +582,7 @@ class Definition(Base, table=True):
 
 
 class Example(Base, table=True):
-    __tablename__: str = "examples"
+    __tablename__: str = "examples"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # ex_text: Mapped[str] = mapped_column(unique=True)
@@ -595,7 +597,7 @@ class Example(Base, table=True):
 
 
 class Pronunciation(Base, table=True):
-    __tablename__: str = "pronunciations"
+    __tablename__: str = "pronunciations"  # type: ignore
 
     # id: Mapped[int] = mapped_column(Integer, primary_key=True)
     # pron_text: Mapped[str] = mapped_column(unique=True)
@@ -619,7 +621,7 @@ class Pronunciation(Base, table=True):
 class LemmaRelation(Base, table=True):
     """Junction table for relating lemmas to each other"""
 
-    __tablename__: str = "lem_rels"
+    __tablename__: str = "lem_rels"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True, index=True)
     # source_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), index=True)
@@ -650,7 +652,7 @@ class LemmaRelation(Base, table=True):
 
 class LookupQueue(Base, table=True):
 
-    __tablename__: str = "lookup_queue"
+    __tablename__: str = "lookup_queue"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True, index=True)
     # target_lem: Mapped[int] = mapped_column(String(48))
@@ -673,7 +675,7 @@ class LookupQueue(Base, table=True):
 class LemmaDefinition(SQLModel, table=True):
     """Junction table for lemmas and definitions."""
 
-    __tablename__: str = "lem_defs"
+    __tablename__: str = "lem_defs"  # type: ignore
 
     # lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
     # def_id: Mapped[int] = mapped_column(ForeignKey("definitions.id"), primary_key=True)
@@ -701,9 +703,9 @@ class LemmaDefinition(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=get_utc_now,
         nullable=False,
-        description="UTC creation timestamp"
+        description="UTC creation timestamp",
     )
-    
+
     lemma: "Lemma" = Relationship(back_populates="definitions")
     definition: "Definition" = Relationship(back_populates="lemmas")
 
@@ -711,7 +713,7 @@ class LemmaDefinition(SQLModel, table=True):
 class DefinitionExample(SQLModel, table=True):
     """Junction table for definitions and examples."""
 
-    __tablename__: str = "def_exs"
+    __tablename__: str = "def_exs"  # type: ignore
 
     # def_id: Mapped[int] = mapped_column(ForeignKey("definitions.id"), primary_key=True)
     # ex_id: Mapped[int] = mapped_column(ForeignKey("examples.id"), primary_key=True)
@@ -739,9 +741,9 @@ class DefinitionExample(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=get_utc_now,
         nullable=False,
-        description="UTC creation timestamp"
+        description="UTC creation timestamp",
     )
-    
+
     definition_example: "Definition" = Relationship(back_populates="example")
     example_definition: "Example" = Relationship(back_populates="definition")
 
@@ -749,7 +751,7 @@ class DefinitionExample(SQLModel, table=True):
 class LemmaPronunciation(SQLModel, table=True):
     """Junction table for lemmas and pronunciations."""
 
-    __tablename__: str = "lem_prons"
+    __tablename__: str = "lem_prons"  # type: ignore
 
     # lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
     # pron_id: Mapped[int] = mapped_column(
@@ -779,9 +781,9 @@ class LemmaPronunciation(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=get_utc_now,
         nullable=False,
-        description="UTC creation timestamp"
+        description="UTC creation timestamp",
     )
-    
+
     lemma: "Lemma" = Relationship(back_populates="pronunciations")
     pronunciation: "Pronunciation" = Relationship(back_populates="lemmas")
 
@@ -790,7 +792,7 @@ class LemmaPronunciation(SQLModel, table=True):
 
 
 class Module(Base, table=True):
-    __tablename__: str = "modules"
+    __tablename__: str = "modules"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # module_name: Mapped[str] = mapped_column(String(10))
@@ -805,7 +807,7 @@ class Module(Base, table=True):
 
 
 class LessonList(Base, table=True):
-    __tablename__: str = "lessons_lists"
+    __tablename__: str = "lessons_lists"  # type: ignore
 
     # id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     # title: Mapped[str] = mapped_column(String(48), unique=True)
@@ -834,7 +836,7 @@ class LessonList(Base, table=True):
 
 
 class LemmaInLessonList(SQLModel, table=True):
-    __tablename__: str = "lems_in_less_lists"
+    __tablename__: str = "lems_in_less_lists"  # type: ignore
 
     # lem_id: Mapped[int] = mapped_column(ForeignKey("lemmas.id"), primary_key=True)
     # less_list_id: Mapped[int] = mapped_column(
@@ -850,14 +852,14 @@ class LemmaInLessonList(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=get_utc_now,
         nullable=False,
-        description="UTC creation timestamp"
+        description="UTC creation timestamp",
     )
-    
+
 
 class LessonListInModule(SQLModel, table=True):
     """Junction table for lessons and modules"""
 
-    __tablename__: str = "less_lists_in_mods"
+    __tablename__: str = "less_lists_in_mods"  # type: ignore
 
     # less_list_id: Mapped[int] = mapped_column(
     #     ForeignKey("lessons_lists.id"), primary_key=True
@@ -873,9 +875,9 @@ class LessonListInModule(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=get_utc_now,
         nullable=False,
-        description="UTC creation timestamp"
+        description="UTC creation timestamp",
     )
-    
+
     less_list_in: "LessonList" = Relationship(back_populates="in_module")
     in_module: "Module" = Relationship(back_populates="has_less_list")
 
@@ -884,7 +886,7 @@ class LessonListInModule(SQLModel, table=True):
 
 
 class Sentence(Base, table=True):
-    __tablename__: str = "sentences"
+    __tablename__: str = "sentences"  # type: ignore
 
     # id: Mapped[int] = mapped_column(Integer, primary_key=True)
     # doc_id: Mapped[int] = mapped_column(
@@ -903,17 +905,20 @@ class Sentence(Base, table=True):
     raw_text: str = Field(nullable=False)
     sent_idx: int = Field()
     document: "Document" = Relationship(back_populates="sentences")
-    tokens: "SentenceToken" = Relationship(
+    tokens: List["SentenceToken"] = Relationship(
         back_populates="sentence",
         # order_by="SentenceToken.token_idx",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan",
+            "order_by": "SentenceToken.token_idx",
+        },
     )
 
 
 class SentenceToken(Base, table=True):
     """Junction table mapping a WordForm to a specific position in a Sentence."""
 
-    __tablename__: str = "sentence_tokens"
+    __tablename__: str = "sentence_tokens"  # type: ignore
 
     # id: Mapped[int] = mapped_column(Integer, primary_key=True)
     # sent_id: Mapped[int] = mapped_column(
@@ -952,8 +957,10 @@ class SentenceToken(Base, table=True):
 
     lex_raw: str = Field(index=False, unique=False, nullable=False)
     lem_raw: str = Field(index=False, unique=False, nullable=False)
-    features: List[Any] | None = Field(
-        sa_column=Column(JSONB, index=False, unique=False, nullable=True)
+    features: Dict[str, Any] | None = Field(
+        default=None,
+        sa_column=Column(JSONB, index=False, unique=False, nullable=True),
+        description="JSONB dictionary storing POS and morphological traits",
     )
 
     head_idx: int | None = Field(index=False, unique=False, nullable=True)
@@ -965,10 +972,10 @@ class SentenceToken(Base, table=True):
         default=False, index=False, unique=False, nullable=False
     )
     punctuation_before: str | None = Field(
-        max_length=8, index=False, unique=False, nullable=True
+        max_length=8, default=None, index=False, unique=False, nullable=True
     )
     punctuation_after: str | None = Field(
-        max_length=8, index=False, unique=False, nullable=True
+        max_length=8, default=None, index=False, unique=False, nullable=True
     )
 
     # associated form(s)
@@ -999,7 +1006,7 @@ class SentenceToken(Base, table=True):
 
 
 class Document(Base, table=True):
-    __tablename__ = "documents"
+    __tablename__ = "documents"  # type: ignore
 
     # id: Mapped[int] = mapped_column(Integer, primary_key=True)
     # title: Mapped[str] = mapped_column()
@@ -1029,7 +1036,7 @@ class Document(Base, table=True):
 
 
 class User(Base, table=True):
-    __tablename__: str = "users"
+    __tablename__: str = "users"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # username: Mapped[str | None] = mapped_column(String(48), unique=True)
@@ -1057,7 +1064,7 @@ class User(Base, table=True):
 
 
 class UserGroup(Base, table=True):
-    __tablename__: str = "user_groups"
+    __tablename__: str = "user_groups"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # group_name: Mapped[str | None] = mapped_column(String(48), unique=True)
@@ -1070,7 +1077,7 @@ class UserGroup(Base, table=True):
 
 
 class UserInGroup(SQLModel, table=True):
-    __tablename__: str = "users_in_groups"
+    __tablename__: str = "users_in_groups"  # type: ignore
 
     # user_id: Mapped[int] = mapped_column(
     #     Integer, ForeignKey("users.id"), primary_key=True
@@ -1088,9 +1095,9 @@ class UserInGroup(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=get_utc_now,
         nullable=False,
-        description="UTC creation timestamp"
+        description="UTC creation timestamp",
     )
-    
+
     group_user: "User" = Relationship(back_populates="in_group")
     user_group: "UserGroup" = Relationship(back_populates="users")
 
@@ -1099,7 +1106,7 @@ class UserInGroup(SQLModel, table=True):
 
 
 class Exercise(Base, table=True):
-    __tablename__: str = "exercises"
+    __tablename__: str = "exercises"  # type: ignore
 
     # id: Mapped[int] = mapped_column(Integer, primary_key=True)
     # user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), index=True)
@@ -1132,7 +1139,7 @@ class Exercise(Base, table=True):
 
 
 class Item(Base, table=True):
-    __tablename__: str = "items"
+    __tablename__: str = "items"  # type: ignore
     # id, type
     # id: Mapped[int] = mapped_column(primary_key=True)
     # ex_id: Mapped[int] = mapped_column(
@@ -1196,7 +1203,7 @@ class Item(Base, table=True):
 
 
 class LemmaInItem(SQLModel, table=True):
-    __tablename__: str = "lems_in_items"
+    __tablename__: str = "lems_in_items"  # type: ignore
 
     # item_id: Mapped[int] = mapped_column(
     #     ForeignKey("items.id", ondelete="CASCADE"), primary_key=True
@@ -1211,12 +1218,12 @@ class LemmaInItem(SQLModel, table=True):
     created_at: datetime = Field(
         default_factory=get_utc_now,
         nullable=False,
-        description="UTC creation timestamp"
+        description="UTC creation timestamp",
     )
-    
+
 
 class ItemResponse(Base, table=True):
-    __tablename__: str = "student_responses"
+    __tablename__: str = "student_responses"  # type: ignore
 
     # id: Mapped[int] = mapped_column(primary_key=True)
     # user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))

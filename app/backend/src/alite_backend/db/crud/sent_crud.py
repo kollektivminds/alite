@@ -1,23 +1,55 @@
+import logging
+from sqlalchemy import select
 from sqlalchemy.orm import Session
-import app.backend.db.models as models
-import app.backend.db.schemas as schemas
+from alite_backend.db.models import Document, Sentence, SentenceToken
+from alite_backend.db.schemas import (
+    DocumentCreate,
+    DocumentUpdate,
+    DocumentReturn,
+    SentenceCreate,
+    SentenceUpdate,
+    SentenceReturn,
+    SentenceTokenCreate,
+    SentenceTokenUpdate,
+    SentenceTokenReturn,
+)
+from alite_backend.db.crud.crud_base import CRUDBase
 
-# O
-# H
-
-#
-# C
-#
-
-#
-# R
-#
-
-#
-# U
-#
+logger = logging.getLogger(__name__)
 
 #
-# D
+# DOCUMENTS
 #
 
+
+class CRUDDocument(CRUDBase[Document, DocumentCreate, DocumentUpdate]):
+    pass
+
+
+crud_document = CRUDDocument(Document)
+
+
+#
+# SENTENCES
+#
+
+
+class CRUDSentence(CRUDBase[Sentence, SentenceCreate, SentenceUpdate]):
+    pass
+
+
+crud_sentence = CRUDSentence(Sentence)
+
+
+#
+# SENTENCE TOKENS
+#
+
+
+class CRUDSentenceToken(
+    CRUDBase[SentenceToken, SentenceTokenCreate, SentenceTokenUpdate]
+):
+    pass
+
+
+crud_sentence_token = CRUDSentenceToken(SentenceToken)
