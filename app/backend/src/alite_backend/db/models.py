@@ -15,7 +15,9 @@ from sqlalchemy import (
     JSON,
     Enum,
     Index,
+    Enum as SAEnum
 )
+from pydantic import EmailStr
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
@@ -155,6 +157,7 @@ class EnumLessListType(str, enum.Enum):
 class EnumUserRole(str, enum.Enum):
     INSTRUCTOR = "instructor"
     STUDENT = "student"
+    ADMIN = "admin"
 
 
 class EnumLookupStatus(str, enum.Enum):
@@ -288,7 +291,6 @@ class Base(SQLModel):
     id: Optional[int] = Field(
         default=None,
         primary_key=True,
-        nullable=True,
         description="Auto-incrementing surrogate primary key",
     )
     created_at: datetime = Field(
@@ -1050,11 +1052,20 @@ class User(Base, table=True):
 
     username: str | None = Field(index=True, unique=True, nullable=False)
     alias: str | None = Field(index=False, unique=True, nullable=True)
-    user_role: EnumUserRole = Field(index=False, unique=False, nullable=False)
-    settings: List[Any] | None = Field(
-        sa_column=Column(JSONB, index=False, unique=False, nullable=False)
+    user_role: EnumUserRole = Field(
+        sa_column=Column(
+            String(32),
+            nullable=False,
+            default=EnumUserRole.STUDENT.value,
+        ),
+        description="Role-based access level for user permissions",
     )
-    email: str = Field(index=False, unique=False, nullable=False)
+
+    hashed_password: str = Field(nullable=True)
+    settings: List[Any] | None = Field(
+        sa_column=Column(JSONB, index=False, unique=False, nullable=True)
+    )
+    email: EmailStr = Field(index=False, unique=False, nullable=False)
     in_group: "UserInGroup" = Relationship(back_populates="group_user")
     exercises: List["Exercise"] = Relationship(back_populates="user")
 

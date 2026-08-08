@@ -8,9 +8,21 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.exc import IntegrityError
+from sqladmin import Admin
 
-from .config import settings
-from .api.router import api_router
+from alite_backend.db.db_session import engine
+from alite_backend.api.admin.admin_auth import admin_auth
+from alite_backend.api.admin.admin_views import (
+    LemmaAdminView,
+    LexemeAdminView,
+    GramPropAdminView,
+    WordFormAdminView,
+    UserAdminView,
+    SentenceAdminView,
+    ItemAdminView,
+)
+from alite_backend.config import settings
+from alite_backend.api.router import api_router
 
 app = FastAPI(
     title="ALITE Backend API",
@@ -19,6 +31,22 @@ app = FastAPI(
     docs_url="/docs",
     redoc_url="/redoc",
 )
+
+admin_dashboard = Admin(
+    app=app,
+    engine=engine,
+    authentication_backend=admin_auth,
+    title="ALITE admin",
+    base_url="/admin",
+)
+
+admin_dashboard.add_view(LemmaAdminView)
+admin_dashboard.add_view(LexemeAdminView)
+admin_dashboard.add_view(GramPropAdminView)
+admin_dashboard.add_view(WordFormAdminView)
+admin_dashboard.add_view(UserAdminView)
+admin_dashboard.add_view(SentenceAdminView)
+admin_dashboard.add_view(ItemAdminView)
 
 origins = [settings.VITE_API_BASE_URL, "http://localhost:5173", "http://127.0.0.1:5173"]
 

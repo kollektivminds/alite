@@ -4,7 +4,7 @@ This module...
 """
 
 from pathlib import Path
-from pydantic import Field, SecretStr, computed_field
+from pydantic import Field, SecretStr, computed_field, EmailStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -18,14 +18,14 @@ class Settings(BaseSettings):
         extra="forbid",
     )
 
-    # --- Core Application Environment ---
+    # --- core application environment ---
     ENV_MODE: str = Field(
         ..., description="Operating mode: development, test, or production"
     )
     NAMESPACE: str = Field(..., description="Application deployment namespace")
     APP_DIR: str = Field(..., description="Absolute application working directory")
 
-    # --- Database Credentials & Identifiers (Loaded from .env) ---
+    # --- database ---
     DB_USER: str = Field(..., description="PostgreSQL database username")
     DB_PW: SecretStr = Field(..., description="PostgreSQL database password (masked)")
     DB_HOST: str = Field(..., description="PostgreSQL database hostname/service name")
@@ -34,13 +34,24 @@ class Settings(BaseSettings):
     DEV_DB_NAME: str = Field(..., description="Development database name")
     TEST_DB_NAME: str = Field(..., description="Testing/Pytest database name")
 
-    # --- External Integrations & Storage Paths ---
+    # --- external integrations & storage paths ---
     CANVAS_TOKEN: str = Field(..., description="LMS Canvas API access token")
     LOG_LOC: str = Field(..., description="System logging directory path")
     VOCAB_LIST_LOC: str = Field(..., description="Linguistic corpus data path")
     VOCAB_CACHE_LOC: str = Field(..., description="Statistical cache directory path")
     VITE_API_BASE_URL: str = Field(
         ..., description="React frontend connection base URL"
+    )
+    
+    # --- admin ---
+    FIRST_SUPERUSER_USERNAME: str = "admin"
+    FIRST_SUPERUSER_EMAIL: EmailStr = "alite@dliflc.edu"
+    FIRST_SUPERUSER_PASSWORD: str = "ChangeInProduction!123"
+    SECRET_KEY: str = Field(
+        ...,
+        min_length=32,
+        description="Cryptographic secret key used for signing JWTs and session cookies. "
+                    "Must be an entropy-rich 32+ character string supplied via environment."
     )
 
     # Computed Database URL (as a property)

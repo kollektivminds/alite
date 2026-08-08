@@ -13,18 +13,21 @@ import logging
 # import json
 from collections import defaultdict
 from cytoolz import concat
-from sqlalchemy import text
+from sqlalchemy import text, exc, create_engine
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
-
+from pathlib import Path
+from alembic import command
+from alembic.config import Config
 
 from alite_backend.db.db_session import SessionLocal, engine
-from alite_backend.db.models import Base
+from alite_backend.db.models import Base, EnumUserRole
 from alite_backend.logging_config import setup_logging
 from alite_backend.words.pipeline import load_words
 from alite_backend.words.queue import process_lookup_queue
 from alite_backend.words.funcs import load_json, save_json
-
+from alite_backend.config import settings
 from alite_backend.sentences.write_sentences_parallel import (
     run_parallel_sentence_pipeline,
 )
@@ -34,6 +37,11 @@ from alite_backend.db.crud.word_crud import (
     crud_less_list,
     crud_lem_in_less_list,
     crud_less_list_in_mod,
+)
+from alite_backend.db.crud.user_crud import (
+    get_password_hash,
+    verify_password,
+    crud_user,
 )
 
 setup_logging()
@@ -49,6 +57,13 @@ corpus_location = "/app/src/alite_backend/sentences/raw/SynTagRus2022/"  # type:
 # bodyLibDfLoc = "../syntagrus/bodyLibDf.json"
 # bodyTextDfLoc = "../syntagrus/bodyTextDf.json"
 # infDictLoc = "../syntagrus/infDict.json"
+
+if settings.ENV_MODE == "dev":
+    DATABASE_URL = settings.DEV_DATABASE_URL
+elif settings.ENV_MODE == "test":
+    DATABASE_URL = settings.TEST_DATABASE_URL
+elif settings.ENV_MODE == "prod":
+    DATABASE_URL = settings.PROD_DATABASE_URL
 
 
 def load_org_tables(db: Session, vocab_list_path: str = VOCAB_LIST_LOC):  # type: ignore
@@ -113,6 +128,134 @@ def load_org_tables(db: Session, vocab_list_path: str = VOCAB_LIST_LOC):  # type
         for lem in lems:
             lists_with_lems[lem].append(id)
     # logger.debug("Lists with lems: %s", lists_with_lems)
+
+
+def seed_superuser(db: Session) -> None:
+    """
+    Idempotent database seeding routine.
+    Ensures essential roles, system defaults, and initial admin accounts exist.
+
+    Args:
+        db (Session): Active SQLAlchemy database session.
+    """
+    logger.info("Verifying initial database state...")
+
+    # query the database to check if the superuser account already exists
+    user = crud_user.get_by_email(db=db, email_input=settings.FIRST_SUPERUSER_EMAIL)
+
+    # provision the user only if no existing matching record is found
+    if not user:
+        logger.info(
+            "First superuser (%s) not found. Seeding initial admin account...",
+            settings.FIRST_SUPERUSER_EMAIL,
+        )
+
+        # Build user creation payload using the validated Pydantic schema
+        user_in = schemas.UserCreate(
+            username=settings.FIRST_SUPERUSER_USERNAME,
+            email=settings.FIRST_SUPERUSER_EMAIL,
+            password=settings.FIRST_SUPERUSER_PASSWORD,
+            user_role=EnumUserRole.ADMIN,
+            alias=None,
+        )
+
+        # Persist through the CRUD layer to ensure password hashing executed
+        user = crud_user.create(db=db, obj_in=user_in)
+        logger.info("Superuser '%s' successfully created.", user.username)
+    else:
+        logger.info("Superuser '%s' already exists. Skipping seed.", user.username)
+
+
+def migrate_schema() -> None:
+    """
+    Executes Alembic migrations programmatically up to 'head'.
+
+    Using programmatic migrations during container initialization guarantees
+    that schema updates apply before any seeding or API logic executes,
+    preventing race conditions between SQLModel and Alembic.
+    """
+    logger.info("Running programmatic database migrations...")
+
+    engine.dispose()
+
+    # locate the alembic.ini configuration file relative to the project root
+    base_dir = Path(__file__).resolve().parent.parent.parent.parent
+    alembic_cfg_path = base_dir / "alembic.ini"
+
+    if not alembic_cfg_path.exists():
+        logger.error("alembic.ini not found at path: %s", alembic_cfg_path)
+        raise FileNotFoundError(f"Missing alembic.ini at {alembic_cfg_path}")
+
+    # load Alembic configuration and override the database URL dynamically
+    alembic_cfg = Config(str(alembic_cfg_path))
+    alembic_cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
+
+    # apply all pending migrations safely
+    try:
+        logger.info("Acquiring Alembic migration context and applying upgrades...")
+
+        command.upgrade(alembic_cfg, "head")
+
+        logger.info("Database schema successfully synchronized to 'head'.")
+
+    except OperationalError as op_err:
+        logger.error(
+            "Database operational error during migration (possible lock timeout): %s",
+            op_err,
+        )
+        raise
+    except Exception as exc:
+        logger.exception("Unexpected failure during programmatic migration: %s", exc)
+        raise
+
+
+def run_isolated_migrations() -> None:
+    """
+    Executes Alembic migrations in an isolated process boundary.
+
+    Engineering Principle:
+    By instantiating a dedicated, single-use SQLAlchemy engine just for migrations
+    and disposing of it immediately, we prevent connection pool sharing and eliminate
+    lingering table locks that cause silent application freezes.
+    """
+    logger.info("Initializing isolated migration engine...")
+
+    # 1. Create a dedicated, non-pooled engine for migrations to prevent lock contention
+    migration_engine = create_engine(DATABASE_URL, pool_pre_ping=True, echo=False)
+
+    try:
+        # 2. Test database connectivity and clear any stale transactions
+        with migration_engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+            conn.commit()
+            logger.info("Database connection verified. Executing Alembic upgrade...")
+
+        # 3. Locate alembic.ini configuration file
+        base_dir = Path(__file__).resolve().parent.parent.parent.parent
+        alembic_ini_path = base_dir / "alembic.ini"
+
+        if not alembic_ini_path.exists():
+            raise FileNotFoundError(
+                f"Missing alembic.ini configuration at {alembic_ini_path}"
+            )
+
+        # 4. Configure Alembic programmatically
+        alembic_cfg = Config(str(alembic_ini_path))
+        alembic_cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
+
+        # 5. Run upgrade to head
+        command.upgrade(alembic_cfg, "head")
+        logger.info("Database schema successfully synchronized to 'head'.")
+
+    except Exception as exc:
+        logger.exception(
+            "Migration execution failed due to lock or connection error: %s", exc
+        )
+        raise exc
+    finally:
+        # CRITICAL: Always dispose of the temporary engine to release file descriptors and sockets
+        migration_engine.dispose()
+        logger.info("Migration engine successfully disposed.")
 
 
 def get_rows(module, chapter, content):
@@ -223,11 +366,15 @@ def init_database():
 
     # logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
 
+    # migrate_schema()
+    run_isolated_migrations()
+
     with SessionLocal() as db:
         try:
             # create tables in db
             # make_tables(db=db)
-            create_tables_from_models()
+            # create_tables_from_models()
+            seed_superuser(db=db)
             load_org_tables(db=db)
             db.commit()
             logger.info("Database tables loaded and committed successfully")

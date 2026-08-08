@@ -28,6 +28,11 @@ alembic = "^1.13.3"
 cytoolz = "^1.0.0"
 dateparser = "^1.2.0"
 sqladmin = {version = "^0.20.1", extras = ["auth"]}
+email-validator = "^2.3.0"
+jwt = "^1.4.0"
+pyjwt = "^2.13.0"
+bcrypt = "^5.0.0"
+itsdangerous = "^2.2.0"
 
 [tool.poetry.group.dev.dependencies]
 jupyterlab = "^4.0.0"
