@@ -1,8 +1,7 @@
-import React, { act, useState } from "react";
-import WordFormsMenu from "../words/WordFormsMenu";
-import WordsPOSMenu from "../words/WordsPOSMenu";
-import SentencesMenu from "../sentences/SentencesMenu";
-import ParagraphsMenu from "../paragraphs/ParagraphsMenu";
+import React, { useState } from "react";
+import { WordsMenu } from "../words/WordsMenu.tsx";
+import SentencesMenu from "../sentences/SentencesMenu.jsx";
+import ParagraphsMenu from "../paragraphs/ParagraphsMenu.jsx";
 import { useTranslation } from 'react-i18next';
 
 
@@ -58,7 +57,7 @@ function SplashMenu() {
               </button>
             </div>
           )}
-          {activeMenu === "words" && <WordsPOSMenu onBack={handleBack} />}
+          {activeMenu === "words" && <WordsMenu onBack={handleBack} />}
           {activeMenu === "sentences" && <SentencesMenu onBack={handleBack} />}
           {activeMenu === "paragraphs" && <ParagraphsMenu onBack={handleBack} />}
         </div>

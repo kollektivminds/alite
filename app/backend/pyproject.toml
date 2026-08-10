@@ -1,6 +1,17 @@
+
+# ==============================================================================
+# ALITE System Configuration
+# ==============================================================================
+
 [build-system]
 requires = ["poetry-core>=1.8.0"]
 build-backend = "poetry.core.masonry.api"
+
+
+# ==============================================================================
+# Dependencies (Poetry)
+# ==============================================================================
+
 
 [tool.poetry]
 # Core metadata fields required by Poetry 1.8.x internal parser
@@ -15,7 +26,7 @@ package-mode = true
 # Python 3.13 runtime constraint matching system requirements
 python = "^3.13"
 fastapi = "^0.115.0"
-uvicorn = {extras = ["standard"], version = "^0.32.0"}
+uvicorn = { extras = ["standard"], version = "^0.32.0" }
 sqlmodel = "^0.0.22"
 psycopg2-binary = "^2.9.10"
 pandas = "^2.2.3"
@@ -27,7 +38,7 @@ pydantic-settings = "^2.6.0"
 alembic = "^1.13.3"
 cytoolz = "^1.0.0"
 dateparser = "^1.2.0"
-sqladmin = {version = "^0.20.1", extras = ["auth"]}
+sqladmin = { version = "^0.20.1", extras = ["auth"] }
 email-validator = "^2.3.0"
 jwt = "^1.4.0"
 pyjwt = "^2.13.0"
@@ -46,3 +57,38 @@ factory-boy = "^3.3.3"
 hypothesis = "^6.155.1"
 pytest-cov = "^7.1.0"
 pytest-mock = "^3.15.1"
+ruff = "^0.16.2"
+mypy = "^2.3.0"
+pip-audit = "^2.10.1"
+
+# ==============================================================================
+# Tooling & Security Configuration
+# ==============================================================================
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+# Select Rule Sets:
+# E/W: Pycodestyle, F: Pyflakes, B: Bugbear (common bugs), S: Bandit (Security)
+select = ["E", "W", "F", "B", "S", "I"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+# allow assertion statements in test suites
+"tests/*" = ["S101"]
+
+[tool.bandit]
+targets = ["app/backend"]
+exclude_dirs = ["tests", ".venv"]
+# skip assert checks if handled by Ruff
+skips = ["B101"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+strict_optional = true
+plugins = ["pydantic.mypy"]

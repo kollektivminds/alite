@@ -1,0 +1,31 @@
+{
+    "compilerOptions": {
+        /* Target latest ECMAScript features for modern browser environments */
+        "target": "ES2020",
+        "useDefineForClassFields": true,
+        /* Include DOM libraries so window, document, and HTML element types are recognized */
+        "lib": [
+            "ES2020",
+            "DOM",
+            "DOM.Iterable"
+        ],
+        "module": "ESNext",
+        "skipLibCheck": true,
+        /* Bundler resolution mode matching Vite's bundling strategy */
+        "moduleResolution": "bundler",
+        "allowImportingTsExtensions": true,
+        "resolveJsonModule": true,
+        "isolatedModules": true,
+        "noEmit": true,
+        /* CRITICAL: Enables React 18 automatic JSX transform, resolving JSX.IntrinsicElements */
+        "jsx": "react-jsx",
+        /* Strict type-checking options for enterprise-grade code safety */
+        "strict": true,
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noFallthroughCasesInSwitch": true
+    },
+    "include": [
+        "src"
+    ]
+}
