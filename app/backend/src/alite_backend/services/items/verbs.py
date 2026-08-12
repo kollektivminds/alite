@@ -1,5 +1,6 @@
 # app/backend/src/alite_backend/services/items/verbs.py
 from typing import List
+
 from alite_backend.db import models, schemas
 from alite_backend.services.items.base import BaseExerciseStrategy
 
@@ -24,7 +25,7 @@ class VerbToAspectStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="lemma_to_trait",
+            is_reverse=False,
         )
 
 
@@ -45,7 +46,7 @@ class AspectToVerbStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="trait_to_lemma",
+            is_reverse=True,
         )
 
 
@@ -82,7 +83,7 @@ class VerbToTypeStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="lemma_to_trait",  # Prompts: "Identify the gender of 'книга'"
+            is_reverse=False,
         )
 
 
@@ -103,7 +104,7 @@ class TypeToVerbStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="trait_to_lemma",  # Prompts: "Identify the gender of 'книга'"
+            is_reverse=True,
         )
 
 
@@ -132,7 +133,7 @@ class VerbToTransReflStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="lemma_to_trait",  # Prompts: "Identify the gender of 'книга'"
+            is_reverse=False,
         )
 
 
@@ -153,5 +154,5 @@ class TransReflToVerbStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="trait_to_lemma",  # Prompts: "Identify the gender of 'книга'"
+            is_reverse=True,
         )

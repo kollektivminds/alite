@@ -1,27 +1,17 @@
-from typing import List, Optional, Dict, Any
-from datetime import datetime, timezone
-from uuid import UUID
 import enum
-from sqlalchemy import (
-    Column,
-    Integer,
-    String,
-    Float,
-    ForeignKey,
-    Boolean,
-    DateTime,
-    Text,
-    UniqueConstraint,
-    JSON,
-    Enum,
-    Index,
-    Enum as SAEnum
-)
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
+from uuid import UUID
+
 from pydantic import EmailStr
-from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.sql import func
+from sqlalchemy import JSON, Boolean, Column, DateTime
+from sqlalchemy import Enum
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy import Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class EnumTargetLanguage(str, enum.Enum):
@@ -169,7 +159,7 @@ class EnumLookupStatus(str, enum.Enum):
 
 
 class EnumItemFormat(str, enum.Enum):
-    CLOZE = "cloze"
+    FITB = "fitb"
     MCQ = "mcq"
     FLASHCARD = "flashcard"
 
@@ -1179,33 +1169,36 @@ class Item(Base, table=True):
     # in_ex: Mapped["Exercise"] = relationship(back_populates="has_item")
 
     ex_id: int = Field(foreign_key="exercises.id", index=True, nullable=False)
-    order_in_ex: int = Field()
-    item_type: EnumWordItemType = Field(index=True, unique=False, nullable=False)
+    order_in_ex: int = Field(index=True, unique=False, nullable=False)
+    item_type: EnumWordItemType | EnumSentItemType = Field(
+        index=True, unique=False, nullable=False
+    )
     item_format: EnumItemFormat = Field(index=True, unique=False, nullable=False)
     # content
-    prompt: str | None = Field(index=False, unique=False, nullable=False)
+    prompt: str | None = Field(index=False, unique=False, nullable=True)
     settings: Dict[str, Any] = Field(
         default_factory=dict,
         sa_column=Column(JSONB, nullable=False),
         description="Dynamic difficulty and item configuration settings",
     )
-    key: List[str] = Field(
-        sa_column=Column(ARRAY(String), nullable=False),
-        description="List of correct answer strings",
-    )
-    distractors: Optional[List[str]] = Field(
-        default=None,
-        sa_column=Column(ARRAY(String), nullable=True),
-        description="List of distractor options for multiple-choice formats",
-    )
-    difficulty: EnumItemDifficulty | None = Field(
-        index=True, unique=False, nullable=False
-    )
-    responses: List["ItemResponse"] = Relationship(back_populates="item")
+    # key: List[str] = Field(
+    #     sa_column=Column(ARRAY(String), nullable=False),
+    #     description="List of correct answer strings",
+    # )
+    # distractors: Optional[List[str]] = Field(
+    #     default=None,
+    #     sa_column=Column(ARRAY(String), nullable=True),
+    #     description="List of distractor options for multiple-choice formats",
+    # )
+    # difficulty: EnumItemDifficulty | None = Field(
+    #     index=True, unique=False, nullable=True
+    # )
+    options: Optional["ItemOption"] = Relationship(back_populates="in_item")
+    responses: Optional[List["ItemResponse"]] = Relationship(back_populates="item")
     # meta
     # TODO: set up to record times
-    start_time: datetime | None = Field(index=False, unique=False, nullable=False)
-    finish_time: datetime | None = Field(index=False, unique=False, nullable=False)
+    start_time: Optional[datetime] = Field(index=False, unique=False, nullable=True)
+    finish_time: datetime | None = Field(index=False, unique=False, nullable=True)
 
     ref_lems: List[Lemma] = Relationship(
         back_populates="in_item", sa_relationship_kwargs={"secondary": "lems_in_items"}
@@ -1233,6 +1226,26 @@ class LemmaInItem(SQLModel, table=True):
     )
 
 
+class ItemOption(SQLModel, table=True):
+    __tablename__: str = "item_options"
+
+    option_uuid: UUID = Field(primary_key=True)
+    item_id: int = Field(
+        foreign_key="items.id", index=True, unique=False, nullable=False
+    )
+    option_text: str = Field(index=False, unique=False, nullable=False)
+    is_correct: bool = Field(default=False, index=False, unique=False, nullable=False)
+    explanation: str = Field(index=False, unique=False, nullable=True)
+    created_at: datetime = Field(
+        default_factory=get_utc_now,
+        # sa_column=Column(DateTime(timezone=True), nullable=False),
+        nullable=False,
+        description="Timezone-aware UTC timestamp when the record was created",
+    )
+
+    in_item: "Item" = Relationship(back_populates="options")
+
+
 class ItemResponse(Base, table=True):
     __tablename__: str = "student_responses"  # type: ignore
 
@@ -1254,6 +1267,7 @@ class ItemResponse(Base, table=True):
     selection: str = Field(index=False, unique=False, nullable=False)
     is_correct: bool = Field(index=False, unique=False, nullable=False)
     response_time_ms: int = Field(index=False, unique=False, nullable=False)
+    attempt_num: int = Field(index=False, unique=False, nullable=False)
 
     item: "Item" = Relationship(back_populates="responses")
 

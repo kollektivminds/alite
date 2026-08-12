@@ -1,16 +1,16 @@
 # app/backend/src/alite_backend/services/items/base.py
-from abc import ABC, abstractmethod
-import logging
-import re
 import json
-import random
-from collections import defaultdict
-from sqlalchemy import select, func
-from sqlalchemy.orm import Session, declarative_base
 import logging
-from typing import List, Any, Dict, Tuple, Optional
+import random
+import re
+from abc import ABC, abstractmethod
+from collections import defaultdict
 from enum import Enum
-from alite_backend.db import schemas, models
+from typing import Any, Dict, List, Optional, Tuple
+
+from alite_backend.db import models, schemas
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session, declarative_base
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +198,7 @@ class BaseExerciseStrategy(ABC):
         # return a new list containing only the tuples where the 4th element (GramProp)
         return [row for row in forms if _is_valid(gram_prop=row[3])]
 
-    def _extract_option_text(self, item_tuple: Tuple, drill_direction: str) -> str:
+    def _extract_option_text(self, item_tuple: Tuple, is_reverse: bool) -> str:
         """
         Extracts the user-facing string from the raw database tuple based on the drill type.
         """
@@ -206,7 +206,7 @@ class BaseExerciseStrategy(ABC):
 
         # if the drill shows words and asks for grammar, the options are the grammar tags.
         # if the drill asks for a word based on a grammar prompt, the options are the words.
-        if drill_direction == "form_to_gram":
+        if is_reverse is False:
             return self._format_attribute_name(gram_prop)
         else:
             return lexeme.lex_text or lexeme.lex_text_clean
@@ -214,7 +214,7 @@ class BaseExerciseStrategy(ABC):
     def _get_paradigm_option_text(
         self,
         item_tuple: Tuple,
-        drill_direction: str,
+        is_reverse: bool,
         target_attr: str,
         static_attrs: List[str],
     ) -> str:
@@ -224,13 +224,13 @@ class BaseExerciseStrategy(ABC):
         # Unpack the standard paradigm tuple
         lemma, word_form, lexeme, gram_prop = item_tuple
 
-        if drill_direction == "form_to_gram":
+        if is_reverse is False:
             return self._format_grammar_label(gram_prop, target_attr, static_attrs)
         else:
             return lexeme.lex_text or lexeme.lex_text_clean
 
     def _generate_paradigm_prompt(
-        self, baseline_form: Tuple, drill_direction: str, target_attr: str
+        self, baseline_form: Tuple, is_reverse: bool, target_attr: str
     ) -> str:
         """
         Generates the instructional prompt for a paradigm-based item.
@@ -240,7 +240,7 @@ class BaseExerciseStrategy(ABC):
         # Determine the base word to display (fallback to lem_text if canon is null)
         base_word = lemma.lem_canon or lemma.lem_text
 
-        if drill_direction == "form_to_gram":
+        if is_reverse is False:
             # user sees a Russian word and must select its grammatical properties.
             if target_attr == "all":
                 return f"Identify the complete grammatical parsing for the form '{word_form.text}':"
@@ -270,7 +270,7 @@ class BaseExerciseStrategy(ABC):
         target_attr: str,
         static_attrs: List[str],
         max_distractors: int,
-        drill_direction: str,
+        is_reverse: bool,
     ) -> Optional[schemas.ItemBlueprint]:
         """Generates a standard multiple-choice paradigm question with one correct answer."""
 
@@ -314,7 +314,7 @@ class BaseExerciseStrategy(ABC):
 
         # generate the localized prompt (e.g., "Find the Genitive Plural form of X")
         prompt_text = self._generate_paradigm_prompt(
-            baseline_form, drill_direction, target_attr
+            baseline_form, is_reverse, target_attr
         )
 
         # build and return the blueprint
@@ -322,13 +322,11 @@ class BaseExerciseStrategy(ABC):
             prompt=prompt_text,
             keys=[
                 self._get_paradigm_option_text(
-                    baseline_form, drill_direction, target_attr, static_attrs
+                    baseline_form, is_reverse, target_attr, static_attrs
                 )
             ],
             distractors=[
-                self._get_paradigm_option_text(
-                    d, drill_direction, target_attr, static_attrs
-                )
+                self._get_paradigm_option_text(d, is_reverse, target_attr, static_attrs)
                 for d in distractors
             ],
             lem_id=baseline_form[0].id,
@@ -342,7 +340,7 @@ class BaseExerciseStrategy(ABC):
         static_attrs: List[str],
         max_keys: int,
         max_distractors: int,
-        drill_direction: str,
+        is_reverse: bool,
     ) -> Optional[schemas.ItemBlueprint]:
         """Generates a multi-select paradigm question with 1 to N correct answers."""
 
@@ -381,28 +379,24 @@ class BaseExerciseStrategy(ABC):
         distractors = random.sample(distractor_pool, max_distractors)
 
         prompt_text = self._generate_paradigm_prompt(
-            baseline_form, drill_direction, target_attr
+            baseline_form, is_reverse, target_attr
         )
 
         return schemas.ItemBlueprint(
             prompt=prompt_text,
             keys=[
-                self._get_paradigm_option_text(
-                    k, drill_direction, target_attr, static_attrs
-                )
+                self._get_paradigm_option_text(k, is_reverse, target_attr, static_attrs)
                 for k in keys
             ],
             distractors=[
-                self._get_paradigm_option_text(
-                    d, drill_direction, target_attr, static_attrs
-                )
+                self._get_paradigm_option_text(d, is_reverse, target_attr, static_attrs)
                 for d in distractors
             ],
             lem_id=baseline_form[0].id,
         )
 
     def _build_ooo_prompt(
-        self, shared_forms: List[Tuple], target_attr: str, drill_direction: str
+        self, shared_forms: List[Tuple], target_attr: str, is_reverse: bool
     ) -> str:
         """
         Generates the instruction prompt for an odd-one-out question.
@@ -428,7 +422,7 @@ class BaseExerciseStrategy(ABC):
         static_attrs: List[str],
         max_keys: int,
         max_distractors: int,
-        drill_direction: str,
+        is_reverse: bool,
     ) -> Optional[schemas.ItemBlueprint]:
         """Generates an odd-one-out morphology question."""
 
@@ -467,7 +461,7 @@ class BaseExerciseStrategy(ABC):
         prompt_text = self._build_ooo_prompt(
             shared_forms=buckets[majority_trait],
             target_attr=target_attr,
-            drill_direction=drill_direction,
+            is_reverse=is_reverse,
         )
 
         # pick the odd-one-out (the key)
@@ -479,7 +473,7 @@ class BaseExerciseStrategy(ABC):
 
         # distractor_texts = [
         #     self._get_paradigm_option_text(
-        #         d, drill_direction, target_attr, static_attrs
+        #         d, is_reverse, target_attr, static_attrs
         #     )
         #     for d in distractors
         # ]
@@ -487,8 +481,8 @@ class BaseExerciseStrategy(ABC):
         seen_texts = {key_text}
         distractor_texts = []
 
-        # 4. Safely Extract Distractors
-        # Shuffle the majority bucket so we don't always grab the first N items
+        # safely extract distractors
+        # shuffle the majority bucket so we don't always grab the first N items
         pool = list(buckets[majority_trait])
         random.shuffle(pool)
 
@@ -496,17 +490,17 @@ class BaseExerciseStrategy(ABC):
             _, _, dist_lexeme, _ = form_tuple
             dist_text = dist_lexeme.lex_text or dist_lexeme.lex_text_clean
 
-            # Only add to our distractors if the surface string is entirely unique
+            # only add to our distractors if the surface string is entirely unique
             if dist_text not in seen_texts:
                 seen_texts.add(dist_text)
                 distractor_texts.append(dist_text)
 
-            # Break early once we hit the required number of distractors
+            # break early once we hit the required number of distractors
             if len(distractor_texts) == max_distractors:
                 break
 
-        # 5. Graceful Degradation Check
-        # Because of deduplication, we might run out of unique words before hitting max_distractors
+        # graceful degradation check
+        # because of deduplication, we might run out of unique words before hitting max_distractors
         if len(distractor_texts) < max_distractors:
             return None
 
@@ -537,7 +531,7 @@ class BaseExerciseStrategy(ABC):
         max_keys: int,
         max_distractors: int,
         allow_odd_one_out: bool,
-        drill_direction: str,  # "lemma_to_trait" OR "trait_to_lemma"
+        is_reverse: bool,
     ) -> List[schemas.ItemBlueprint]:
         """
         engine for creating exercises based on the lemma table
@@ -581,7 +575,7 @@ class BaseExerciseStrategy(ABC):
             # scenario a: lemma -> trait (buttons are grammar qualities)
             # e.g., "What is the gender of 'книга'?" -> [Feminine, Masculine, Neuter]
             # -----------------------------------------------------------------
-            if drill_direction == "lemma_to_trait":
+            if is_reverse is True:
                 keys = [trait_str]
 
                 # distractors are other enum traits available
@@ -600,7 +594,7 @@ class BaseExerciseStrategy(ABC):
             # scenario b: trait -> lemma (buttons are Russian words)
             # e.g., "Which of these nouns is Feminine?" -> [книга, дом, окно]
             # -----------------------------------------------------------------
-            elif drill_direction == "trait_to_lemma":
+            elif is_reverse is False:
                 item_is_ooo = (
                     random.choice([True, False]) if allow_odd_one_out else False
                 )
@@ -709,7 +703,7 @@ class BaseExerciseStrategy(ABC):
         max_distractors: int,
         allowed_foci: list,
         allow_odd_one_out: bool,
-        drill_direction: str = "form_to_gram",
+        is_reverse: bool,
     ) -> List[schemas.ItemBlueprint]:
 
         blueprints = []
@@ -743,7 +737,7 @@ class BaseExerciseStrategy(ABC):
             # TODO: candidate for bkt
             item_is_ooo = random.choice([True, False]) if allow_odd_one_out else False
 
-            if drill_direction == "gram_to_form":
+            if is_reverse is False:
                 item_is_ooo = False
 
             if item_is_ooo:
@@ -754,7 +748,7 @@ class BaseExerciseStrategy(ABC):
                     static_attrs,
                     max_keys,
                     max_distractors,
-                    drill_direction,
+                    is_reverse,
                 )
             elif max_keys > 1:
                 bp = self._generate_multiselect_paradigm(
@@ -764,7 +758,7 @@ class BaseExerciseStrategy(ABC):
                     static_attrs,
                     max_keys,
                     max_distractors,
-                    drill_direction,
+                    is_reverse,
                 )
             else:
                 bp = self._generate_single_key_paradigm(
@@ -773,7 +767,7 @@ class BaseExerciseStrategy(ABC):
                     target_attr,
                     static_attrs,
                     max_distractors,
-                    drill_direction,
+                    is_reverse,
                 )
 
             if bp:
@@ -792,7 +786,7 @@ class BaseExerciseStrategy(ABC):
         max_keys: int = 1,
         max_distractors: int = 3,
         allow_odd_one_out: bool = False,
-        drill_direction: str = "lemma_to_sibling",
+        is_reverse: bool = False,
     ) -> List[schemas.ItemBlueprint]:
         """
         Builds an item by joining the Lemma table to a related 'sibling' table
@@ -872,7 +866,7 @@ class BaseExerciseStrategy(ABC):
 
             item_is_ooo = random.choice([True, False]) if allow_odd_one_out else False
 
-            if drill_direction == "sibling_to_lemma" and not item_is_ooo:
+            if is_reverse is True and not item_is_ooo:
                 distractor_stmt = (
                     select(models.Lemma)
                     .join(
@@ -914,7 +908,7 @@ class BaseExerciseStrategy(ABC):
                     lem_id=lemma.id,
                 )
 
-            elif drill_direction == "lemma_to_sibling":
+            elif is_reverse is False:
                 bp = schemas.ItemBlueprint(
                     prompt=lemma.lem_text,
                     keys=random.sample(
@@ -924,7 +918,7 @@ class BaseExerciseStrategy(ABC):
                     lem_id=lemma.id,
                 )
 
-            elif drill_direction == "sibling_to_lemma":
+            elif is_reverse is True:
                 selected_sibling = random.choice(sibling_values)
                 bp = schemas.ItemBlueprint(
                     prompt=selected_sibling,
@@ -937,110 +931,109 @@ class BaseExerciseStrategy(ABC):
 
         return blueprints
 
-    # def _build_lemma_relation_drill(
-    #     self,
-    #     relation_type: models.EnumRelLemTypeGroup,
-    #     pos_target: schemas.EnumPartOfSpeech,
-    #     num_items: int = 5,
-    #     max_keys: int = 1,
-    #     max_distractors: int = 3,
-    #     allow_odd_one_out: bool = False,
-    #     drill_direction: str = "forward",
-    # ) -> Dict[str, Any]:
-    #     """
-    #     Builds an item by traversing the lemma_relations junction table
-    #     (e.g., finding synonyms, antonyms, or aspect pairs).
-    #     """
-    #     blueprints = []
+    def _build_lemma_relation_drill(
+        self,
+        relation_type: models.EnumRelLemTypeGroup,
+        pos_target: schemas.EnumPartOfSpeech,
+        num_items: int = 5,
+        max_keys: int = 1,
+        max_distractors: int = 3,
+        allow_odd_one_out: bool = False,
+        is_reverse: str = "forward",
+    ) -> Dict[str, Any]:
+        """
+        Builds an item by traversing the lemma_relations junction table
+        (e.g., finding synonyms, antonyms, or aspect pairs).
+        """
+        blueprints = []
 
-    #     # fetch valid relationships using scoped statement
-    #     rel_stmt = self._get_scoped_stmt()
-    #     relations_query = (
-    #         rel_stmt.join(
-    #             models.Lemma, models.LemmaRelation.source_id == models.Lemma.id
-    #         )
-    #         .filter(
-    #             models.LemmaRelation.rel_type == relation_type,
-    #             models.Lemma.pos == pos_target,
-    #         )
-    #         .order_by(func.random())
-    #         .limit(num_items * 2)
-    #     )
+        # fetch valid relationships using scoped statement
+        rel_stmt = self._get_scoped_stmt()
+        relations_query = (
+            rel_stmt.join(
+                models.Lemma, models.LemmaRelation.source_id == models.Lemma.id
+            )
+            .filter(
+                models.LemmaRelation.rel_type == relation_type,
+                models.Lemma.pos == pos_target,
+            )
+            .order_by(func.random())
+            .limit(num_items * 2)
+        )
 
-    #     # deduplicate sources
-    #     unique_sources = list({rel.source_id: rel for rel in relations_query}.values())[
-    #         :num_items
-    #     ]
+        # deduplicate sources
+        unique_sources = list({rel.source_id: rel for rel in relations_query}.values())[
+            :num_items
+        ]
 
-    #     for rel in unique_sources:
-    #         lemma_stmt = self._get_scoped_stmt()
-    #         source_lemma = lemma_stmt.get(rel.source_id)
+        for rel in unique_sources:
+            lemma_stmt = self._get_scoped_stmt()
+            source_lemma = lemma_stmt.get(rel.source_id)
 
-    #         # Get all valid targets using scoped statement
-    #         target_stmt = self._get_scoped_stmt()
-    #         all_targets = (
-    #             target_stmt.join(
-    #                 models.LemmaRelation,
-    #                 models.LemmaRelation.target_id == models.Lemma.id,
-    #             )
-    #             .filter(
-    #                 models.LemmaRelation.source_id == source_lemma.id,
-    #                 models.LemmaRelation.rel_type == relation_type,
-    #             )
-    #             .all()
-    #         )
+            # Get all valid targets using scoped statement
+            target_stmt = self._get_scoped_stmt()
+            all_targets = (
+                target_stmt.join(
+                    models.LemmaRelation,
+                    models.LemmaRelation.target_id == models.Lemma.id,
+                )
+                .filter(
+                    models.LemmaRelation.source_id == source_lemma.id,
+                    models.LemmaRelation.rel_type == relation_type,
+                )
+                .all()
+            )
 
-    #         target_words = [t.word for t in all_targets]
+            target_words = [t.word for t in all_targets]
 
-    #         # 2. Defensively fetch distractors using scoped statement
-    #         # We still need the raw db.query for the subquery logic
-    #         invalid_ids_subquery = db.query(models.LemmaRelation.target_id).filter(
-    #             models.LemmaRelation.source_id == source_lemma.id,
-    #             models.LemmaRelation.rel_type == relation_type,
-    #         )
+            # defensively fetch distractors using scoped statement
+            invalid_ids_subquery = db.query(models.LemmaRelation.target_id).filter(
+                models.LemmaRelation.source_id == source_lemma.id,
+                models.LemmaRelation.rel_type == relation_type,
+            )
 
-    #         distractor_stmt = self._get_scoped_stmt(db, models.Lemma)
-    #         distractor_lemmas = (
-    #             distractor_stmt.filter(
-    #                 models.Lemma.pos == pos_target,
-    #                 models.Lemma.id != source_lemma.id,
-    #                 ~models.Lemma.id.in_(invalid_ids_subquery),
-    #             )
-    #             .order_by(func.random())
-    #             .limit(max_distractors)
-    #             .all()
-    #         )
+            distractor_stmt = self._get_scoped_stmt(db, models.Lemma)
+            distractor_lemmas = (
+                distractor_stmt.filter(
+                    models.Lemma.pos == pos_target,
+                    models.Lemma.id != source_lemma.id,
+                    ~models.Lemma.id.in_(invalid_ids_subquery),
+                )
+                .order_by(func.random())
+                .limit(max_distractors)
+                .all()
+            )
 
-    #         distractor_words = [d.word for d in distractor_lemmas]
+            distractor_words = [d.word for d in distractor_lemmas]
 
-    #         # 3. Blueprint Formulation
-    #         if allow_odd_one_out and len(target_words) >= 3:
-    #             blueprint = schemas.ItemBlueprint(
-    #                 prompt=f"Which word is NOT a {relation_type} for '{source_lemma.word}'?",
-    #                 keys=[distractor_words[0]],
-    #                 distractors=target_words[:3],
-    #                 metadata={"type": "odd_one_out", "relation_type": relation_type},
-    #             )
+            # 3. Blueprint Formulation
+            if allow_odd_one_out and len(target_words) >= 3:
+                blueprint = schemas.ItemBlueprint(
+                    prompt=f"Which word is NOT a {relation_type} for '{source_lemma.word}'?",
+                    keys=[distractor_words[0]],
+                    distractors=target_words[:3],
+                    metadata={"type": "odd_one_out", "relation_type": relation_type},
+                )
 
-    #         elif drill_direction == "forward":
-    #             blueprint = schemas.ItemBlueprint(
-    #                 prompt=source_lemma.word,
-    #                 keys=random.sample(target_words, min(max_keys, len(target_words))),
-    #                 distractors=distractor_words,
-    #                 metadata={"relation": relation_type, "direction": "forward"},
-    #             )
+            elif is_reverse == "forward":
+                blueprint = schemas.ItemBlueprint(
+                    prompt=source_lemma.word,
+                    keys=random.sample(target_words, min(max_keys, len(target_words))),
+                    distractors=distractor_words,
+                    metadata={"relation": relation_type, "direction": "forward"},
+                )
 
-    #         elif drill_direction == "reverse":
-    #             blueprint = schemas.ItemBlueprint(
-    #                 prompt=random.choice(target_words),
-    #                 keys=[source_lemma.word],
-    #                 distractors=distractor_words,
-    #                 metadata={"relation": relation_type, "direction": "reverse"},
-    #             )
+            elif is_reverse == "reverse":
+                blueprint = schemas.ItemBlueprint(
+                    prompt=random.choice(target_words),
+                    keys=[source_lemma.word],
+                    distractors=distractor_words,
+                    metadata={"relation": relation_type, "direction": "reverse"},
+                )
 
-    #         blueprints.append(blueprint)
+            blueprints.append(blueprint)
 
-    #     return blueprints
+        return blueprints
 
     # --- ABSTRACT METHOD ---
 

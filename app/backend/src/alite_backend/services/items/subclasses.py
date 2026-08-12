@@ -1,13 +1,14 @@
 # app/backend/src/alite_backend/services/items/subclasses.py
-from typing import List, Any
+import logging
 import random
 from collections import defaultdict
-import logging
-from sqlalchemy import select, func
-from sqlalchemy.orm import Session
+from typing import Any, List
+
 from alite_backend.db import models, schemas
-from alite_backend.db.crud.item_crud import crud_item, crud_exercise
+from alite_backend.db.crud.item_crud import crud_exercise, crud_item
 from alite_backend.services.items.base import BaseExerciseStrategy
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class StandaloneAttributeStrategy(BaseExerciseStrategy):
         request_context: schemas.ExerciseContext,
         target_pos: models.EnumPartOfSpeech | None,
         target_column: str,
-        drill_direction: str,
+        reverse_drill: bool,
     ):
         # pass up to Base class
         super().__init__(db_session, request_context)
@@ -33,7 +34,7 @@ class StandaloneAttributeStrategy(BaseExerciseStrategy):
         # subclass attributes
         self.target_pos = target_pos
         self.target_column = target_column
-        self.target_direction = drill_direction
+        self.is_reverse = reverse_drill
 
     def generate_item_blueprints(
         self, num_items=10, max_keys=1, max_distractors=3, config=None
@@ -47,7 +48,7 @@ class StandaloneAttributeStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction=self.target_direction,
+            is_reverse=self.is_reverse,
         )
 
 
@@ -62,7 +63,7 @@ class SiblingAttributeStrategy(BaseExerciseStrategy):
         target_column: str,
         junction_model: models.Base,
         junction_column: str,
-        drill_direction: str,
+        reverse_drill: bool,
     ):
         # pass up to Base class
         super().__init__(db_session, request_context)
@@ -72,7 +73,7 @@ class SiblingAttributeStrategy(BaseExerciseStrategy):
         self.junction_model = junction_model
         self.junction_column = junction_column
         self.target_column = target_column
-        self.target_direction = drill_direction
+        self.is_reverse = reverse_drill
 
     def generate_item_blueprints(
         self, num_items=10, max_keys=1, max_distractors=3, config=None
@@ -89,7 +90,7 @@ class SiblingAttributeStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction=self.target_direction,
+            is_reverse=self.is_reverse,
         )
 
 
@@ -100,14 +101,14 @@ class MorphologicalStrategy(BaseExerciseStrategy):
         db_session: Session,
         request_context: schemas.ExerciseContext,
         target_pos: models.EnumPartOfSpeech,
-        drill_direction: str,
+        reverse_drill: bool,
     ):
 
         # pass up to Base class
         super().__init__(db_session, request_context)
 
         self.target_pos = target_pos
-        self.target_direction = drill_direction
+        self.is_reverse = reverse_drill
 
     def generate_item_blueprints(
         self,
@@ -141,7 +142,7 @@ class MorphologicalStrategy(BaseExerciseStrategy):
                 max_distractors=max_distractors,
                 allowed_foci=foci,  # type: ignore
                 allow_odd_one_out=allow_ooo,
-                drill_direction=self.target_direction,
+                is_reverse=self.is_reverse,
             )
 
 
@@ -151,11 +152,11 @@ class LemmaRelationStrategy(BaseExerciseStrategy):
         self,
         target_pos: models.EnumPartOfSpeech,
         target_column: str,
-        drill_direction: str,
+        reverse_drill: bool,
     ):
         self.target_pos = target_pos
         self.target_column = target_column
-        self.target_direction = drill_direction
+        self.is_reverse = reverse_drill
 
     def generate_item_blueprints(
         self, num_items=10, max_keys=1, max_distractors=3, config=None
@@ -169,5 +170,5 @@ class LemmaRelationStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction=self.target_direction,
+            is_reverse=self.is_reverse,
         )

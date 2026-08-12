@@ -1,7 +1,8 @@
 # app/backend/src/alite_backend/services/items/lemmas.py
-from typing import List, Dict
-from alite_backend.services.items.base import BaseExerciseStrategy
+from typing import Dict, List
+
 from alite_backend.db import models, schemas
+from alite_backend.services.items.base import BaseExerciseStrategy
 
 # lemam to part of speech ("lemma_to_pos")
 # "What is the part of speech of [lemma]?" (ZQ: MCQ)
@@ -20,7 +21,7 @@ class LemmaToPosStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="lemma_to_trait",
+            is_reverse=False,
         )
 
 
@@ -41,7 +42,7 @@ class PosToLemmaStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="trait_to_lemma",
+            is_reverse=True,
         )
 
 

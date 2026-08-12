@@ -1,31 +1,35 @@
 # schemas.py
 # pydantic models for API data validation and response shaping
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
 from enum import Enum
+from typing import Any, Dict, List, Optional, Tuple
+from uuid import UUID
+
 from alite_backend.db.models import (
     EnumGramGender,
+    EnumItemDifficulty,
+    EnumItemFormat,
+    EnumLookupStatus,
     EnumPartOfSpeech,
+    EnumPronType,
+    EnumRelLemType,
+    EnumSentItemType,
+    EnumUserRole,
     EnumVerbAspect,
     EnumVerbTransRefl,
     EnumVerbType,
-    EnumRelLemType,
-    EnumLookupStatus,
-    EnumPronType,
-    EnumUserRole,
-    EnumItemFormat,
     EnumWordItemType,
 )
 from pydantic import (
-    BaseModel,
-    Field,
-    HttpUrl,
     UUID4,
     UUID5,
+    BaseModel,
     ConfigDict,
-    model_validator,
-    JsonValue,
     EmailStr,
+    Field,
+    HttpUrl,
+    JsonValue,
+    model_validator,
 )
 
 #
@@ -531,7 +535,7 @@ class UserReturn(UserBase):
     id: int
     created_at: datetime
     alias: Optional[str]
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -768,31 +772,6 @@ class SentenceTokenReturn(SentenceTokenBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-# Items
-
-
-class ItemBase(BaseModel):
-    item_type: EnumWordItemType
-    prompt: str
-    settings: JsonValue
-    key: str
-    distractors: Optional[List[str]]
-
-
-class ItemCreate(ItemBase):
-    pass
-
-
-class ItemUpdate(ItemBase):
-    id: int
-
-
-class ItemReturn(ItemUpdate):
-    start_time: datetime
-    finish_time: datetime
-    created_at: datetime
-
-
 # Exercise
 
 
@@ -809,6 +788,52 @@ class ExerciseUpdate(ExerciseBase):
 
 
 class ExerciseReturn(ExerciseUpdate):
+    start_time: datetime
+    finish_time: datetime
+    created_at: datetime
+
+
+# Items
+
+
+class ItemBase(BaseModel):
+    item_type: EnumWordItemType
+
+
+class ItemCreate(ItemBase):
+    prompt: str
+    settings: JsonValue
+    options: List[str]
+
+
+class ItemUpdate(ItemBase):
+    id: int
+
+
+class ItemReturn(ItemUpdate):
+    start_time: datetime
+    finish_time: datetime
+    created_at: datetime
+
+
+# Item Options
+
+
+class ItemOptionBase(BaseModel):
+    option_text: str
+    item_id: int
+    is_correct: bool
+
+
+class ItemOptionCreate(ItemOptionBase):
+    option_uuid: UUID
+
+
+class ItemOptionUpdate(ItemOptionCreate):
+    id: int
+
+
+class ItemOptionReturn(ItemOptionUpdate):
     start_time: datetime
     finish_time: datetime
     created_at: datetime
@@ -852,7 +877,7 @@ class ExerciseContext(BaseModel):
     mod_ids: Optional[List[int]]
     lem_ids: Optional[List[int]]
     ex_formats: List[EnumItemFormat]
-    # num_items: int
+    difficulty: EnumItemDifficulty = EnumItemDifficulty.MEDIUM
     max_keys: int = 1
     max_distractors: int = 3
 
@@ -892,10 +917,10 @@ class EnumGramExFocus(str, Enum):
 
 
 class StrategyConfigs(BaseModel):
-    # Use optional attributes mapped directly to your core strategy enums
+    # use optional attributes mapped directly to core strategy enums
     allow_odd_one_out: bool = False
     strategies: Dict[
-        str,
+        EnumWordItemType | EnumSentItemType,
         List[EnumSubstGramExFocus]
         | List[EnumVerbGramExFocus]
         | List[EnumPartGramExFocus],
@@ -905,7 +930,7 @@ class StrategyConfigs(BaseModel):
 class ExerciseRequest(BaseModel):
     # Side-A + Side-B items = request
     exercise_context: ExerciseContext
-    type_counts: Dict[EnumWordItemType, int]
+    type_counts: Dict[EnumWordItemType | EnumSentItemType, int]
     grammar_focus: Optional[StrategyConfigs] = None
 
 
@@ -941,16 +966,14 @@ class MultipleChoiceResponse(BaseModel):
     options: List[str | int]
 
 
-class WordClozeResponse(BaseModel):
-    item_format: EnumItemFormat = EnumItemFormat.CLOZE
+class FillInTheBlankResponse(BaseModel):
+    item_format: EnumItemFormat = EnumItemFormat.FITB
     item_id: int
     prompt: str
-    sentence_parts: List[str]
-    # TODO: replace below with cheat-secure way to check cloze responses
-    target_lemma: str
+    parts: List[str]
 
 
-ExerciseItems = FlashcardResponse | MultipleChoiceResponse | WordClozeResponse
+ExerciseItems = FlashcardResponse | MultipleChoiceResponse | FillInTheBlankResponse
 
 
 class ExerciseResponse(BaseModel):
@@ -966,10 +989,10 @@ class AnswerSubmission(BaseModel):
     item_id: int
     selection: str
     response_time_ms: int
+    attempt_num: int
 
 
 class AnswerResult(BaseModel):
     is_correct: bool
-    attempts_remaining: int
     correct_answer: Optional[str] = None
     explanation: Optional[str] = None

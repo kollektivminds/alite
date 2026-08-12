@@ -10,6 +10,67 @@ export const ITEM_FORMAT = [
 
 export type ItemFormat = (typeof ITEM_FORMAT)[number];
 
+export type StrategyCategory = 'general' | 'adjectives' | 'nouns' | 'participles' | 'verbs';
+
+export interface StrategyMetadata {
+  id: WordItemStrategy;
+  label: string;
+  description: string; // Used for the Tooltip
+  category: StrategyCategory;
+  reversible: boolean;
+}
+
+export const ITEM_STRATEGY_REGISTRY: Record<WordItemStrategy, StrategyMetadata> = {
+  lem_to_pos: {
+    id: 'lem_to_pos',
+    label: 'word ↔ part of speech',
+    description: 'Tests identification of part of speech of a given word.',
+    category: 'general',
+    reversible: true,
+  },
+  lem_to_def: {
+    id: 'lem_to_def',
+    label: 'word ↔ definition',
+    description: 'Tests identification of definition of a given word.',
+    category: 'general',
+    reversible: true,
+  },
+  lem_to_pron: {
+    id: 'lem_to_pron',
+    label: 'word ↔ pronunciation',
+    description: 'Tests identification of part of speech of a given word.',
+    category: 'general',
+    reversible: true,
+  },
+  lem_lem_to_rel: {
+    id: 'lem_lem_to_rel',
+    label: '2 words ↔ relationship',
+    description: 'Tests identification of part of speech of a given word.',
+    category: 'general',
+    reversible: true,
+  },
+  adjv_form_to_type: {
+    id: 'adjv_form_to_type',
+    label: 'adjective form ↔ comparative / superlative',
+    description: 'Tests identification of part of speech of a given word.',
+    category: 'adjectives',
+    reversible: true,
+  },
+  adjv_form_to_gram: {
+    id: 'adjv_form_to_gram',
+    label: 'adjective form ↔ grammar type',
+    description: 'Tests identification of part of speech of a given word.',
+    category: 'adjectives',
+    reversible: true,
+  },
+  noun_to_gend: {
+    id: 'noun_to_gend',
+    label: 'noun ↔ gender',
+    description: 'Tests identification of gender of a given noun.',
+    category: 'nouns',
+    reversible: true,
+  },
+}
 
 export const WORD_ITEM_STRATEGIES = [
   // lemmas
@@ -45,7 +106,7 @@ export const WORD_ITEM_STRATEGIES = [
   "tnrf_to_verb",
 ] as const;
 
-export type WordItemStrategies = (typeof WORD_ITEM_STRATEGIES)[number];
+export type WordItemStrategy = (typeof WORD_ITEM_STRATEGIES)[number];
 
 export const SENT_ITEM_STRATEGIES = [
   "fill_in_the_form",
@@ -54,4 +115,4 @@ export const SENT_ITEM_STRATEGIES = [
   "fill_in_the_lemma",
 ] as const;
 
-export type SentItemStrategies = (typeof SENT_ITEM_STRATEGIES)[number];
+export type SentItemStrategy = (typeof SENT_ITEM_STRATEGIES)[number];

@@ -1,12 +1,14 @@
 # app/backend/src/alite_backend/services/items/nouns.py
-from typing import List
+import logging
 import random
 from collections import defaultdict
-import logging
-from sqlalchemy import select, func
+from typing import List
+
 from alite_backend.db import models, schemas
-from alite_backend.db.crud.item_crud import crud_item, crud_exercise
+from alite_backend.db.crud.item_crud import crud_exercise, crud_item
 from alite_backend.services.items.base import BaseExerciseStrategy
+from regex import T
+from sqlalchemy import func, select
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +63,7 @@ class AdjvFormToGramStrategy(BaseExerciseStrategy):
             max_distractors=max_distractors,
             allowed_foci=foci,
             allow_odd_one_out=allow_ooo,
-            drill_direction="form_to_gram",
+            is_reverse=False,
         )
 
 
@@ -90,7 +92,7 @@ class AdjvGramToFormStrategy(BaseExerciseStrategy):
             max_distractors=max_distractors,
             allowed_foci=foci,
             allow_odd_one_out=allow_ooo,
-            drill_direction="gram_to_form",
+            is_reverse=True,
         )
 
 
@@ -115,7 +117,7 @@ class NounToGenderStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="lemma_to_trait",  # Prompts: "Identify the gender of 'книга'"
+            is_reverse=False,
         )
 
 
@@ -136,7 +138,7 @@ class GenderToNounStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="trait_to_lemma",  # Prompts: "Which of the following is feminine?"
+            is_reverse=True,
         )
 
 
@@ -157,7 +159,7 @@ class NounToAnimacyStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="lemma_to_trait",  # Prompts: "Identify the gender of 'книга'"
+            is_reverse=False,  # Prompts: "Identify the gender of 'книга'"
         )
 
 
@@ -178,7 +180,7 @@ class AnimacyToNounStrategy(BaseExerciseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            drill_direction="trait_to_lemma",  # Prompts: "Identify the gender of 'книга'"
+            is_reverse=True,  # Prompts: "Identify the gender of 'книга'"
         )
 
 
@@ -208,7 +210,7 @@ class NounFormToGramStrategy(BaseExerciseStrategy):
             max_distractors=max_distractors,
             allowed_foci=foci,
             allow_odd_one_out=allow_ooo,
-            drill_direction="form_to_gram",
+            is_reverse=False,
         )
 
 
@@ -451,7 +453,7 @@ class NounGramToFormStrategy(BaseExerciseStrategy):
             max_distractors=max_distractors,
             allowed_foci=foci,
             allow_odd_one_out=allow_ooo,
-            drill_direction="gram_to_form",
+            is_reverse=True,
         )
 
 

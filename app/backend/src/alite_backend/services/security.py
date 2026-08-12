@@ -2,7 +2,6 @@
 
 import logging
 from typing import Any, Optional, Dict
-# from passlib.context import CryptContext
 import bcrypt
 from datetime import datetime, timedelta, timezone
 import jwt
@@ -23,43 +22,43 @@ BCRYPT_ROUNDS = 12
 def get_password_hash(password: str) -> str:
     """
     Generates a salted, C-accelerated bcrypt hash from a plain-text password string.
-    
+
     Args:
         password (str): Raw plain-text password submitted by user or seed script.
-        
+
     Returns:
         str: Salted bcrypt hash formatted as a UTF-8 string for DB storage.
     """
-    # 1. Convert the plain-text password string to raw UTF-8 bytes
-    password_bytes = password.encode("utf-8")
+    # convert the plain-text password string to raw UTF-8 bytes
+    password_bytes: bytes = password.encode("utf-8")
 
-    # 2. Generate a random salt with the configured work factor
-    salt = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
+    # generate a random salt with the configured work factor
+    salt: bytes = bcrypt.gensalt(rounds=BCRYPT_ROUNDS)
 
-    # 3. Hash the password bytes against the generated salt
-    hashed_bytes = bcrypt.hashpw(password_bytes, salt)
+    # hash the password bytes against the generated salt
+    hashed_bytes: bytes = bcrypt.hashpw(password_bytes, salt)
 
-    # 4. Decode the byte string back to UTF-8 for database column persistence
+    # decode the byte string back to UTF-8 for database column persistence
     return hashed_bytes.decode("utf-8")
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """
     Cryptographically verifies a candidate plain-text password against a stored bcrypt hash.
-    
+
     Args:
         plain_password (str): Raw candidate password from login attempt.
         hashed_password (str): Stored bcrypt hash string retrieved from PostgreSQL.
-        
+
     Returns:
         bool: True if candidate matches the hash; False otherwise.
     """
     try:
-        # 1. Encode both inputs into bytes required by C-bindings
-        plain_bytes = plain_password.encode("utf-8")
-        hashed_bytes = hashed_password.encode("utf-8")
+        # encode both inputs into bytes required by C-bindings
+        plain_bytes: bytes = plain_password.encode("utf-8")
+        hashed_bytes: bytes = hashed_password.encode("utf-8")
 
-        # 2. Perform constant-time comparison to prevent timing attacks
+        # perform constant-time comparison to prevent timing attacks
         return bcrypt.checkpw(plain_bytes, hashed_bytes)
     except Exception as exc:
         logger.error("Password verification error: %s", exc)
@@ -86,7 +85,7 @@ def create_access_token(
     else:
         expire = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
 
-    # Construct standard claims payload (RFC 7519)
+    # construct standard claims payload (RFC 7519)
     payload: Dict[str, Any] = {
         "sub": str(subject),  # Subject identifier
         "role": role,  # Application-specific RBAC claim
@@ -95,7 +94,7 @@ def create_access_token(
         "type": "access_token",  # Token type identifier
     }
 
-    # Encode and sign using the symmetric SECRET_KEY and HS256
+    # encode and sign using the symmetric SECRET_KEY and HS256
     encoded_jwt = jwt.encode(payload, settings.SECRET_KEY, algorithm=JWT_ALGORITHM)
     return encoded_jwt
 

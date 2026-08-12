@@ -1,19 +1,17 @@
 # app/backend/services/exercise_router.py
 import logging
 import random
-from typing import Tuple, Any, Dict
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException
-from alite_backend.db import schemas, models
+from typing import Any, Dict, Tuple
+
 from alite_backend.api import deps
+from alite_backend.db import models, schemas
 from alite_backend.db.schemas import EnumWordItemType
 from alite_backend.services.items.base import BaseExerciseStrategy
 from alite_backend.services.items.subclasses import (
-    StandaloneAttributeStrategy,
-    SiblingAttributeStrategy,
-    MorphologicalStrategy,
-    LemmaRelationStrategy,
-)
+    LemmaRelationStrategy, MorphologicalStrategy, SiblingAttributeStrategy,
+    StandaloneAttributeStrategy)
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +22,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": None,
             "target_column": "pos",
-            "drill_direction": "lemma_to_trait",
+            "is_reverse": False,
         },
     },
     EnumWordItemType.POS_TO_LEM: {
@@ -32,7 +30,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": None,
             "target_column": "pos",
-            "drill_direction": "trait_to_lemma",
+            "is_reverse": True,
         },
     },
     EnumWordItemType.NOUN_TO_GEND: {
@@ -40,7 +38,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_gender",
-            "drill_direction": "lemma_to_trait",
+            "is_reverse": False,
         },
     },
     EnumWordItemType.GEND_TO_NOUN: {
@@ -48,7 +46,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_gender",
-            "drill_direction": "trait_to_lemma",
+            "is_reverse": True,
         },
     },
     EnumWordItemType.NOUN_TO_ANIM: {
@@ -56,7 +54,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_animacy",
-            "drill_direction": "lemma_to_trait",
+            "is_reverse": False,
         },
     },
     EnumWordItemType.ANIM_TO_NOUN: {
@@ -64,7 +62,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_animacy",
-            "drill_direction": "trait_to_lemma",
+            "is_reverse": True,
         },
     },
     EnumWordItemType.VERB_TO_ASPT: {
@@ -72,7 +70,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_aspect",
-            "drill_direction": "lemma_to_trait",
+            "is_reverse": False,
         },
     },
     EnumWordItemType.ASPT_TO_VERB: {
@@ -80,7 +78,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_aspect",
-            "drill_direction": "trait_to_lemma",
+            "is_reverse": True,
         },
     },
     EnumWordItemType.VERB_TO_TYPE: {
@@ -88,7 +86,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_type",
-            "drill_direction": "lemma_to_trait",
+            "is_reverse": False,
         },
     },
     EnumWordItemType.TYPE_TO_VERB: {
@@ -96,7 +94,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_type",
-            "drill_direction": "trait_to_lemma",
+            "is_reverse": True,
         },
     },
     EnumWordItemType.VERB_TO_TNRF: {
@@ -104,7 +102,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_trans_refl",
-            "drill_direction": "lemma_to_trait",
+            "is_reverse": False,
         },
     },
     EnumWordItemType.TNRF_TO_VERB: {
@@ -112,7 +110,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_trans_refl",
-            "drill_direction": "trait_to_lemma",
+            "is_reverse": True,
         },
     },
     # sibling-query types
@@ -124,7 +122,7 @@ EXERCISE_CONFIG = {
             "target_column": "def_text",
             "junction_model": models.LemmaDefinition,
             "junction_column": "def_id",
-            "drill_direction": "lemma_to_sibling",
+            "is_reverse": False,
         },
     },
     EnumWordItemType.DEF_TO_LEM: {
@@ -135,7 +133,7 @@ EXERCISE_CONFIG = {
             "target_column": "def_text",
             "junction_model": models.LemmaDefinition,
             "junction_column": "def_id",
-            "drill_direction": "sibling_to_lemma",
+            "is_reverse": True,
         },
     },
     EnumWordItemType.LEM_TO_PRON: {
@@ -146,7 +144,7 @@ EXERCISE_CONFIG = {
             "target_column": "pron_text",
             "junction_model": models.LemmaPronunciation,
             "junction_column": "pron_id",
-            "drill_direction": "lemma_to_sibling",
+            "is_reverse": False,
         },
     },
     EnumWordItemType.PRON_TO_LEM: {
@@ -157,36 +155,36 @@ EXERCISE_CONFIG = {
             "target_column": "pron_text",
             "junction_model": models.LemmaPronunciation,
             "junction_column": "pron_id",
-            "drill_direction": "sibling_to_lemma",
+            "is_reverse": True,
         },
     },
     # morphology types
-    EnumWordItemType.NOUN_GRAM_TO_FORM: {
-        "strategy_class": MorphologicalStrategy,
-        "kwargs": {
-            "target_pos": models.EnumPartOfSpeech.NOUN,
-            "drill_direction": "gram_to_form",
-        },
-    },
     EnumWordItemType.NOUN_FORM_TO_GRAM: {
         "strategy_class": MorphologicalStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
-            "drill_direction": "form_to_gram",
+            "is_reverse": False,
         },
     },
-    EnumWordItemType.ADJV_GRAM_TO_FORM: {
+    EnumWordItemType.NOUN_GRAM_TO_FORM: {
         "strategy_class": MorphologicalStrategy,
         "kwargs": {
-            "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
-            "drill_direction": "gram_to_form",
+            "target_pos": models.EnumPartOfSpeech.NOUN,
+            "is_reverse": True,
         },
     },
     EnumWordItemType.ADJV_FORM_TO_GRAM: {
         "strategy_class": MorphologicalStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
-            "drill_direction": "form_to_gram",
+            "is_reverse": False,
+        },
+    },
+    EnumWordItemType.ADJV_GRAM_TO_FORM: {
+        "strategy_class": MorphologicalStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
+            "is_reverse": True,
         },
     },
     # lemma-relation types
@@ -301,50 +299,55 @@ class ExerciseRouter:
                 item_type=pl["item_type"],
                 item_format=item_format,
                 prompt=item_prompt,
-                key=item_key,
-                distractors=item_distractors,
                 settings=item_settings,
+                start_time=None,
+                finish_time=None,
             )
-            self.db.add(db_item)
-            self.db.flush()
 
-            db_lem_in_item = models.LemmaInItem(
-                item_id=db_item.id, lem_id=pl["item_bp"].lem_id
-            )
-            self.db.add(db_lem_in_item)
-            self.db.flush()
+            if db_item:
+                self.db.add(db_item)
+                self.db.flush()
 
-            options = item_key + item_distractors
-            random.shuffle(options)
+                for opt in
 
-            if item_format == models.EnumItemFormat.MCQ:
-                response_items.append(
-                    schemas.MultipleChoiceResponse(
-                        item_id=db_item.id, prompt=item_prompt, options=options
-                    )
+                db_lem_in_item = models.LemmaInItem(
+                    item_id=db_item.id, lem_id=pl["item_bp"].lem_id
                 )
-            elif item_format == models.EnumItemFormat.FLASHCARD:
-                response_items.append(
-                    schemas.FlashcardResponse(
-                        item_id=db_item.id, front_text=item_prompt, back_text=item_key
+                self.db.add(db_lem_in_item)
+                self.db.flush()
+
+                options = item_key + item_distractors
+                random.shuffle(options)
+
+                if item_format == models.EnumItemFormat.MCQ:
+                    response_items.append(
+                        schemas.MultipleChoiceResponse(
+                            item_id=db_item.id, prompt=item_prompt, options=options
+                        )
                     )
-                )
-            elif item_format == models.EnumItemFormat.CLOZE:
-                response_items.append(
-                    schemas.WordClozeResponse(
-                        item_id=db_item.id,
-                        prompt=item_prompt,
-                        sentence_parts=options,  # TODO
-                        target_lemma=item_key,
+                elif item_format == models.EnumItemFormat.FLASHCARD:
+                    response_items.append(
+                        schemas.FlashcardResponse(
+                            item_id=db_item.id,
+                            front_text=item_prompt,
+                            back_text=item_key,
+                        )
                     )
-                )
-            else:
-                continue
+                elif item_format == models.EnumItemFormat.FITB:
+                    response_items.append(
+                        schemas.FillInTheBlankResponse(
+                            item_id=db_item.id,
+                            prompt=item_prompt,
+                            parts=item_key,
+                        )
+                    )
+                else:
+                    continue
 
         self.db.commit()  # Save transaction securely
 
         return schemas.ExerciseResponse(
-            exercise_id=self.exercise_in.id,
+            exercise_id=self.exercise_in.id,  # type: ignore
             num_questions=len(response_items),
             response_data=response_items,
         )
