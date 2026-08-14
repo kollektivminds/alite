@@ -1,19 +1,19 @@
 #
-from typing import Literal, Any
-from fastapi.testclient import TestClient
+from typing import Any, Literal
+
 import pytest
-from sqlalchemy import select, func
-from alite_backend.db.tests.factories import ExerciseRequestFactory
 from alite_backend.db import models
 from alite_backend.db.schemas import (
-    EnumWordItemType,
-    EnumItemFormat,
     EnumGramExFocus,
+    EnumItemFormat,
+    EnumPartGramExFocus,
     EnumSubstGramExFocus,
     EnumVerbGramExFocus,
-    EnumPartGramExFocus,
+    EnumWordItemType,
 )
-from alite_backend.db.tests.factories import UserFactory
+from alite_backend.db.tests.factories import ExerciseRequestFactory, UserFactory
+from fastapi.testclient import TestClient
+from sqlalchemy import func, select
 from sqlalchemy.orm.session import Session
 
 CONFIG_MATRIX = [
@@ -82,10 +82,10 @@ CONFIG_MATRIX = [
     {
         "exercise_context__ex_formats": [EnumItemFormat.MCQ],
         "type_counts": {
-            EnumWordItemType.LEM_TO_DEF: 3,
-            EnumWordItemType.DEF_TO_LEM: 3,
-            EnumWordItemType.LEM_TO_PRON: 3,
-            EnumWordItemType.PRON_TO_LEM: 3,
+            EnumWordItemType.LEM_LEM_TO_REL: 3,
+            EnumWordItemType.REL_TO_LEM_LEM: 3,
+            EnumWordItemType.VERB_PAIR_TO_REL: 3,
+            EnumWordItemType.VERB_TO_ASPT_PAIR: 3,
         },
         "grammar_focus": {
             "strategies": {

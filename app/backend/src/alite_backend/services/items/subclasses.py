@@ -26,7 +26,7 @@ class StandaloneAttributeStrategy(BaseExerciseStrategy):
         request_context: schemas.ExerciseContext,
         target_pos: models.EnumPartOfSpeech | None,
         target_column: str,
-        reverse_drill: bool,
+        is_reverse: bool,
     ):
         # pass up to Base class
         super().__init__(db_session, request_context)
@@ -34,7 +34,7 @@ class StandaloneAttributeStrategy(BaseExerciseStrategy):
         # subclass attributes
         self.target_pos = target_pos
         self.target_column = target_column
-        self.is_reverse = reverse_drill
+        self.is_reverse = is_reverse
 
     def generate_item_blueprints(
         self, num_items=10, max_keys=1, max_distractors=3, config=None
@@ -63,7 +63,7 @@ class SiblingAttributeStrategy(BaseExerciseStrategy):
         target_column: str,
         junction_model: models.Base,
         junction_column: str,
-        reverse_drill: bool,
+        is_reverse: bool,
     ):
         # pass up to Base class
         super().__init__(db_session, request_context)
@@ -73,7 +73,7 @@ class SiblingAttributeStrategy(BaseExerciseStrategy):
         self.junction_model = junction_model
         self.junction_column = junction_column
         self.target_column = target_column
-        self.is_reverse = reverse_drill
+        self.is_reverse = is_reverse
 
     def generate_item_blueprints(
         self, num_items=10, max_keys=1, max_distractors=3, config=None
@@ -101,14 +101,14 @@ class MorphologicalStrategy(BaseExerciseStrategy):
         db_session: Session,
         request_context: schemas.ExerciseContext,
         target_pos: models.EnumPartOfSpeech,
-        reverse_drill: bool,
+        is_reverse: bool,
     ):
 
         # pass up to Base class
         super().__init__(db_session, request_context)
 
         self.target_pos = target_pos
-        self.is_reverse = reverse_drill
+        self.is_reverse = is_reverse
 
     def generate_item_blueprints(
         self,
@@ -150,13 +150,19 @@ class LemmaRelationStrategy(BaseExerciseStrategy):
 
     def __init__(
         self,
-        target_pos: models.EnumPartOfSpeech,
-        target_column: str,
-        reverse_drill: bool,
+        db_session: Session,
+        request_context: schemas.ExerciseContext,
+        target_pos: models.EnumPartOfSpeech | None,
+        target_rel: models.EnumRelLemTypeGroup | None,
+        is_reverse: bool,
     ):
+        # pass up to Base class
+        super().__init__(db_session, request_context)
+
+        # subclass attributes
         self.target_pos = target_pos
-        self.target_column = target_column
-        self.is_reverse = reverse_drill
+        self.target_rel = target_rel
+        self.is_reverse = is_reverse
 
     def generate_item_blueprints(
         self, num_items=10, max_keys=1, max_distractors=3, config=None
@@ -164,8 +170,8 @@ class LemmaRelationStrategy(BaseExerciseStrategy):
         allow_ooo = config.allow_odd_one_out if config else False
 
         return self._build_lemma_relation_drill(
+            rel_target_group=self.target_rel,
             pos_target=self.target_pos,
-            target_attr=self.target_column,
             num_items=num_items,
             max_keys=max_keys,
             max_distractors=max_distractors,

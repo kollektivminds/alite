@@ -118,12 +118,12 @@ class EnumVerbTransRefl(str, enum.Enum):
 
 class EnumRelLemType(str, enum.Enum):
     ADJECTIVE_OF = "adjective_of"
-    ABSTRACT_NOUN_OF = "abstract-noun_of"
+    ABSTRACT_NOUN_OF = "abstract_noun_of"
     ADVERB_OF = "adverb_of"
-    REL_ADJV_OF = "relational-adjective_of"
-    NOUN_FROM_VERB_OF = "noun-from-verb_of"
-    PERFECTIVE_PAIR_OF = "perfective-pair_of"
-    IMPERFECTIVE_PAIR_OF = "imperfective-pair_of"
+    REL_ADJV_OF = "relational_adjective_of"
+    NOUN_FROM_VERB_OF = "noun_from_verb_of"
+    PERFECTIVE_PAIR_OF = "perfective_pair_of"
+    IMPERFECTIVE_PAIR_OF = "imperfective_pair_of"
     SYNONYM_OF = "synonym_of"
     ANTONYM_OF = "antonym_of"
 
@@ -218,10 +218,10 @@ class EnumWordItemType(str, enum.Enum):
     # Aspect
     # lemmas.filter(pos==verb).lem_canon <-> lemmas(id=lem_id).filter(pos==verb).verb_aspect
     VERB_TO_ASPT = "verb_to_aspt"  # "What is the aspect of [verb]?" (FC/MCQ)
-    # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id, target_id].lem_canon
-    # <-> lemmas(id=lem_id).verb_aspect
     ASPT_TO_VERB = "aspt_to_verb"  # "Which of these verbs is [aspect]?" (MCQ)
     # Aspectual pairs
+    # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id, target_id].lem_canon
+    # <-> lemmas(id=lem_id).verb_aspect
     VERB_PAIR_TO_REL = "verb_pair_to_rel"  # "Choose the [aspect] verb(s) of the aspectual group." (MCQ)
     # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id].lem_canon
     # <-> lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[target_id].lem_canon
@@ -1170,9 +1170,7 @@ class Item(Base, table=True):
 
     ex_id: int = Field(foreign_key="exercises.id", index=True, nullable=False)
     order_in_ex: int = Field(index=True, unique=False, nullable=False)
-    item_type: EnumWordItemType | EnumSentItemType = Field(
-        index=True, unique=False, nullable=False
-    )
+    item_type: EnumWordItemType = Field(index=True, unique=False, nullable=False)
     item_format: EnumItemFormat = Field(index=True, unique=False, nullable=False)
     # content
     prompt: str | None = Field(index=False, unique=False, nullable=True)

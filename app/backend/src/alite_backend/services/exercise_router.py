@@ -5,11 +5,14 @@ from typing import Any, Dict, Tuple
 
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
-from alite_backend.db.schemas import EnumWordItemType
+from alite_backend.db.schemas import EnumSentItemType, EnumWordItemType
 from alite_backend.services.items.base import BaseExerciseStrategy
 from alite_backend.services.items.subclasses import (
-    LemmaRelationStrategy, MorphologicalStrategy, SiblingAttributeStrategy,
-    StandaloneAttributeStrategy)
+    LemmaRelationStrategy,
+    MorphologicalStrategy,
+    SiblingAttributeStrategy,
+    StandaloneAttributeStrategy,
+)
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -192,14 +195,32 @@ EXERCISE_CONFIG = {
         "strategy_class": LemmaRelationStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
-            "rel_type": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
+            "target_rel": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
+            "is_reverse": False,
         },
     },
     EnumWordItemType.VERB_TO_ASPT_PAIR: {
         "strategy_class": LemmaRelationStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
-            "rel_type": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
+            "target_rel": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
+            "is_reverse": True,
+        },
+    },
+    EnumWordItemType.LEM_LEM_TO_REL: {
+        "strategy_class": LemmaRelationStrategy,
+        "kwargs": {
+            "target_pos": None,
+            "target_rel": None,
+            "is_reverse": False,
+        },
+    },
+    EnumWordItemType.REL_TO_LEM_LEM: {
+        "strategy_class": LemmaRelationStrategy,
+        "kwargs": {
+            "target_pos": None,
+            "target_rel": None,
+            "is_reverse": True,
         },
     },
 }
@@ -223,7 +244,9 @@ class ExerciseRouter:
         self.db.add(self.exercise_in)
         self.db.flush()
 
-    def get_exercise_generator(self, exercise_type: EnumWordItemType) -> Tuple[
+    def get_exercise_generator(
+        self, exercise_type: EnumWordItemType | models.EnumSentItemType
+    ) -> Tuple[
         StandaloneAttributeStrategy
         | SiblingAttributeStrategy
         | MorphologicalStrategy
@@ -254,10 +277,10 @@ class ExerciseRouter:
                 db_session=self.db,
                 request_context=request.exercise_context,
                 **strategy_kwargs,
-            )
+            )  # type: ignore
             # specific_config = None
             specific_config = (
-                request.grammar_focus if request.grammar_focus.strategies else None
+                request.grammar_focus if request.grammar_focus.strategies else None  # type: ignore
             )
             # create blueprints for all items of a strategy
             blueprints = strategy_instance.generate_item_blueprints(
@@ -308,7 +331,8 @@ class ExerciseRouter:
                 self.db.add(db_item)
                 self.db.flush()
 
-                for opt in
+                for opt in item_key + item_distractors:
+                    db_option = models.ItemOption
 
                 db_lem_in_item = models.LemmaInItem(
                     item_id=db_item.id, lem_id=pl["item_bp"].lem_id

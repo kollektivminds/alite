@@ -3,18 +3,18 @@
 import logging
 import os
 import time
-from typing import List, Dict, Any, Optional, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from dotenv import load_dotenv
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import SQLAlchemyError
+from typing import Any, Dict, List, Optional, Tuple
 
 from alite_backend.words.funcs import validate_word_list
+from alite_backend.words.load import Loader
 
 # from alite_backend.words.lookup import LookupFDAPI
 from alite_backend.words.lookup_parallel import LookupFDAPI
 from alite_backend.words.process import ReturnedLemmaProcessor
-from alite_backend.words.load import Loader
+from dotenv import load_dotenv
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import Session
 
 #
 # LOCATIONS AND SETTINGS
@@ -84,7 +84,7 @@ def _network_worker(
 
 
 def load_words(
-    db: Session, word_s: List[str], max_threads: int = 4, batch_size: int = 50
+    db: Session, word_s: List[str], max_workers: int = 4, batch_size: int = 50
 ):
     """
     Bifurcated ETL pipeline. Processes cached words instantly,
@@ -127,7 +127,7 @@ def load_words(
 
     # get uncached words from the internet
     if uncached_words:
-        with ThreadPoolExecutor(max_threads=max_threads) as executor:  # type: ignore
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:  # type: ignore
             # Submit uncached words to the thread pool
             future_to_word = {
                 executor.submit(_network_worker, w, fetcher): w for w in uncached_words

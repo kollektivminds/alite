@@ -1,18 +1,18 @@
 # app/backend/src/alite_backend/db/tests/conftest.py
-import pytest
 import json
-from sqlalchemy import create_engine, MetaData, select, event
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.types import ARRAY
-from sqlalchemy.engine import Engine
-from fastapi.testclient import TestClient
 
+import pytest
+from alite_backend.api import deps
 from alite_backend.config import settings
 from alite_backend.db import models, schemas
-from alite_backend.db.tests.factories import UserFactory, BaseFactory, ALL_FACTORIES
+from alite_backend.db.tests.factories import ALL_FACTORIES, BaseFactory, UserFactory
 from alite_backend.main import app
-from alite_backend.api import deps
+from fastapi.testclient import TestClient
+from sqlalchemy import MetaData, create_engine, event, select
+from sqlalchemy.engine import Engine
+from sqlalchemy.ext.compiler import compiles
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.types import ARRAY
 
 # # GLOBAL DIALECT COMPILER OVERRIDES
 # @compiles(ARRAY, "sqlite")
@@ -61,8 +61,8 @@ from alite_backend.api import deps
 
 try:
     # 1. Handle DDL Table Compilation Bounds
-    from sqlalchemy.types import ARRAY
     from sqlalchemy.ext.compiler import compiles
+    from sqlalchemy.types import ARRAY
 
     @compiles(ARRAY, "sqlite")
     def compile_array_sqlite(type_, compiler, **kw):
@@ -242,10 +242,10 @@ def db_session(clone_lexicon_snapshot):
 
     yield session  # Running tests populate transient items here
 
-    # Teardown: Safely sever session pointers to prevent cross-test memory contamination
+    # teardown: safely sever session pointers to prevent cross-test memory contamination
     for factory_class in ALL_FACTORIES:
         factory_class._meta.sqlalchemy_session = None
-    # 5. Teardown: Close the session and ROLL BACK the outer transaction.
+    # teardown: close the session and ROLL BACK the outer transaction.
     session.close()
     transaction.rollback()
     connection.close()

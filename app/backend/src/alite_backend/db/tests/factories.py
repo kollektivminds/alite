@@ -1,9 +1,9 @@
 import factory
-from factory.faker import Faker
-from factory.declarations import Sequence, SubFactory, LazyAttribute
-from factory.alchemy import SQLAlchemyModelFactory
 from alite_backend.db import models, schemas
 from alite_backend.db.db_session import SessionLocal
+from factory.alchemy import SQLAlchemyModelFactory
+from factory.declarations import LazyAttribute, Sequence, SubFactory
+from factory.faker import Faker
 
 TEST_SESSION = None
 
@@ -39,7 +39,7 @@ class UserFactory(BaseFactory):
     id = Sequence(lambda n: n)
     username = Faker("user_name")
     user_role = models.EnumUserRole.STUDENT
-    # email = Sequence(lambda n: f"student_{n}@alite.edu")
+    email = Sequence(lambda n: f"student_{n}@alite.edu")
     # target_lang = models.EnumTargetLanguage.RU
 
 

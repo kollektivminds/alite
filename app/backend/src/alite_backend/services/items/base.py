@@ -9,6 +9,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from alite_backend.db import models, schemas
+from hypothesis import target
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, declarative_base
 
@@ -38,7 +39,7 @@ class BaseExerciseStrategy(ABC):
 
         if self.less_list_ids:
             stmt = stmt.join(models.LemmaInLessonList).where(
-                models.LemmaInLessonList.less_list_id.in_(self.less_list_ids)
+                models.LemmaInLessonList.less_list_id.in_(self.less_list_ids)  # type: ignore
             )
 
         if self.mod_ids:
@@ -46,14 +47,14 @@ class BaseExerciseStrategy(ABC):
                 stmt.join(models.LemmaInLessonList)
                 .join(
                     models.LessonListInModule,
-                    models.LessonListInModule.less_list_id
+                    models.LessonListInModule.less_list_id  # type: ignore
                     == models.LemmaInLessonList.less_list_id,
                 )
-                .where(models.LessonListInModule.mod_id.in_(self.mod_ids))
+                .where(models.LessonListInModule.mod_id.in_(self.mod_ids))  # type: ignore
             )
 
         if self.lem_ids:
-            stmt = stmt.where(models.Lemma.id.in_(self.lem_ids))
+            stmt = stmt.where(models.Lemma.id.in_(self.lem_ids))  # type: ignore
 
         return stmt
 
@@ -108,8 +109,8 @@ class BaseExerciseStrategy(ABC):
         """
         # subquery: get distinct base words
         lemma_stmt = (
-            self._get_scoped_stmt()
-            .with_only_columns(models.Lemma.id)
+            self._get_scoped_stmt()  # type: ignore
+            .with_only_columns(models.Lemma.id)  # type: ignore
             .where(models.Lemma.pos == pos_target)
             .order_by(func.random())
             .limit(num_lemmas)
@@ -118,10 +119,10 @@ class BaseExerciseStrategy(ABC):
         # main query: the relational pathway
         stmt = (
             select(models.Lemma, models.WordForm, models.Lexeme, models.GramProp)
-            .join(models.WordForm, models.WordForm.lem_id == models.Lemma.id)
-            .join(models.Lexeme, models.WordForm.lex_id == models.Lexeme.id)
-            .join(models.GramProp, models.WordForm.gram_id == models.GramProp.id)
-            .where(models.Lemma.id.in_(lemma_stmt.scalar_subquery()))
+            .join(models.WordForm, models.WordForm.lem_id == models.Lemma.id)  # type: ignore
+            .join(models.Lexeme, models.WordForm.lex_id == models.Lexeme.id)  # type: ignore
+            .join(models.GramProp, models.WordForm.gram_id == models.GramProp.id)  # type: ignore
+            .where(models.Lemma.id.in_(lemma_stmt.scalar_subquery()))  # type: ignore
         )
 
         # apply any specific grammatical filters passed by the child strategy
@@ -542,7 +543,7 @@ class BaseExerciseStrategy(ABC):
         stmt = self._get_scoped_stmt()
 
         if pos_target is not None:
-            stmt = stmt.where(models.Lemma.pos == pos_target)
+            stmt = stmt.where(models.Lemma.pos == pos_target)  # type: ignore
 
         stmt = (
             stmt.where(getattr(models.Lemma, target_attr).isnot(None))  # Ignore nulls
@@ -689,7 +690,7 @@ class BaseExerciseStrategy(ABC):
                     prompt=prompt_text,
                     keys=keys,
                     distractors=distractors,
-                    lem_id=lemma_id,
+                    lem_id=lemma_id,  # type: ignore
                 )
                 blueprints.append(bp)
 
@@ -802,7 +803,7 @@ class BaseExerciseStrategy(ABC):
         )
 
         if target_pos:
-            stmt = stmt.filter(models.Lemma.pos == target_pos)
+            stmt = stmt.filter(models.Lemma.pos == target_pos)  # type: ignore
 
         stmt = stmt.order_by(func.random()).limit(num_items * 4)
 
@@ -872,7 +873,7 @@ class BaseExerciseStrategy(ABC):
                     .join(
                         junction_model
                     )  # Ensure the distractor word actually has entries
-                    .filter(models.Lemma.pos == lemma.pos, models.Lemma.id != lemma.id)
+                    .filter(models.Lemma.pos == lemma.pos, models.Lemma.id != lemma.id)  # type: ignore
                     .order_by(func.random())
                     .limit(max_distractors)
                 )
@@ -884,7 +885,7 @@ class BaseExerciseStrategy(ABC):
                     select(target_model)
                     .join(junction_model)
                     .join(models.Lemma)
-                    .filter(models.Lemma.pos == lemma.pos, models.Lemma.id != lemma.id)
+                    .filter(models.Lemma.pos == lemma.pos, models.Lemma.id != lemma.id)  # type: ignore
                     .order_by(func.random())
                     .limit(max_distractors)
                 )
@@ -904,8 +905,8 @@ class BaseExerciseStrategy(ABC):
                     keys=[distractor_val],
                     distractors=random.sample(
                         sibling_values, 3
-                    ),  # Valid siblings act as wrong answers
-                    lem_id=lemma.id,
+                    ),  # valid siblings act as wrong answers
+                    lem_id=lemma.id,  # type: ignore
                 )
 
             elif is_reverse is False:
@@ -915,7 +916,7 @@ class BaseExerciseStrategy(ABC):
                         sibling_values, min(max_keys, len(sibling_values))
                     ),
                     distractors=distractor_values,
-                    lem_id=lemma.id,
+                    lem_id=lemma.id,  # type: ignore
                 )
 
             elif is_reverse is True:
@@ -924,22 +925,77 @@ class BaseExerciseStrategy(ABC):
                     prompt=selected_sibling,
                     keys=[lemma.lem_text],
                     distractors=distractor_values,  # We efficiently fetched exactly what we needed!
-                    lem_id=lemma.id,
+                    lem_id=lemma.id,  # type: ignore
                 )
 
             blueprints.append(bp)  # type: ignore
 
         return blueprints
 
+    def _generate_relation_prompt(
+        self,
+        prompt_word: str,
+        rel_type: str | Enum,
+        is_reverse: bool,
+        is_ooo: bool = False,
+    ) -> str:
+        """
+        Generates pedagogically sound prompts for relational items, handling
+        asymmetry in derivational and aspectual relationships.
+        """
+        # extract string value if an Enum is passed
+        rel_str = getattr(rel_type, "value", str(rel_type))
+
+        # base mapping for forward relations (Source -> Target)
+        forward_labels = {
+            "perfective_pair_of": "perfective counterpart",
+            "imperfective_pair_of": "imperfective counterpart",
+            "synonym_of": "synonym",
+            "antonym_of": "antonym",
+            "adjective_of": "derived adjective",
+            "abstract_noun_of": "abstract noun",
+            "adverb_of": "derived adverb",
+            "rel_adjv_of": "relational adjective",
+            "noun_from_verb_of": "verbal noun",
+        }
+
+        # base mapping for reverse relations (target -> source)
+        # resolves the asymmetry of derivational/aspectual roots
+        reverse_labels = {
+            "perfective_pair_of": "imperfective base",
+            "imperfective_pair_of": "perfective base",
+            "synonym_of": "synonym",  # Symmetric
+            "antonym_of": "antonym",  # Symmetric
+            "adjective_of": "base noun or verb",
+            "abstract_noun_of": "base word",
+            "adverb_of": "base adjective",
+            "rel_adjv_of": "base noun",
+            "noun_from_verb_of": "base verb",
+        }
+
+        if is_ooo:
+            # for OOO, the prompt_word is always the central hub.
+            label = forward_labels.get(rel_str, rel_str.replace("_", " "))
+            return f"Which word is NOT a {label} for '{prompt_word}'?"
+
+        if is_reverse:
+            # showing the Target, asking for the Source
+            label = reverse_labels.get(rel_str, f"base of {rel_str}")
+            return f"Identify the {label} for '{prompt_word}':"
+        else:
+            # showing the Source, asking for the Target
+            label = forward_labels.get(rel_str, rel_str.replace("_", " "))
+            return f"Identify the {label} for '{prompt_word}':"
+
     def _build_lemma_relation_drill(
         self,
-        relation_type: models.EnumRelLemTypeGroup,
-        pos_target: schemas.EnumPartOfSpeech,
+        rel_target_group: models.EnumRelLemTypeGroup | None,
+        pos_target: models.EnumPartOfSpeech | None,
         num_items: int = 5,
         max_keys: int = 1,
         max_distractors: int = 3,
         allow_odd_one_out: bool = False,
-        is_reverse: str = "forward",
+        is_reverse: bool = False,
     ) -> Dict[str, Any]:
         """
         Builds an item by traversing the lemma_relations junction table
@@ -947,88 +1003,166 @@ class BaseExerciseStrategy(ABC):
         """
         blueprints = []
 
-        # fetch valid relationships using scoped statement
-        rel_stmt = self._get_scoped_stmt()
+        rel_type_dict = {
+            models.EnumRelLemTypeGroup.ASPECTUAL_PAIR: [
+                models.EnumRelLemType.PERFECTIVE_PAIR_OF,
+                models.EnumRelLemType.IMPERFECTIVE_PAIR_OF,
+            ],
+            models.EnumRelLemTypeGroup.SEMANTIC: [
+                models.EnumRelLemType.SYNONYM_OF,
+                models.EnumRelLemType.ANTONYM_OF,
+            ],
+            models.EnumRelLemTypeGroup.SHARED_ROOT: [
+                models.EnumRelLemType.ADJECTIVE_OF,
+                models.EnumRelLemType.ABSTRACT_NOUN_OF,
+                models.EnumRelLemType.ADVERB_OF,
+                models.EnumRelLemType.REL_ADJV_OF,
+                models.EnumRelLemType.NOUN_FROM_VERB_OF,
+            ],
+        }
+
+        target_rel_types = []
+        if rel_target_group:
+            target_rel_types = rel_type_dict.get(rel_target_group, [])
+
+        # 1. Fetch distinct (source_id, specific_rel_type) pairs
         relations_query = (
-            rel_stmt.join(
-                models.Lemma, models.LemmaRelation.source_id == models.Lemma.id
+            self._get_scoped_stmt()
+            .join_from(
+                models.Lemma,
+                models.LemmaRelation,
+                models.LemmaRelation.source_id == models.Lemma.id,  # type: ignore
             )
-            .filter(
-                models.LemmaRelation.rel_type == relation_type,
-                models.Lemma.pos == pos_target,
+            .with_only_columns(
+                models.LemmaRelation.source_id, models.LemmaRelation.rel_type  # type: ignore
             )
-            .order_by(func.random())
-            .limit(num_items * 2)
         )
 
-        # deduplicate sources
-        unique_sources = list({rel.source_id: rel for rel in relations_query}.values())[
-            :num_items
-        ]
+        if target_rel_types:
+            relations_query = relations_query.filter(
+                models.LemmaRelation.rel_type.in_(target_rel_types)  # type: ignore
+            )
 
-        for rel in unique_sources:
-            lemma_stmt = self._get_scoped_stmt()
-            source_lemma = lemma_stmt.get(rel.source_id)
+        if pos_target is not None:
+            relations_query = relations_query.filter(models.Lemma.pos == pos_target)
 
-            # Get all valid targets using scoped statement
-            target_stmt = self._get_scoped_stmt()
-            all_targets = (
-                target_stmt.join(
+        relations_query = relations_query.order_by(func.random()).limit(num_items * 4)
+
+        # execute and deduplicate to ensure unique pair combinations
+        candidate_pairs = list(set(self.db.execute(relations_query).all()))
+
+        if len(candidate_pairs) < num_items:
+            num_items = len(candidate_pairs)
+            if num_items == 0:
+                return []
+
+        for source_id, specific_rel_type in candidate_pairs:
+            if len(blueprints) >= num_items:
+                break
+
+            source_lemma = self.db.get(models.Lemma, source_id)
+            if not source_lemma:
+                continue
+
+            # get targets matching this EXACT relation type
+            target_stmt = (
+                select(models.Lemma)
+                .join_from(
                     models.LemmaRelation,
-                    models.LemmaRelation.target_id == models.Lemma.id,
+                    models.Lemma,
+                    models.LemmaRelation.target_id == models.Lemma.id,  # type: ignore
                 )
                 .filter(
-                    models.LemmaRelation.source_id == source_lemma.id,
-                    models.LemmaRelation.rel_type == relation_type,
+                    models.LemmaRelation.source_id == source_id,
+                    models.LemmaRelation.rel_type == specific_rel_type,
                 )
-                .all()
             )
 
-            target_words = [t.word for t in all_targets]
+            all_targets = self.db.scalars(target_stmt).all()
+            if not all_targets:
+                continue
 
-            # defensively fetch distractors using scoped statement
-            invalid_ids_subquery = db.query(models.LemmaRelation.target_id).filter(
-                models.LemmaRelation.source_id == source_lemma.id,
-                models.LemmaRelation.rel_type == relation_type,
+            target_words = [
+                t.lem_canon or t.lem_text
+                for t in all_targets
+                if t.lem_canon or t.lem_text
+            ]
+            first_target = all_targets[0]
+
+            required_distractor_pos = (
+                source_lemma.pos if is_reverse else first_target.pos
             )
 
-            distractor_stmt = self._get_scoped_stmt(db, models.Lemma)
-            distractor_lemmas = (
-                distractor_stmt.filter(
-                    models.Lemma.pos == pos_target,
-                    models.Lemma.id != source_lemma.id,
-                    ~models.Lemma.id.in_(invalid_ids_subquery),
+            # fetch distractors excluding this exact relation
+            invalid_ids_subquery = select(models.LemmaRelation.target_id).filter(  # type: ignore
+                models.LemmaRelation.source_id == source_id,
+                models.LemmaRelation.rel_type == specific_rel_type,
+            )
+
+            distractor_stmt = (
+                select(models.Lemma)
+                .filter(
+                    models.Lemma.id != source_id,
+                    models.Lemma.pos == required_distractor_pos,  # type: ignore
+                    ~models.Lemma.id.in_(invalid_ids_subquery),  # type: ignore
                 )
                 .order_by(func.random())
                 .limit(max_distractors)
-                .all()
             )
 
-            distractor_words = [d.word for d in distractor_lemmas]
+            distractor_lemmas = self.db.scalars(distractor_stmt).all()
+            distractor_words = [
+                d.lem_canon or d.lem_text
+                for d in distractor_lemmas
+                if d.lem_canon or d.lem_text
+            ]
 
-            # 3. Blueprint Formulation
-            if allow_odd_one_out and len(target_words) >= 3:
+            # graceful degradation check
+            if not target_words or len(distractor_words) < max_distractors:
+                continue
+
+            # blueprint formulation with contextual prompt generation
+            item_is_ooo = allow_odd_one_out and len(target_words) >= 3
+
+            if item_is_ooo:
+                prompt_text = self._generate_relation_prompt(
+                    prompt_word=source_lemma.lem_text,
+                    rel_type=specific_rel_type,
+                    is_reverse=is_reverse,
+                    is_ooo=True,
+                )
                 blueprint = schemas.ItemBlueprint(
-                    prompt=f"Which word is NOT a {relation_type} for '{source_lemma.word}'?",
+                    prompt=prompt_text,
                     keys=[distractor_words[0]],
                     distractors=target_words[:3],
-                    metadata={"type": "odd_one_out", "relation_type": relation_type},
+                    lem_id=source_lemma.id,  # type: ignore
                 )
 
-            elif is_reverse == "forward":
+            elif not is_reverse:
+                prompt_text = self._generate_relation_prompt(
+                    prompt_word=source_lemma.lem_text,
+                    rel_type=specific_rel_type,
+                    is_reverse=False,
+                )
                 blueprint = schemas.ItemBlueprint(
-                    prompt=source_lemma.word,
+                    prompt=prompt_text,
                     keys=random.sample(target_words, min(max_keys, len(target_words))),
                     distractors=distractor_words,
-                    metadata={"relation": relation_type, "direction": "forward"},
+                    lem_id=source_lemma.id,  # type: ignore
                 )
 
-            elif is_reverse == "reverse":
+            else:  # is_reverse is True
+                target_hub = random.choice(target_words)
+                prompt_text = self._generate_relation_prompt(
+                    prompt_word=target_hub,
+                    rel_type=specific_rel_type,
+                    is_reverse=True,
+                )
                 blueprint = schemas.ItemBlueprint(
-                    prompt=random.choice(target_words),
-                    keys=[source_lemma.word],
+                    prompt=prompt_text,
+                    keys=[source_lemma.lem_text],
                     distractors=distractor_words,
-                    metadata={"relation": relation_type, "direction": "reverse"},
+                    lem_id=source_lemma.id,  # type: ignore
                 )
 
             blueprints.append(blueprint)

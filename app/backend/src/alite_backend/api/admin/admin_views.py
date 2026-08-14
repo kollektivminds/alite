@@ -1,28 +1,28 @@
-from sqladmin import ModelView
 from alite_backend.db.models import (
-    Lemma,
-    Lexeme,
-    WordForm,
-    GramProp,
     Definition,
-    Example,
-    Pronunciation,
-    LemmaRelation,
-    LookupQueue,
-    LemmaDefinition,
     DefinitionExample,
+    Document,
+    Example,
+    Exercise,
+    GramProp,
+    Item,
+    Lemma,
+    LemmaDefinition,
     LemmaPronunciation,
-    Module,
+    LemmaRelation,
     LessonList,
+    Lexeme,
+    LookupQueue,
+    Module,
+    Pronunciation,
     Sentence,
     SentenceToken,
-    Document,
     User,
     UserGroup,
     UserInGroup,
-    Item,
-    Exercise,
+    WordForm,
 )
+from sqladmin import ModelView
 
 
 class LemmaAdminView(ModelView, model=Lemma):
@@ -200,8 +200,7 @@ class ItemAdminView(ModelView, model=Item):
         Item.ex_id,
         Item.item_type,
         Item.item_format,
-        Item.difficulty,
         Item.prompt,
     ]  # type: ignore
-    column_filters = [Item.item_type, Item.item_format, Item.difficulty]
+    column_filters = [Item.item_type, Item.item_format]
     page_size = 50

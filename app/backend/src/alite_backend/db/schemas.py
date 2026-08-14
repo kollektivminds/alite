@@ -2,7 +2,7 @@
 # pydantic models for API data validation and response shaping
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import UUID
 
 from alite_backend.db.models import (
@@ -919,8 +919,8 @@ class EnumGramExFocus(str, Enum):
 class StrategyConfigs(BaseModel):
     # use optional attributes mapped directly to core strategy enums
     allow_odd_one_out: bool = False
-    strategies: Dict[
-        EnumWordItemType | EnumSentItemType,
+    strategies: dict[
+        str,
         List[EnumSubstGramExFocus]
         | List[EnumVerbGramExFocus]
         | List[EnumPartGramExFocus],
@@ -930,7 +930,7 @@ class StrategyConfigs(BaseModel):
 class ExerciseRequest(BaseModel):
     # Side-A + Side-B items = request
     exercise_context: ExerciseContext
-    type_counts: Dict[EnumWordItemType | EnumSentItemType, int]
+    type_counts: dict[Union[EnumWordItemType, EnumSentItemType], int]
     grammar_focus: Optional[StrategyConfigs] = None
 
 
