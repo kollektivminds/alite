@@ -5,44 +5,45 @@ set up database
 3. CREATE module
 """
 
+import logging
+
 # from ..words.funcs import load_json
 import os
 import random
-import logging
 
 # import json
 from collections import defaultdict
-from cytoolz import concat
-from sqlalchemy import text, exc, create_engine
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Session
-from dotenv import load_dotenv
 from pathlib import Path
+
+import alite_backend.db.schemas as schemas
 from alembic import command
 from alembic.config import Config
-
+from alite_backend.config import settings
+from alite_backend.db.crud.user_crud import (
+    crud_user,
+    get_password_hash,
+    verify_password,
+)
+from alite_backend.db.crud.word_crud import (
+    crud_lem_in_less_list,
+    crud_less_list,
+    crud_less_list_in_mod,
+    crud_module,
+)
 from alite_backend.db.db_session import SessionLocal, engine
 from alite_backend.db.models import Base, EnumUserRole
 from alite_backend.logging_config import setup_logging
-from alite_backend.words.pipeline import load_words
-from alite_backend.words.queue import process_lookup_queue
-from alite_backend.words.funcs import load_json, save_json
-from alite_backend.config import settings
 from alite_backend.sentences.write_sentences_parallel import (
     run_parallel_sentence_pipeline,
 )
-import alite_backend.db.schemas as schemas
-from alite_backend.db.crud.word_crud import (
-    crud_module,
-    crud_less_list,
-    crud_lem_in_less_list,
-    crud_less_list_in_mod,
-)
-from alite_backend.db.crud.user_crud import (
-    get_password_hash,
-    verify_password,
-    crud_user,
-)
+from alite_backend.words.funcs import load_json, save_json
+from alite_backend.words.pipeline import load_words
+from alite_backend.words.process_queue import process_lookup_queue
+from cytoolz import concat
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, exc, text
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
 
 setup_logging()
 

@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 from typing import Optional
 
 from alite_backend.db import models
@@ -9,12 +10,14 @@ from alite_backend.words.pipeline import load_words
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
+print(f"--> EXECUTING QUEUE FROM: {__file__}")
+
 logger = logging.getLogger(__name__)
 
 
 def process_lookup_queue(
     db: Session,
-    batch_limit: Optional[int] = 1,
+    batch_limit: Optional[int] = 4,
     target_item_id: Optional[int] = None,
 ) -> int:
     """
@@ -95,7 +98,9 @@ def process_lookup_queue(
                 logger.info(
                     f"'{target_lem_clean}' not found locally. Executing pipeline..."
                 )
-                new_lemma = load_words(db, [target_lem_clean])
+                loaded_lemmas = load_words(db, [target_lem_clean])
+
+                new_lemma = loaded_lemmas[0] if loaded_lemmas else None
 
             # 4. Create LemmaRelation mapping and update status
             if new_lemma:

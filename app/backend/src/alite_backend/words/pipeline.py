@@ -6,13 +6,16 @@ import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any, Dict, List, Optional, Tuple
 
+from alite_backend.db import models
 from alite_backend.words.funcs import validate_word_list
 from alite_backend.words.load import Loader
 
 # from alite_backend.words.lookup import LookupFDAPI
 from alite_backend.words.lookup_parallel import LookupFDAPI
 from alite_backend.words.process import ReturnedLemmaProcessor
+from bleach import clean
 from dotenv import load_dotenv
+from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -27,49 +30,6 @@ load_dotenv()
 save_dir_loc = os.getenv("APP_DIR")
 logger = logging.getLogger(__name__)
 logger.info("Starting run")
-
-
-# def load_words(db: Session, word_s: list[str]):
-#     """_summary_
-
-#     Args:
-#         db (Session): The active SQLAlchemy session passed in from the router or script.
-#         word_s (list[str]): The list of words to look up.
-#     """
-#     # logger.info("Starting session for %s", word_s)
-
-#     validate_word_list(word_s)
-#     # init lookup class
-#     fetcher = lfa()
-#     # init processor class
-#     processor = rlp()
-#     # init loader class
-#     loader = Loader(db_session=db)
-#     # logger.info("Starting pull of %s", word_s)
-#     results_stream = fetcher.get(word_s)
-
-#     # The API call for each word happens as this loop runs.
-#     for raw_data_dict in results_stream:
-#         try:
-#             # GET: Grab the raw dictionary data
-#             # word_lemma = raw_data_dict.get("word", "unknown")
-#             # logger.debug("Successfully looked up data for '%s':\n%s\n", word_lemma, raw_data_dict)
-
-#             # PROCESS: Pass the raw dictionary to the processor
-#             processed_payload = processor.process(raw_data_dict)
-
-#             if processed_payload:
-#                 # logger.debug("Successfully processed data for '%s':\n%s\n", word_lemma, processed_payload)
-
-#                 # LOAD: Pass the processed payload to the Loader
-#                 loader.load_payload(payload=processed_payload)  # type: ignore
-
-#         except Exception as e:
-#             logger.error(
-#                 "Failed to process an item from the lookup stream: %s", e, exc_info=True
-#             )
-
-#     logger.info("Pipeline run finished.")
 
 
 def _network_worker(
@@ -96,9 +56,11 @@ def load_words(
     processor = ReturnedLemmaProcessor()
     loader = Loader(db_session=db)
 
+    clean_words = [w.strip().lower() for w in word_s]
+
     # separate cache and uncached words
-    cached_words = [w for w in word_s if w in fetcher.cache_data]
-    uncached_words = [w for w in word_s if w not in fetcher.cache_data]
+    cached_words = [w for w in clean_words if w in fetcher.cache_data]
+    uncached_words = [w for w in clean_words if w not in fetcher.cache_data]
 
     logger.info(
         f"Pipeline started. {len(cached_words)} cached, {len(uncached_words)} uncached."
@@ -128,7 +90,7 @@ def load_words(
     # get uncached words from the internet
     if uncached_words:
         with ThreadPoolExecutor(max_workers=max_workers) as executor:  # type: ignore
-            # Submit uncached words to the thread pool
+            # submit uncached words to the thread pool
             future_to_word = {
                 executor.submit(_network_worker, w, fetcher): w for w in uncached_words
             }
@@ -141,8 +103,10 @@ def load_words(
                     fetcher.cache_data[word] = raw_data
                     new_words_fetched += 1
 
-                    # Process the newly fetched data
+                    # process the newly fetched data
                     _process_and_batch(raw_data)
+                else:
+                    logger.warning(f"API returned no data for '{word}'")
 
     # cleanup
     if batch_payloads:
@@ -152,6 +116,9 @@ def load_words(
         fetcher.save_cache_to_disk()
 
     logger.info("Vocabulary pipeline run finished.")
+
+    stmt = select(models.Lemma).where(models.Lemma.lem_text.in_(clean_words))  # type: ignore
+    return list(db.scalars(stmt).all())
 
 
 def _flush_vocab_batch(db: Session, loader: Loader, payloads: List[Any]):
