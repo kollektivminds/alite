@@ -1,12 +1,15 @@
 import argparse
 import logging
 import sys
-from typing import Optional
+import unicodedata
+from collections import defaultdict
+from typing import Dict, List, Optional, Set
 
 from alite_backend.db import models
 from alite_backend.db.db_session import SessionLocal
 from alite_backend.words.funcs import remove_accents
 from alite_backend.words.pipeline import load_words
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 from sqlalchemy.orm.exc import ObjectDeletedError
 
@@ -17,157 +20,158 @@ logger = logging.getLogger(__name__)
 
 def process_lookup_queue(
     db: Session,
-    batch_limit: Optional[int] = 4,
+    batch_limit: int = 50,
     target_item_id: Optional[int] = None,
+    include_failed: bool = True,
 ) -> int:
     """
-    Processes items from the lookup_queue.
-
-    Args:
-        db: Active SQLAlchemy database session.
-        batch_limit: Max number of items to process in this execution run.
-        target_item_id: Optional specific LookupQueue ID to run in isolation.
-
-    Returns:
-        int: Number of items successfully processed.
+    Consumes pending records from models.LookupQueue in optimized batches.
+    Resolves items against the local DB first, then delegates missing strings
+    to the ETL pipeline.
     """
-    attempted_ids = set()
-    processed_count = 0
+    attempted_ids: Set[int] = set()
+    total_processed = 0
+
+    target_statuses = [models.EnumLookupStatus.UNLINKED]
+    if include_failed:
+        target_statuses.append(models.EnumLookupStatus.FAILED)
 
     while True:
-        # enforce batch limits to prevent unintended full-table processing
-        if batch_limit is not None and processed_count >= batch_limit:
-            logger.info(
-                f"Reached batch limit of {batch_limit} item(s). Stopping execution."
-            )
-            break
-
-        # build query based on whether we are targeting one item or pulling pending items
-        query = db.query(models.LookupQueue)
-
+        # fetch a batch of queue items
+        stmt = select(models.LookupQueue)
         if target_item_id is not None:
-            # Single-item target mode: query explicitly for the requested ID
-            query = query.filter(models.LookupQueue.id == target_item_id)  # type: ignore
+            stmt = stmt.where(models.LookupQueue.id == target_item_id)  # type: ignore
         else:
-            # Batch mode: filter for UNLINKED/FAILED items not yet tried in this run
-            query = query.filter(
-                models.LookupQueue.status.in_(  # type: ignore
-                    [
-                        models.EnumLookupStatus.UNLINKED,
-                        models.EnumLookupStatus.FAILED,
-                    ]
-                ),
+            stmt = stmt.where(
+                models.LookupQueue.status.in_(target_statuses),  # type: ignore
                 models.LookupQueue.id.notin_(attempted_ids),  # type: ignore
-            )
+            ).limit(batch_limit)
 
-        queue_item = query.first()
+        queue_batch = list(db.scalars(stmt).all())
 
-        # Stop if no matching items remain
-        if not queue_item:
-            if target_item_id:
-                logger.warning(
-                    f"Target LookupQueue item ID {target_item_id} not found."
-                )
+        if not queue_batch:
             break
 
-        item_id = queue_item.id
-        attempted_ids.add(item_id)
+        # track ids to prevent infinite loops
+        for item in queue_batch:
+            attempted_ids.add(item.id)  # type: ignore
 
-        try:
-            target_lem_accented = str(queue_item.target_lem).strip()
-            target_lem_clean = remove_accents(target_lem_accented)
+        # extract & normalize target strings
+        # mapping: queue_item.id -> clean_string
+        item_to_clean_str: Dict[int, str] = {}
+        unique_clean_strings: Set[str] = set()
 
-            new_lemma = None
+        for item in queue_batch:
+            accented = unicodedata.normalize("NFC", str(item.target_lem).strip())
+            clean = remove_accents(accented)
+            item_to_clean_str[item.id] = clean  # type: ignore
+            unique_clean_strings.add(clean)
 
-            # 3. Cache Check: Check local DB before invoking external pipeline
-            existing_lemma = (
-                db.query(models.Lemma)
-                .filter(
-                    (models.Lemma.lem_text == target_lem_clean)  # type: ignore
-                    | (models.Lemma.lem_canon == target_lem_accented)  # type: ignore
-                )
-                .first()
+        # batch db cache check (the n+1 fix)
+        # fetch all existing lemmas that match any target strings in one query
+        existing_lemmas_stmt = select(models.Lemma).where(
+            models.Lemma.lem_text.in_(unique_clean_strings)  # type: ignore
+        )
+        existing_lemmas = list(db.scalars(existing_lemmas_stmt).all())
+
+        # core tracking dictionary: maps 'clean_str' -> [Lemma1, Lemma2...]
+        resolved_dict: Dict[str, List[models.Lemma]] = defaultdict(list)
+        for lem in existing_lemmas:
+            if lem.lem_text:
+                resolved_dict[lem.lem_text].append(lem)
+
+        # identify missing words & run pipeline
+        missing_strings = [
+            text for text in unique_clean_strings if text not in resolved_dict
+        ]
+
+        if missing_strings:
+            logger.info(
+                f"Batch dispatching {len(missing_strings)} unknown words to ETL pipeline..."
             )
-            # breakpoint()
-            if existing_lemma:
-                logger.info(
-                    f"Found '{target_lem_clean}' in local DB. Bypassing pipeline."
-                )
-                new_lemma = existing_lemma
-            else:
-                logger.info(
-                    f"'{target_lem_clean}' not found locally. Executing pipeline..."
-                )
-                loaded_lemmas = load_words(db, [target_lem_clean])
 
-                new_lemma = loaded_lemmas[0] if loaded_lemmas else None
+            new_lemmas = load_words(db, missing_strings)
 
-            # 4. Create LemmaRelation mapping and update status
-            if new_lemma:
-                new_relation = models.LemmaRelation(
-                    source_id=queue_item.source_id,  # type: ignore
-                    target_id=new_lemma.id,  # type: ignore
-                    rel_type=queue_item.rel_type,
-                )
-                db.add(new_relation)
-                db.flush()
+            if new_lemmas:
+                for lem in new_lemmas:
+                    if lem.lem_text:
+                        resolved_dict[lem.lem_text].append(lem)
 
-                queue_item.target_id = new_relation.id
-                queue_item.status = models.EnumLookupStatus.LINKED
-                db.commit()
+        # resolve queue items and link
+        # now iterate through original queue items and link them using populated dictionary
+        for item in queue_batch:
+            target_str = item_to_clean_str[item.id]  # type: ignore
+            matched_lemmas = resolved_dict.get(target_str, [])
 
-                processed_count += 1
-                logger.info(
-                    f"Linked '{target_lem_clean}' (Queue ID: {item_id}) -> Lemma ID {new_lemma.id}"
-                )
-            else:
-                logger.warning(f"Pipeline returned None for word '{target_lem_clean}'")
-                queue_item.status = models.EnumLookupStatus.FAILED
-                db.commit()
-
-        except ObjectDeletedError:
-            db.rollback()
-            continue
-        except Exception as e:
-            db.rollback()
-            logger.error(f"Error processing LookupQueue ID {item_id}: {e}")
-
-            # Mark as failed safely
             try:
-                failed_item = db.get(models.LookupQueue, item_id)
+                if matched_lemmas:
+                    # ink all homographs
+                    for lemma in matched_lemmas:
+                        # idempotency check: don't create duplicate relationships
+                        rel_exists = db.scalars(
+                            select(models.LemmaRelation).where(
+                                models.LemmaRelation.source_id == item.source_id,  # type: ignore
+                                models.LemmaRelation.target_id == lemma.id,  # type: ignore
+                                models.LemmaRelation.rel_type == item.rel_type,  # type: ignore
+                            )
+                        ).first()
+
+                        if not rel_exists:
+                            db.add(
+                                models.LemmaRelation(
+                                    source_id=item.source_id,  # type: ignore
+                                    target_id=lemma.id,  # type: ignore
+                                    rel_type=item.rel_type,
+                                )
+                            )
+
+                    # successfully linked at least one relation
+                    item.target_id = matched_lemmas[0].id
+                    item.status = models.EnumLookupStatus.LINKED
+                    total_processed += 1
+                    logger.info(f"Linked '{target_str}' for Queue ID {item.id}.")
+
+                else:
+                    logger.warning(
+                        f"Word '{target_str}' not resolved. Marking NOT_IN_DICT."
+                    )
+                    item.status = models.EnumLookupStatus.NOT_IN_DICT
+
+                # commit per-item to ensure a failure on one item doesn't roll back the whole batch
+                db.flush()
+                db.commit()
+
+            except Exception as e:
+                db.rollback()
+                logger.error(f"Failed linking Queue ID {item.id}: {e}")
+
+                # safe failure fallback
+                failed_item = db.get(models.LookupQueue, item.id)
                 if failed_item:
                     failed_item.status = models.EnumLookupStatus.FAILED
                     db.commit()
-            except Exception as nested_e:
-                db.rollback()
-                logger.error(
-                    f"Could not set failure status for ID {item_id}: {nested_e}"
-                )
 
-        # If running in single-item mode, exit the loop immediately after 1 attempt
         if target_item_id is not None:
-            break
+            break  # exit after processing the specific item
 
-    logger.info(
-        f"Lookup queue batch complete. Total items processed: {processed_count}"
-    )
-    return processed_count
+    logger.info(f"Queue processing complete. Successfully linked: {total_processed}")
+    return total_processed
 
 
 def clean_lookup_queue(limit: Optional[int] = 50, item_id: Optional[int] = None) -> int:
     """Wrapper function managing session lifecycle."""
     with SessionLocal() as db:
-        return process_lookup_queue(db, batch_limit=limit, target_item_id=item_id)
+        return process_lookup_queue(db, batch_limit=limit, target_item_id=item_id)  # type: ignore
 
 
 if __name__ == "__main__":
-    # Configure CLI interface for local testing & ops scripts
+    # configure CLI interface for local testing & ops scripts
     parser = argparse.ArgumentParser(description="ALITE Lookup Queue Processor")
     parser.add_argument(
         "-l",
         "--limit",
         type=int,
-        default=1,
+        default=5,
         help="Maximum number of queue items to process (default: 50)",
     )
     parser.add_argument(
@@ -180,5 +184,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    # Execute with parsed CLI options
+    # execute with parsed CLI options
     clean_lookup_queue(limit=args.limit, item_id=args.item_id)

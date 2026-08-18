@@ -1,40 +1,42 @@
 # load.py
-import os
 import json
 import logging
+import os
+import unicodedata
 from collections import defaultdict
-from dotenv import load_dotenv
-from sqlalchemy.orm import Session
-from psycopg2.errors import UniqueViolation
-from alite_backend.words.funcs import remove_accents, load_json
+
 from alite_backend.db import schemas
+from alite_backend.db.crud.orgi_crud import crud_lem_in_less_list, crud_less_list
+from alite_backend.db.crud.word_crud import (
+    crud_def_ex,
+    crud_definition,
+    crud_example,
+    crud_gram_prop,
+    crud_lem_def,
+    crud_lem_pron,
+    crud_lem_rel,
+    crud_lemma,
+    crud_lexicon,
+    crud_lookup_queue,
+    crud_pronunciation,
+    crud_word_form,
+)
 from alite_backend.db.models import (
     EnumAltAdjvType,
     EnumAltNounType,
-    EnumGramGender,
     EnumConjPerson,
-    EnumGramTense,
+    EnumGramGender,
     EnumGramNum,
+    EnumGramTense,
     EnumPartType,
     EnumPartVoice,
     EnumSubstCase,
     EnumVerbMood,
 )
-from alite_backend.db.crud.word_crud import (
-    crud_lemma,
-    crud_lexicon,
-    crud_gram_prop,
-    crud_word_form,
-    crud_definition,
-    crud_example,
-    crud_pronunciation,
-    crud_lem_rel,
-    crud_lookup_queue,
-    crud_lem_def,
-    crud_def_ex,
-    crud_lem_pron,
-)
-from alite_backend.db.crud.orgi_crud import crud_less_list, crud_lem_in_less_list
+from alite_backend.words.funcs import load_json, remove_accents
+from dotenv import load_dotenv
+from psycopg2.errors import UniqueViolation
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +92,7 @@ def _get_curriculum_cache(db: Session) -> dict:
     return _CURRICULUM_CACHE
 
 
-# 2. THE LOADER CLASS
+# THE LOADER CLASS
 class Loader:
     """_summary_"""
 
@@ -193,15 +195,20 @@ class Loader:
 
             # get parent id from map
             lemma_db_id = lemma_id_map[lex.entry_key]
-            new_lex_in = {
-                "lex_text": lex.lex_text,
-                "lex_text_clean": remove_accents(lex.lex_text),
+
+            # enforce canonical NFC normalization
+            raw_lex_text = unicodedata.normalize("NFC", lex.lex_text.strip())
+            clean_lex_text = remove_accents(raw_lex_text)
+
+            lex_in = {
+                "lex_text": raw_lex_text,
+                "lex_text_clean": clean_lex_text,
             }
-            lex_in = schemas.LexemeCreate(**new_lex_in)
+            # lex_in = schemas.LexemeCreate(**new_lex_in)
             # create lexicon row
             # new_lexeme = word_crud.goc_lexeme(db=self.db, word_form=lex.form)
             new_lex = crud_lexicon.get_or_create(
-                db=self.db, obj_in=lex_in, filter_kwargs=new_lex_in
+                db=self.db, obj_in=lex_in, filter_kwargs={"lex_text": raw_lex_text}
             )
             # create link between lemma and lexeme
             junction_map[lex.temp_form_id] = {

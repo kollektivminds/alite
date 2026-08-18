@@ -50,7 +50,7 @@ def load_words(
     Bifurcated ETL pipeline. Processes cached words instantly,
     and threads uncached words over the network.
     """
-    validate_word_list(word_s)
+    word_s = validate_word_list(word_s)  # type: ignore
 
     fetcher = LookupFDAPI()
     processor = ReturnedLemmaProcessor()
@@ -99,7 +99,7 @@ def load_words(
                 word, raw_data = future.result()
 
                 if raw_data:
-                    # update in-memory cache (Dict assignment is thread-safe in CPython)
+                    # update in-memory cache (dict assignment is thread-safe in CPython)
                     fetcher.cache_data[word] = raw_data
                     new_words_fetched += 1
 

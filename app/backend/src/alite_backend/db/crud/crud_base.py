@@ -1,11 +1,11 @@
-from typing import Any, Dict, Generic, List, Optional, Type, TypeVar, Union, Sequence
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import IntegrityError, SQLAlchemyError
-from fastapi import HTTPException, status
-# from fastapi.encoders import jsonable_encoder
-from pydantic import BaseModel
 import logging
+from typing import Any, Dict, Generic, List, Optional, Sequence, Type, TypeVar, Union
+
+from fastapi import HTTPException, status
+from pydantic import BaseModel
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -82,26 +82,46 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             )
 
     def get_or_create(
-        self, db: Session, obj_in: CreateSchemaType, filter_kwargs: Dict[str, Any]
+        self,
+        db: Session,
+        obj_in: CreateSchemaType | Dict[str, Any],
+        filter_kwargs: Optional[Dict[str, Any]] = None,
     ) -> ModelType:
         """
-        Tries to fetch the object based on filter_kwargs.
-        If it doesn't exist, it creates it using obj_in.
+        Idempotent fetch-or-insert with PostgreSQL savepoint recovery.
+        Guarantees concurrency safety against unique constraint violations.
         """
-        # stmt = select(self.model)
+        # prepare query parameters from filter_kwargs or raw schema data
+        if filter_kwargs is None:
+            if isinstance(obj_in, dict):
+                filter_kwargs = obj_in
+            else:
+                filter_kwargs = obj_in.model_dump(exclude_unset=True)
 
-        # for key, value in filter_kwargs.items():
-        #     # getattr(self.model, 'lem_text') behaves exactly like self.model.lem_text
-        #     stmt = stmt.where(getattr(self.model, key) == value)
+        # attempt clean lookup first
+        stmt = select(self.model).filter_by(**filter_kwargs)
+        existing = db.scalars(stmt).first()
+        if existing:
+            return existing
 
-        # existing_obj = db.scalars(stmt).first()
+        # handle insert within a nested savepoint
+        db_obj_data = obj_in if isinstance(obj_in, dict) else obj_in.model_dump()
+        db_obj = self.model(**db_obj_data)
 
-        existing_obj = self.params_search(db, filter_kwargs)
+        try:
+            # begin_nested creates a SAVEPOINT in PostgreSQL
+            with db.begin_nested():
+                db.add(db_obj)
+                db.flush()
+            return db_obj
+        except IntegrityError:
+            # savepoint automatically rolled back on exception; query existing row
+            existing_after_collision = db.scalars(stmt).first()
+            if existing_after_collision:
+                return existing_after_collision
 
-        if existing_obj:
-            return existing_obj  # type: ignore
-
-        return self.create(db=db, obj_in=obj_in)
+            # fallback: if collision occurred on a primary unique constraint not in filter_kwargs
+            raise
 
     def update(
         self,
@@ -112,17 +132,16 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
     ) -> ModelType:
         try:
             # check that type is dict
-            #obj_data = jsonable_encoder(db_obj)
             if isinstance(obj_in, BaseModel):
                 obj_in_data = db_obj.model_dump()
             else:
                 obj_in_data = dict(db_obj)
-            
+
             if isinstance(obj_in, dict):
                 update_data = obj_in
             else:
                 update_data = obj_in.dict(exclude_unset=True)
-            
+
             for field in obj_in_data:
                 if field in update_data:
                     setattr(db_obj, field, update_data[field])

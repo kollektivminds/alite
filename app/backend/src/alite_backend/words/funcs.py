@@ -20,14 +20,15 @@ Example:
 import json
 import logging
 import os
-import unicodedata
 import re
+import unicodedata
+
+import alite_backend.db.schemas as schemas
 import numpy as np
 import pandas as pd
+from alite_backend.db.schemas import EnumVerbType
 from dotenv import load_dotenv
 from sqlalchemy import text
-import alite_backend.db.schemas as schemas
-from alite_backend.db.schemas import EnumVerbType
 
 load_dotenv()
 
@@ -118,14 +119,14 @@ def remove_accents(input_str: str) -> str:
     if not isinstance(input_str, str):
         return input_str  # Return non-strings as they are
 
-    # The specific Unicode character for the combining acute accent
-    COMBINING_ACUTE_ACCENT = "\u0301"
+    # decompose to NFD to separate base glyphs from combining diacritics
+    decomposed = unicodedata.normalize("NFD", input_str)
 
-    # Normalize to NFD to separate all combining marks
-    nfd_form = unicodedata.normalize("NFD", input_str)
+    # filter out ONLY combining acute (\u0301) and grave (\u0300) accents
+    stripped = "".join(char for char in decomposed if char not in ("\u0301", "\u0300"))
 
-    # Filter out ONLY the acute accent mark and rejoin
-    return "".join([c for c in nfd_form if c != COMBINING_ACUTE_ACCENT])
+    # recompose back to NFC (recombines 'и' + '\u0306' into 'й')
+    return unicodedata.normalize("NFC", stripped).strip()
 
 
 def map_words_in_cell(cell_text, word_map):
@@ -174,6 +175,10 @@ def validate_word_list(word_list):
     # check if word_list is indeed a list of words
     # or at least a single word that can be recognized
     # TODO add some logic to pull out problematic words instead of stopping things
+
+    if not word_list:
+        raise ValueError("Word list cannot be empty.")
+
     if not isinstance(word_list, list) and all(
         isinstance(word, str) and word.isalpha() for word in word_list
     ):
@@ -181,6 +186,8 @@ def validate_word_list(word_list):
             word_list.isalpha()
         except:
             raise TypeError("not alpha")
+
+    return [unicodedata.normalize("NFC", str(w)).strip() for w in word_list if w]
 
 
 def is_cyrillic(text: str) -> bool:
