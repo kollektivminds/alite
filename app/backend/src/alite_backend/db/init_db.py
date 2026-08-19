@@ -15,30 +15,21 @@ import random
 from collections import defaultdict
 from pathlib import Path
 
-import alite_backend.db.schemas as schemas
+# import alite_backend.db.schemas as schemas
 from alembic import command
 from alembic.config import Config
 from alite_backend.config import settings
-from alite_backend.db.crud.user_crud import (
-    crud_user,
-    get_password_hash,
-    verify_password,
-)
-from alite_backend.db.crud.word_crud import (
-    crud_lem_in_less_list,
-    crud_less_list,
-    crud_less_list_in_mod,
-    crud_module,
-)
+
+# from alite_backend.db.crud.word_crud import (
+#     crud_lem_in_less_list,
+#     crud_less_list,
+#     crud_less_list_in_mod,
+#     crud_module,
+# )
 from alite_backend.db.db_session import SessionLocal, engine
 from alite_backend.db.models import Base, EnumUserRole
 from alite_backend.logging_config import setup_logging
-from alite_backend.sentences.write_sentences_parallel import (
-    run_parallel_sentence_pipeline,
-)
 from alite_backend.words.funcs import load_json, save_json
-from alite_backend.words.pipeline import load_words
-from alite_backend.words.process_queue import process_lookup_queue
 from cytoolz import concat
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, exc, text
@@ -46,18 +37,12 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
 setup_logging()
-
 logger = logging.getLogger(__name__)
-
 load_dotenv()
 
 VOCAB_LIST_LOC = os.getenv("VOCAB_LIST_LOC")
 APP_DIR = os.getenv("APP_DIR")
-INIT_DB_LOC = APP_DIR + "/app/src/alite_backend/db/init_db.sql"  # type: ignore
 corpus_location = "/app/src/alite_backend/sentences/raw/SynTagRus2022/"  # type: ignore
-# bodyLibDfLoc = "../syntagrus/bodyLibDf.json"
-# bodyTextDfLoc = "../syntagrus/bodyTextDf.json"
-# infDictLoc = "../syntagrus/infDict.json"
 
 if settings.ENV_MODE == "dev":
     DATABASE_URL = settings.DEV_DATABASE_URL
@@ -67,7 +52,44 @@ elif settings.ENV_MODE == "prod":
     DATABASE_URL = settings.PROD_DATABASE_URL
 
 
+def run_dynamic_migrations() -> None:
+    """
+    Verifies the database connection and executes Alembic migrations.
+    """
+    logger.info("Verifying database connection...")
+
+    # open a brief connection to ensure the DB container is responsive
+    with engine.connect() as conn:
+        conn.execute(text("SELECT 1"))
+
+    # dispose of the engine to terminate the connection pool.
+    engine.dispose()
+
+    logger.info("Database connection verified. Executing Alembic upgrade...")
+
+    # trigger Alembic programmatically
+    # alembic_cfg = Config(settings.BASE_DIR / "alembic.ini")
+    alembic_cfg = Config()
+
+    # manually map the required config routes
+    base_dir = Path(__file__).resolve().parent.parent.parent.parent
+    alembic_cfg.set_main_option("script_location", str(base_dir / "alembic"))
+    alembic_cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
+
+    command.upgrade(alembic_cfg, "head")
+
+    logger.info("Database schema successfully synchronized.")
+
+
 def load_org_tables(db: Session, vocab_list_path: str = VOCAB_LIST_LOC):  # type: ignore
+    # DEFERRED IMPORTS: Imported here to prevent module-level locks during migration
+    import alite_backend.db.schemas as schemas
+    from alite_backend.db.crud.word_crud import (
+        crud_less_list,
+        crud_less_list_in_mod,
+        crud_module,
+    )
+
     data = load_json(vocab_list_path)
     # logger.debug("data: %s", data)
     lists_in_mods = []
@@ -139,6 +161,9 @@ def seed_superuser(db: Session) -> None:
     Args:
         db (Session): Active SQLAlchemy database session.
     """
+    import alite_backend.db.schemas as schemas
+    from alite_backend.db.crud.user_crud import crud_user
+
     logger.info("Verifying initial database state...")
 
     # query the database to check if the superuser account already exists
@@ -221,17 +246,17 @@ def run_isolated_migrations() -> None:
     """
     logger.info("Initializing isolated migration engine...")
 
-    # 1. Create a dedicated, non-pooled engine for migrations to prevent lock contention
+    # create a dedicated, non-pooled engine for migrations to prevent lock contention
     migration_engine = create_engine(DATABASE_URL, pool_pre_ping=True, echo=False)
 
     try:
-        # 2. Test database connectivity and clear any stale transactions
+        # test database connectivity and clear any stale transactions
         with migration_engine.connect() as conn:
             conn.execute(text("SELECT 1"))
             conn.commit()
             logger.info("Database connection verified. Executing Alembic upgrade...")
 
-        # 3. Locate alembic.ini configuration file
+        # locate alembic.ini configuration file
         base_dir = Path(__file__).resolve().parent.parent.parent.parent
         alembic_ini_path = base_dir / "alembic.ini"
 
@@ -240,11 +265,11 @@ def run_isolated_migrations() -> None:
                 f"Missing alembic.ini configuration at {alembic_ini_path}"
             )
 
-        # 4. Configure Alembic programmatically
+        # configure Alembic programmatically
         alembic_cfg = Config(str(alembic_ini_path))
         alembic_cfg.set_main_option("sqlalchemy.url", DATABASE_URL)
 
-        # 5. Run upgrade to head
+        # run upgrade to head
         command.upgrade(alembic_cfg, "head")
         logger.info("Database schema successfully synchronized to 'head'.")
 
@@ -254,7 +279,7 @@ def run_isolated_migrations() -> None:
         )
         raise exc
     finally:
-        # CRITICAL: Always dispose of the temporary engine to release file descriptors and sockets
+        # dispose of the temporary engine to release file descriptors and sockets
         migration_engine.dispose()
         logger.info("Migration engine successfully disposed.")
 
@@ -290,42 +315,6 @@ def get_all_words(vocab_list_path: str = VOCAB_LIST_LOC):  # type: ignore
 
     rows = list(concat(get_rows(*item) for item in chapter_gen))  # type: ignore
     return [x["lemma"] for x in rows]
-
-
-def make_tables(db: Session, init_db_loc: str = INIT_DB_LOC):
-    # logger.debug("Attempting to execute SQL from %s...", init_db_loc)
-
-    try:
-        # read all commands from the SQL file
-        with open(init_db_loc, "r") as f:
-            # split commands by semicolon for more robust execution
-            sql_commands = [cmd.strip() for cmd in f.read().split(";") if cmd.strip()]
-
-        # connect to the database and execute commands within a transaction
-        with db as connection:
-            with connection.begin():
-                print(f"Executing {len(sql_commands)} commands...")
-                for command in sql_commands:
-                    try:
-                        connection.execute(text(command))
-                    except Exception as e:
-                        logger.error(
-                            "An error was raised while executing init_db SQL commands: %s",
-                            e,
-                        )
-                        pass
-
-        print(f"Successfully executed all SQL commands.")
-
-    except FileNotFoundError as fnfe:
-        print(f"Error: SQL file not found at {init_db_loc}: {fnfe}")
-        raise fnfe
-    except Exception as e:
-        print(f"An error occurred during database initialization: {e}")
-        raise e
-    finally:
-        # dispose of the engine connection pool
-        print("Engine disposed.")
 
 
 def create_tables_from_models():
@@ -368,13 +357,20 @@ def init_database():
     # logger.debug("trying %d words: %s", len(rand_samp), rand_samp)
 
     # migrate_schema()
-    run_isolated_migrations()
+    run_dynamic_migrations()
+
+    # defer pipeline imports until migrations are complete
+    # this specifically prevents `process_queue.py` and the multiprocessing
+    # logic from executing module-level code that otherwise deadlocks the Python process
+    from alite_backend.sentences.write_sentences_parallel import (
+        run_parallel_sentence_pipeline,
+    )
+    from alite_backend.words.pipeline import load_words
+    from alite_backend.words.process_queue import process_lookup_queue
 
     with SessionLocal() as db:
         try:
             # create tables in db
-            # make_tables(db=db)
-            # create_tables_from_models()
             seed_superuser(db=db)
             load_org_tables(db=db)
             db.commit()
@@ -386,8 +382,9 @@ def init_database():
             raise e
 
         try:
+            # insert words and resolve lookup queue
             load_words(db=db, word_s=all_words)
-            # process_lookup_queue(db=db)
+            process_lookup_queue(db=db)
             db.commit()
             logger.info("Lemma data loaded and committed successfully")
 
@@ -397,6 +394,7 @@ def init_database():
             raise e
 
         try:
+            # process and load documents, sentences, their tokens
             run_parallel_sentence_pipeline(db=db, corpus_directory=corpus_location)
             db.commit()
             logger.info("Sentences data loaded and committed successfully")

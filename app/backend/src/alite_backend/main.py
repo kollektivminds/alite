@@ -3,26 +3,37 @@
 This module...
 """
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
-from sqlalchemy.exc import IntegrityError
-from sqladmin import Admin
+from pathlib import Path
 
-from alite_backend.db.db_session import engine
 from alite_backend.api.admin.admin_auth import admin_auth
 from alite_backend.api.admin.admin_views import (
-    LemmaAdminView,
-    LexemeAdminView,
+    DefinitionAdminView,
+    DocumentAdminView,
+    ExampleAdminView,
     GramPropAdminView,
-    WordFormAdminView,
-    UserAdminView,
-    SentenceAdminView,
     ItemAdminView,
+    LemmaAdminView,
+    LemmaRelationAdminView,
+    LessListAdminView,
+    LexemeAdminView,
+    LookupQueueAdminView,
+    ModuleAdminView,
+    PronunciationAdminView,
+    SentenceAdminView,
+    SentenceTokenAdminView,
+    UserAdminView,
+    WordFormAdminView,
 )
-from alite_backend.config import settings
+from alite_backend.api.admin.analytics import AnalyticsDashboardView
 from alite_backend.api.router import api_router
+from alite_backend.config import settings
+from alite_backend.db.db_session import engine
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from sqladmin import Admin
+from sqlalchemy.exc import IntegrityError
 
 app = FastAPI(
     title="ALITE Backend API",
@@ -32,21 +43,36 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
+TEMPLATES_DIR = Path(__file__).resolve().parent.parent.parent / "templates"
+
 admin_dashboard = Admin(
     app=app,
     engine=engine,
     authentication_backend=admin_auth,
     title="ALITE admin",
     base_url="/admin",
+    templates_dir=str(TEMPLATES_DIR),
 )
 
 admin_dashboard.add_view(LemmaAdminView)
 admin_dashboard.add_view(LexemeAdminView)
 admin_dashboard.add_view(GramPropAdminView)
 admin_dashboard.add_view(WordFormAdminView)
+admin_dashboard.add_view(DefinitionAdminView)
+admin_dashboard.add_view(ExampleAdminView)
+admin_dashboard.add_view(PronunciationAdminView)
+admin_dashboard.add_view(LemmaRelationAdminView)
+admin_dashboard.add_view(LookupQueueAdminView)
+admin_dashboard.add_view(ExampleAdminView)
+admin_dashboard.add_view(ModuleAdminView)
+admin_dashboard.add_view(LessListAdminView)
 admin_dashboard.add_view(UserAdminView)
+admin_dashboard.add_view(DocumentAdminView)
 admin_dashboard.add_view(SentenceAdminView)
+admin_dashboard.add_view(SentenceTokenAdminView)
 admin_dashboard.add_view(ItemAdminView)
+
+admin_dashboard.add_view(AnalyticsDashboardView)
 
 origins = [settings.VITE_API_BASE_URL, "http://localhost:5173", "http://127.0.0.1:5173"]
 

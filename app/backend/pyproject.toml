@@ -1,6 +1,6 @@
 
 # ==============================================================================
-# ALITE System Configuration
+# alite system configuration
 # ==============================================================================
 
 [build-system]
@@ -9,12 +9,12 @@ build-backend = "poetry.core.masonry.api"
 
 
 # ==============================================================================
-# Dependencies (Poetry)
+# dependencies (poetry)
 # ==============================================================================
 
 
 [tool.poetry]
-# Core metadata fields required by Poetry 1.8.x internal parser
+# core metadata fields required by poetry 1.8.x internal parser
 name = "alite-backend"
 version = "0.1.0"
 description = "Autonomous Learning And Teaching Engine (ALITE) - Statistical & Item Analytics Engine"
@@ -23,8 +23,8 @@ packages = [{ include = "alite_backend", from = "src" }]
 package-mode = true
 
 [tool.poetry.dependencies]
-# Python 3.13 runtime constraint matching system requirements
-python = "^3.13"
+# python 3.13 runtime constraint matching system requirements
+python = "~3.13"
 fastapi = "^0.115.0"
 uvicorn = { extras = ["standard"], version = "^0.32.0" }
 sqlmodel = "^0.0.22"
@@ -44,6 +44,9 @@ jwt = "^1.4.0"
 pyjwt = "^2.13.0"
 bcrypt = "^5.0.0"
 itsdangerous = "^2.2.0"
+streamlit = "^1.62.0"
+plotly = "^6.9.0"
+networkx = "^3.6.1"
 
 [tool.poetry.group.dev.dependencies]
 jupyterlab = "^4.0.0"
@@ -62,7 +65,7 @@ mypy = "^2.3.0"
 pip-audit = "^2.10.1"
 
 # ==============================================================================
-# Tooling & Security Configuration
+# tooling & security configuration
 # ==============================================================================
 
 [tool.ruff]
@@ -82,7 +85,7 @@ ignore = []
 [tool.bandit]
 targets = ["app/backend"]
 exclude_dirs = ["tests", ".venv"]
-# skip assert checks if handled by Ruff
+# skip assert checks if handled by ruff
 skips = ["B101"]
 
 [tool.mypy]
