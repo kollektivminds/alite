@@ -513,7 +513,7 @@ class LemPronReturn(LemPronUpdate):
 class UserBase(BaseModel):
     username: str
     email: EmailStr
-    user_role: EnumUserRole
+    role: EnumUserRole
 
 
 class UserCreate(UserBase):

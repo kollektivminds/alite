@@ -38,17 +38,17 @@ class UserFactory(BaseFactory):
 
     id = Sequence(lambda n: n)
     username = Faker("user_name")
-    user_role = models.EnumUserRole.STUDENT
+    role = models.EnumUserRole.STUDENT
     email = Sequence(lambda n: f"student_{n}@alite.edu")
     # target_lang = models.EnumTargetLanguage.RU
 
 
 class StudentFactory(UserFactory):
-    user_role = models.EnumUserRole.STUDENT
+    role = models.EnumUserRole.STUDENT
 
 
 class InstructorFactory(UserFactory):
-    user_role = models.EnumUserRole.INSTRUCTOR
+    role = models.EnumUserRole.INSTRUCTOR
 
 
 class ExerciseContextFactory(BaseFactory):

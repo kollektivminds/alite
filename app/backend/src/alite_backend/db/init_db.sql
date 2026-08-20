@@ -53,7 +53,7 @@ CREATE EXTENSION IF NOT EXISTS pg_trgm;
 -- WORDS
 --
 -- PRIMARY TABLE for all base forms
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     lemmas (
         -- ALL / MOST WILL HAVE
@@ -74,7 +74,7 @@ CREATE TABLE
     );
 
 -- PRIMARY TABLE for all word forms involved
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     lexicon (
         id SERIAL PRIMARY KEY,
@@ -84,7 +84,7 @@ CREATE TABLE
     );
 
 -- PRIMARY TABLE for all grammatical variations of lemmas
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     gram_props (
         id SERIAL PRIMARY KEY,
@@ -119,7 +119,7 @@ CREATE TABLE
     );
 
 -- PRIMARY TABLE for word instances
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     word_forms (
         id SERIAL PRIMARY KEY,
@@ -133,7 +133,7 @@ CREATE TABLE
     );
 
 -- PRIMARY TABLE for word definitions
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     definitions (
         id SERIAL PRIMARY KEY,
@@ -284,7 +284,7 @@ CREATE TABLE
         id SERIAL PRIMARY KEY,
         username VARCHAR(48) NOT NULL UNIQUE,
         alias VARCHAR(25),
-        user_role VARCHAR(48),
+        role VARCHAR(48),
         email citext,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT email_format_check CHECK (email ~* '^\\S+@\\S+\\.\\S+$')
@@ -311,7 +311,7 @@ CREATE TABLE
 -- WORD ORGANIZATION
 --
 -- PRIMARY TABLE for textbook modules
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     modules (
         id SERIAL PRIMARY KEY,
@@ -320,7 +320,7 @@ CREATE TABLE
     );
 
 -- PRIMARY TABLE for lessons and custom word lists
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     lessons_lists (
         id SERIAL PRIMARY KEY,
@@ -332,7 +332,7 @@ CREATE TABLE
     );
 
 -- SECONDARY TABLE for lessons/lists in modules
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     less_lists_in_mods (
         mod_id INT NOT NULL,
@@ -344,7 +344,7 @@ CREATE TABLE
     );
 
 -- SECONDARY TABLE for words in lessons/lists
--- RELS INCL 
+-- RELS INCL
 CREATE TABLE
     lems_in_less_lists (
         lem_id INT NOT NULL,

@@ -1,5 +1,6 @@
 from ast import Mod
 from pydoc import Doc
+from typing import Any
 
 from alite_backend.db.models import (
     Definition,
@@ -26,7 +27,9 @@ from alite_backend.db.models import (
     WordForm,
 )
 from hypothesis import example
+from markupsafe import Markup
 from sqladmin import ModelView
+from starlette.requests import Request
 
 
 class LemmaAdminView(ModelView, model=Lemma):
@@ -315,9 +318,98 @@ class SentenceTokenAdminView(ModelView, model=SentenceToken):
     icon = "fa-solid fa-align-left"
     category = "Sentences"
 
-    column_list = [SentenceToken.id, SentenceToken.lex_raw, SentenceToken.lem_raw, SentenceToken.features, SentenceToken.head_idx, SentenceToken.dep_rel, SentenceToken.semantic_tag, SentenceToken.is_capitalized, SentenceToken.punctuation_before, SentenceToken.punctuation_after, SentenceToken.status, SentenceToken.lem_id, SentenceToken.lex_id, SentenceToken.wf_id]  # type: ignore
+    column_list = [
+        SentenceToken.id,
+        SentenceToken.lex_raw,
+        SentenceToken.lem_raw,
+        SentenceToken.features,
+        SentenceToken.head_idx,
+        SentenceToken.dep_rel,
+        SentenceToken.semantic_tag,
+        SentenceToken.is_capitalized,
+        SentenceToken.punctuation_before,
+        SentenceToken.punctuation_after,
+        SentenceToken.status,
+        SentenceToken.lem_id,
+        SentenceToken.lex_id,
+        SentenceToken.wf_id,
+    ]  # type: ignore
+
+    column_select_related_list = [
+        SentenceToken.lemma,
+        SentenceToken.lexeme,
+        SentenceToken.word_form,
+    ]
+
     column_searchable_list = [Sentence.raw_text]
-    page_size = 25
+    page_size = 50
+
+    # Formatting Engine: Converts raw integer IDs into structured anchor tags
+    # --------------------------------------------------------------------------
+    @staticmethod
+    def _format_lemma_link(model: SentenceToken, attribute: str) -> Markup:
+        """
+        Formats lem_id as a clickable hyperlink directing to the Lemma admin view.
+        """
+        if not model.lem_id:
+            return Markup('<span class="text-muted">—</span>')
+
+        # Resolves route: /admin/lemma/details/{lem_id} (or edit view)
+        target_url = f"/admin/lemma/details/{model.lem_id}"
+
+        # Optionally display the related lemma string alongside the ID if pre-fetched
+        label = f"#{model.lem_id}"
+        if getattr(model, "lemma_rel", None) and hasattr(model.lemma, "lemma_text"):
+            label = f"{model.lemma.lem_text} (#{model.lem_id})"  # type: ignore
+
+        return Markup(
+            f'<a href="{target_url}" class="badge bg-primary-subtle text-primary text-decoration-none">'
+            f'<i class="fa-solid fa-arrow-up-right-from-square me-1"></i>{label}'
+            f"</a>"
+        )
+
+    @staticmethod
+    def _format_lexeme_link(model: SentenceToken, attribute: str) -> Markup:
+        """
+        Formats lex_id as a clickable hyperlink directing to the Lexeme admin view.
+        """
+        if not model.lex_id:
+            return Markup('<span class="text-muted">—</span>')
+
+        target_url = f"/admin/lexeme/details/{model.lex_id}"
+        label = f"#{model.lex_id}"
+        if getattr(model, "lexeme_rel", None) and hasattr(model.lexeme, "lex_text"):
+            label = f"{model.lexeme.lex_text} (#{model.lex_id})"  # type: ignore
+
+        return Markup(
+            f'<a href="{target_url}" class="badge bg-info-subtle text-info text-decoration-none">'
+            f'<i class="fa-solid fa-link me-1"></i>{label}'
+            f"</a>"
+        )
+
+    @staticmethod
+    def _format_word_form_link(model: SentenceToken, attribute: str) -> Markup:
+        """
+        Formats wf_id as a clickable hyperlink directing to the WordForm admin view.
+        """
+        if not model.wf_id:
+            return Markup('<span class="text-muted">—</span>')
+
+        target_url = f"/admin/word-form/details/{model.wf_id}"
+        label = f"#{model.wf_id}"
+
+        return Markup(
+            f'<a href="{target_url}" class="badge bg-secondary-subtle text-secondary text-decoration-none">'
+            f'<i class="fa-solid fa-cube me-1"></i>{label}'
+            f"</a>"
+        )
+
+    # Register the formatting callbacks against their model column definitions
+    column_formatters = {
+        SentenceToken.lem_id: _format_lemma_link,
+        SentenceToken.lex_id: _format_lexeme_link,
+        SentenceToken.wf_id: _format_word_form_link,
+    }  # type: ignore
 
 
 class UserAdminView(ModelView, model=User):
@@ -331,9 +423,9 @@ class UserAdminView(ModelView, model=User):
     category = "Users"
 
     # Explicitly list visible table columns to prevent exposing hashed passwords
-    column_list = [User.id, User.username, User.email, User.user_role, User.created_at]  # type: ignore
+    column_list = [User.id, User.username, User.alias, User.email, User.role, User.settings, User.created_at]  # type: ignore
     column_searchable_list = [User.username, User.email]  # type: ignore
-    column_sortable_list = [User.user_role]
+    column_sortable_list = [User.role]
 
     # Exclude system-managed timestamps and sensitive security hashes from edit forms
     form_excluded_columns = [User.created_at, User.exercises, User.in_group]  # type: ignore

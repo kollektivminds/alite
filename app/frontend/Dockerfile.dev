@@ -2,9 +2,11 @@
 
 FROM node:23.11.0-slim
 
-WORKDIR /app
+WORKDIR /app/frontend
 
-RUN corepack enable
+ENV CI=true
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
 # copy dependency manifests first for layer caching
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
@@ -12,7 +14,7 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN corepack prepare --activate && pnpm install
 
 # install dependencies using pnpm
-# RUN pnpm install --frozen-lockfile
+RUN pnpm install --frozen-lockfile
 
 # copy application source
 COPY . ./
@@ -21,3 +23,4 @@ EXPOSE 5173
 
 # expose Vite dev server on all network interfaces
 CMD ["pnpm", "run", "dev", "--host", "0.0.0.0"]
+# RUN pnpm run build

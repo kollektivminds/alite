@@ -181,7 +181,7 @@ def seed_superuser(db: Session) -> None:
             username=settings.FIRST_SUPERUSER_USERNAME,
             email=settings.FIRST_SUPERUSER_EMAIL,
             password=settings.FIRST_SUPERUSER_PASSWORD,
-            user_role=EnumUserRole.ADMIN,
+            role=EnumUserRole.ADMIN,
             alias=None,
         )
 

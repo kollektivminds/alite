@@ -5,8 +5,9 @@ This module...
 
 from pathlib import Path
 
-from alite_backend.api.admin.admin_auth import admin_auth
-from alite_backend.api.admin.admin_views import (
+# from alite_backend.api.admin.analytics import AnalyticsDashboardView
+from alite_backend.api.admin.auth import admin_auth
+from alite_backend.api.admin.views import (
     DefinitionAdminView,
     DocumentAdminView,
     ExampleAdminView,
@@ -24,7 +25,6 @@ from alite_backend.api.admin.admin_views import (
     UserAdminView,
     WordFormAdminView,
 )
-from alite_backend.api.admin.analytics import AnalyticsDashboardView
 from alite_backend.api.router import api_router
 from alite_backend.config import settings
 from alite_backend.db.db_session import engine
@@ -72,7 +72,7 @@ admin_dashboard.add_view(SentenceAdminView)
 admin_dashboard.add_view(SentenceTokenAdminView)
 admin_dashboard.add_view(ItemAdminView)
 
-admin_dashboard.add_view(AnalyticsDashboardView)
+# admin_dashboard.add_view(AnalyticsDashboardView)
 
 origins = [settings.VITE_API_BASE_URL, "http://localhost:5173", "http://127.0.0.1:5173"]
 

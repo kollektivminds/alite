@@ -1,11 +1,12 @@
 import logging
 from typing import Optional
-from starlette.requests import Request
-from starlette.responses import RedirectResponse
-from sqladmin.authentication import AuthenticationBackend
+
 from alite_backend.config import settings
 from alite_backend.db.crud import user_crud
 from alite_backend.db.db_session import SessionLocal
+from sqladmin.authentication import AuthenticationBackend
+from starlette.requests import Request
+from starlette.responses import RedirectResponse
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class AdminAuthBackend(AuthenticationBackend):
                 )
                 return False
 
-            if user.user_role != "admin":  # Restrict panel to faculty/instructors
+            if user.role != "admin":  # Restrict panel to faculty/instructors
                 logger.warning(
                     "Unauthorized admin access attempt by user: %s", username
                 )

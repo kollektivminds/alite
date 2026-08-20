@@ -1,13 +1,14 @@
 # alite_backend/scripts/create_admin.py
 
-import sys
 import getpass
 import logging
-from sqlalchemy.orm import Session
-from alite_backend.db.db_session import SessionLocal
+import sys
+
 from alite_backend.db.crud import user_crud
+from alite_backend.db.db_session import SessionLocal
 from alite_backend.db.models import EnumUserRole
 from alite_backend.db.schemas import UserCreate
+from sqlalchemy.orm import Session
 
 # Configure terminal logging
 logging.basicConfig(level=logging.INFO)
@@ -50,7 +51,7 @@ def create_admin_account(db: Session) -> None:
             username=username,
             email=email,
             password=password,
-            user_role=EnumUserRole.ADMIN,
+            role=EnumUserRole.ADMIN,
             alias="admin",
         )
         new_admin = user_crud.crud_user.create(db=db, obj_in=user_in)
