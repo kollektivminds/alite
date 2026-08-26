@@ -8,119 +8,157 @@
  * api read responses
  */
 
+// types.ts
+export interface Lemma {
+  id: string;
+  lemma: string; // Russian dictionary form (e.g., "читать")
+  pos: string; // Part of speech (e.g., "VERB")
+  frequencyRank?: number;
+}
+
+export interface LessonList {
+  id: string;
+  name: string;
+  lemmas: Lemma[];
+}
+
+export type ItemFormat =
+  | "MULTIPLE_CHOICE"
+  | "FILL_IN_BLANK"
+  | "MATCHING"
+  | "C_TEST";
+export type DistractorStrategy =
+  | "MORPHOLOGICAL_PARITY"
+  | "FREQUENCY_NEIGHBOR"
+  | "RANDOM";
+
+export interface QualityConfig {
+  itemFormat: ItemFormat;
+  strategy: DistractorStrategy;
+  distractorCount: number;
+  targetInflectionsOnly: boolean;
+}
+
+export interface WordSelectionState {
+  selectedLessonListIds: string[];
+  manualLemmas: Lemma[];
+  excludedLemmaIds: string[];
+  qualities: QualityConfig;
+}
+
 export interface LemmaDetailsReturn {
-    id: number;
-    lemText: string;
-    lemCanon?: string;
-    pos: PartOfSpeech;
-    nounGender?: GramGender;
-    nounAnimacy?: boolean;
-    verbAspect?: VerbAspect;
-    verbConj?: string;
-    verbType?: VerbType;
-    verbTransRefl?: VerbTransRefl;
-    createdAt: string;
+  id: number;
+  lemText: string;
+  lemCanon?: string;
+  pos: PartOfSpeech;
+  nounGender?: GramGender;
+  nounAnimacy?: boolean;
+  verbAspect?: VerbAspect;
+  verbConj?: string;
+  verbType?: VerbType;
+  verbTransRefl?: VerbTransRefl;
+  createdAt: string;
 }
 
 export interface LexemeReturn {
-    id: number;
-    lexText: string;
-    lexTextClean: string;
-    createdAt: string;
+  id: number;
+  lexText: string;
+  lexTextClean: string;
+  createdAt: string;
 }
 
 export interface GramPropReturn {
-    id: number;
-    gramTense?: GramTense;
-    gramNum?: GramNum;
-    gramGender?: GramGender;
-    conjPerson?: string;
-    verbMood?: VerbMood;
-    substCase?: SubstCase;
-    altAdjvType?: AltAdjvType;
-    altBounType?: AltNounType;
-    partType?: PartType;
-    partVoice?: PartVoice;
-    createdAt: string;
+  id: number;
+  gramTense?: GramTense;
+  gramNum?: GramNum;
+  gramGender?: GramGender;
+  conjPerson?: string;
+  verbMood?: VerbMood;
+  substCase?: SubstCase;
+  altAdjvType?: AltAdjvType;
+  altBounType?: AltNounType;
+  partType?: PartType;
+  partVoice?: PartVoice;
+  createdAt: string;
 }
 
 export interface WordFormReturn {
-    id: number;
-    lem: LemmaDetailsReturn;
-    lex: LexemeReturn;
-    gram: GramPropReturn;
+  id: number;
+  lem: LemmaDetailsReturn;
+  lex: LexemeReturn;
+  gram: GramPropReturn;
 }
 
 export interface DefinitionReturn {
-    id: number;
-    defText: string;
-    defTags: string[];
-    createdAt: string;
+  id: number;
+  defText: string;
+  defTags: string[];
+  createdAt: string;
 }
 
 export interface ExampleReturn {
-    id: number;
-    exText: string;
-    createdAt: string;
+  id: number;
+  exText: string;
+  createdAt: string;
 }
 
 export interface PronunciationReturn {
-    id: number;
-    pronText: string;
-    pronTags?: string[];
-    createdAt: string;
+  id: number;
+  pronText: string;
+  pronTags?: string[];
+  createdAt: string;
 }
 
 export interface LemRelReturn {
-    id: number;
-    target: string;
-    source: string[];
-    relType: RelType;
-    createdAt: string;
+  id: number;
+  target: string;
+  source: string[];
+  relType: RelType;
+  createdAt: string;
 }
 
 export interface UserReturn {
-    id: number;
-    username: string;
-    email: string;
-    alias?: string;
-    createdAt: string;
+  id: number;
+  username: string;
+  email: string;
+  alias?: string;
+  createdAt: string;
 }
 
 export interface UserGroupReturn {
-    id: number;
-    group_name: string;
-    createdAt: string;
+  id: number;
+  group_name: string;
+  createdAt: string;
 }
 
 export interface ModuleReturn {
-    id: number;
-    module_name: string;
-    createdAt: string;
+  id: number;
+  module_name: string;
+  createdAt: string;
 }
 
 export interface LessonListReturn {
-    id: number;
-    title: string;
-    topic?: string;
-    owner: UserReturn;
-    createdAt: string;
+  id: number;
+  title: string;
+  topic?: string;
+  owner: UserReturn;
+  createdAt: string;
 }
 
 export interface DocumentReturn {
-    id: number;
-    title: string;
-    author?: string;
-    source?: string;
-    date?: string;
-    createdAt: string;
+  id: number;
+  title: string;
+  author?: string;
+  source?: string;
+  date?: string;
+  createdAt: string;
 }
 
 export interface SentenceReturn {
-    id: number;
-    rawText: string;
-    sentIdx: number;
-    createdAt: string;
+  id: number;
+  rawText: string;
+  sentIdx: number;
+  createdAt: string;
 }
 
 /**
@@ -260,11 +298,11 @@ export type VerbMood = (typeof VERB_MOOD)[number];
 
 // lemmas
 export interface Lemma {
-  id: number;
+  id: string;
   entryKey: string;
   lemText: string;
   lemCanon?: string;
-  pos: PartOfSpeech;
+  pos: string;
   nounGender: GramGender;
   nounAnimacy: boolean;
   verbAspect: VerbAspect;
@@ -350,7 +388,7 @@ export interface Module {
 
 // lesson_lists
 export interface LessonList {
-  id: number;
+  id: string;
   title: string;
   topic?: string;
   createdAt: string;
