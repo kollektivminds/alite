@@ -1,26 +1,27 @@
 import logging
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+
+from alite_backend.db.crud.crud_base import CRUDBase
 from alite_backend.db.models import (
-    LessonList,
     LemmaInLessonList,
+    LessonList,
     LessonListInModule,
     Module,
 )
 from alite_backend.db.schemas import (
-    ModuleCreate,
-    ModuleUpdate,
-    ModuleReturn,
-    LessonListCreate,
-    LessonListUpdate,
-    LessonListReturn,
-    LessListInModCreate,
-    LessListInModUpdate,
-    LessListInModReturn,
     LemInLessListCreate,
     LemInLessListUpdate,
+    LessListInModCreate,
+    LessListInModReturn,
+    LessListInModUpdate,
+    LessonListCreate,
+    LessonListReturn,
+    LessonListUpdate,
+    ModuleCreate,
+    ModuleReturn,
+    ModuleUpdate,
 )
-from alite_backend.db.crud.crud_base import CRUDBase
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,19 @@ class CRUDLessList(CRUDBase[LessonList, LessonListCreate, LessonListUpdate]):
         if result is None:
             return None
         return result.id  # type: ignore
+
+    def get_active_lesson_lists(db: Session, skip: int = 0, limit: int = 100):
+        """
+        Retrieves available curriculum batches and eagerly loads their associated lemmas.
+        """
+        return (
+            db.query(LessonList)
+            # Instructs SQLAlchemy to eagerly load the 'lemmas' relationship
+            .options(selectinload(LessonList.has_lemma))
+            .offset(skip)
+            .limit(limit)
+            .all()
+        )
 
 
 crud_less_list = CRUDLessList(LessonList)

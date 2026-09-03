@@ -26,7 +26,7 @@ export type ItemFormat =
   | "MULTIPLE_CHOICE"
   | "FILL_IN_BLANK"
   | "MATCHING"
-  | "C_TEST";
+  | "FLASHCARD";
 export type DistractorStrategy =
   | "MORPHOLOGICAL_PARITY"
   | "FREQUENCY_NEIGHBOR"

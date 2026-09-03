@@ -12,6 +12,24 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("/all", response_model=List[schemas.LessonListReturn])
+def read_lesson_lists(
+    skip: int = 0, limit: int = 100, db: Session = Depends(deps.get_db)
+):
+    """
+    GET /lesson-lists
+    Fetches curriculum modules for the frontend assessment configuration menu.
+    """
+    lesson_lists = orgi_crud.crud_less_list.get_multi(db=db)
+
+    if not lesson_lists:
+        # Returning an empty array is usually preferred for list endpoints,
+        # but throwing a 404 can be useful if lists are strictly required.
+        return []
+
+    return lesson_lists
+
+
 @router.get("/{lesslist_id}", response_model=schemas.LessonListReturn)
 def read_lesslist(lesslist_id: int, db: Session = Depends(deps.get_db)):
     """Fetch a specific sentence by ID."""

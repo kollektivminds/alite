@@ -265,7 +265,7 @@ class LessListAdminView(ModelView, model=LessonList):
     icon = "fa-solid" "fa-book"
     category = "Lemmas - Organization"
 
-    column_list = [LessonList.id, LessonList.title, LessonList.topic, LessonList.owner_id]  # type: ignore
+    column_list = [LessonList.id, LessonList.title, LessonList.topic, LessonList.owner_id, LessonList.has_lemma]  # type: ignore
     column_sortable_list = [LessonList.id, LessonList.title, LessonList.topic, LessonList.owner_id]  # type: ignore
     column_default_sort = [(LessonList.id, False)]
     page_size = 50

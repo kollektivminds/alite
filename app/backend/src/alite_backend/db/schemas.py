@@ -616,6 +616,8 @@ class LessonListUpdate(LessonListBase):
 
 class LessonListReturn(LessonListUpdate):
     created_at: datetime
+    has_lemma: List[LemmaExerciseReturn] = []
+    model_config = ConfigDict(from_attributes=True)
 
 
 # Lessons & Lists in Modules

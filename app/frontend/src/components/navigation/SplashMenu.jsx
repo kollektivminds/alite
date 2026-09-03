@@ -1,9 +1,8 @@
-import React, { useState } from "react";
-import { WordsMenu } from "../words/WordsMenu.tsx";
-import SentencesMenu from "../sentences/SentencesMenu.jsx";
-import ParagraphsMenu from "../paragraphs/ParagraphsMenu.jsx";
-import { useTranslation } from 'react-i18next';
-
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import ParagraphsMenu from "../../features/paragraphs/ParagraphsMenu.jsx";
+import SentencesMenu from "../../features/sentences/SentencesMenu.jsx";
+import { WordsMenu } from "../../features/words/WordsMenu.tsx";
 
 function SplashMenu() {
   const { t } = useTranslation();
@@ -29,8 +28,8 @@ function SplashMenu() {
           style={activeMenu ? { width: "fit-content" } : {}}
         >
           {activeMenu
-            ? t('im_studying_what', { item : t(`splashMenu.${activeMenu}`)})
-            : t('im_studying')}
+            ? t("im_studying_what", { item: t(`splashMenu.${activeMenu}`) })
+            : t("im_studying")}
         </div>
 
         {/* Menu buttons or submenu */}
@@ -41,25 +40,27 @@ function SplashMenu() {
                 onClick={() => handleSelect("words")}
                 className="text-lg font-bold p-4 rounded bg-blue-500 text-white hover:bg-blue-600"
               >
-                {t('splashMenu.words')}
+                {t("splashMenu.words")}
               </button>
               <button
                 onClick={() => handleSelect("sentences")}
                 className="text-lg font-bold p-4 rounded bg-green-500 text-white hover:bg-green-600"
               >
-                {t('splashMenu.sentences')}
+                {t("splashMenu.sentences")}
               </button>
               <button
                 onClick={() => handleSelect("paragraphs")}
                 className="text-lg font-bold p-4 rounded bg-purple-500 text-white hover:bg-purple-600"
               >
-                {t('splashMenu.paragraphs')}
+                {t("splashMenu.paragraphs")}
               </button>
             </div>
           )}
           {activeMenu === "words" && <WordsMenu onBack={handleBack} />}
           {activeMenu === "sentences" && <SentencesMenu onBack={handleBack} />}
-          {activeMenu === "paragraphs" && <ParagraphsMenu onBack={handleBack} />}
+          {activeMenu === "paragraphs" && (
+            <ParagraphsMenu onBack={handleBack} />
+          )}
         </div>
       </div>
     </div>
