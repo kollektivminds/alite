@@ -1,19 +1,31 @@
-from sqlalchemy.orm import Session
-from fastapi import APIRouter, Depends, HTTPException
-from alite_backend.services import exercise_router, flashcard_generator
-from alite_backend.db import models, schemas
+import http
+import logging
+
 from alite_backend.api import deps
+from alite_backend.db import models, schemas
+from alite_backend.services import exercise_router, flashcard_generator
 from alite_backend.services.exercise_router import ExerciseRouter
+from fastapi import APIRouter, Depends, HTTPException, Request
+from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
 @router.post("/generate", response_model=schemas.ExerciseResponse)
-def create_custom_exercise(
+async def create_custom_exercise(
+    http_request: Request,
     request: schemas.ExerciseRequest,
     db: Session = Depends(deps.get_db),
     current_user=Depends(deps.get_current_user),
 ):
+    try:
+        raw_body = await http_request.json()
+        logger.info(f"Incoming /generate payload structure: {raw_body}")
+    except Exception as parse_err:
+        logger.warning(f"Failed to decode incoming request body as JSON: {parse_err}")
+
     generator = ExerciseRouter(
         db=db,
         user_id=current_user.id,

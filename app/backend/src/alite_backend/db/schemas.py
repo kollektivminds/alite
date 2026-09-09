@@ -14,6 +14,8 @@ from alite_backend.db.models import (
     EnumPronType,
     EnumRelLemType,
     EnumSentItemType,
+    EnumSystemTheme,
+    EnumTargetLanguage,
     EnumUserRole,
     EnumVerbAspect,
     EnumVerbTransRefl,
@@ -208,6 +210,7 @@ class ProcessedPayload(BaseModel):
 class LemmaBase(BaseModel):
     lem_text: str
     lem_canon: Optional[str] = None
+    pos: Optional[EnumPartOfSpeech] = None
 
 
 # lemma shared grammar properties
@@ -537,6 +540,13 @@ class UserReturn(UserBase):
     alias: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class UserSettings(BaseModel):
+    difficulty: EnumItemDifficulty
+    theme: EnumSystemTheme
+    reduce_motion: bool
+    language: EnumTargetLanguage
 
 
 # User Groups
@@ -875,11 +885,12 @@ class ItemResponseReturn(ItemResponseUpdate):
 
 class ExerciseContext(BaseModel):
     # Side-A menu items
-    less_list_ids: Optional[List[int]]
-    mod_ids: Optional[List[int]]
-    lem_ids: Optional[List[int]]
+    # less_list_ids: Optional[List[int]]
+    # mod_ids: Optional[List[int]]
+    lem_ids: List[int]
     ex_formats: List[EnumItemFormat]
     difficulty: EnumItemDifficulty = EnumItemDifficulty.MEDIUM
+    allow_odd_one_out: bool = False
     max_keys: int = 1
     max_distractors: int = 3
 
@@ -920,20 +931,17 @@ class EnumGramExFocus(str, Enum):
 
 class StrategyConfigs(BaseModel):
     # use optional attributes mapped directly to core strategy enums
-    allow_odd_one_out: bool = False
     strategies: dict[
         str,
-        List[EnumSubstGramExFocus]
-        | List[EnumVerbGramExFocus]
-        | List[EnumPartGramExFocus],
+        List[EnumGramExFocus],
     ]
 
 
 class ExerciseRequest(BaseModel):
     # Side-A + Side-B items = request
     exercise_context: ExerciseContext
-    type_counts: dict[Union[EnumWordItemType, EnumSentItemType], int]
     grammar_focus: Optional[StrategyConfigs] = None
+    type_counts: dict[Union[EnumWordItemType, EnumSentItemType], int]
 
 
 # Raw Exercise Responses
@@ -957,7 +965,7 @@ class ItemFormatBlueprints(BaseModel):
 class FlashcardResponse(BaseModel):
     item_format: EnumItemFormat = EnumItemFormat.FLASHCARD
     item_id: int
-    front_text: str
+    prompt: str
     back_text: str
 
 

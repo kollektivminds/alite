@@ -1,109 +1,110 @@
 import logging
+from functools import wraps
 from typing import List, Optional, Sequence
 from uuid import UUID
-from functools import wraps
-from sqlalchemy import select, update, delete
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import (
-    SQLAlchemyError,
-    IntegrityError,
-    ProgrammingError,
-    DBAPIError,
-    NoResultFound,
-    StatementError,
-)
-from fastapi import HTTPException, status
+
+from alite_backend.db.crud.crud_base import CRUDBase
 from alite_backend.db.models import (
+    Definition,
+    DefinitionExample,
     EnumAltAdjvType,
     EnumAltNounType,
-    EnumGramGender,
     EnumConjPerson,
+    EnumGramGender,
     EnumGramTense,
+    EnumPartOfSpeech,
     EnumPartType,
     EnumPartVoice,
-    EnumPartOfSpeech,
     EnumSubstCase,
     EnumVerbAspect,
     EnumVerbMood,
     EnumVerbTransRefl,
     EnumVerbType,
-    Lemma,
-    Lexeme,
-    GramProp,
-    WordForm,
-    Definition,
     Example,
-    DefinitionExample,
-    Pronunciation,
+    GramProp,
+    Lemma,
     LemmaDefinition,
-    LemmaRelation,
-    LemmaPronunciation,
-    LookupQueue,
-    LessonList,
     LemmaInLessonList,
+    LemmaPronunciation,
+    LemmaRelation,
+    LessonList,
     LessonListInModule,
+    Lexeme,
+    LookupQueue,
     Module,
+    Pronunciation,
+    WordForm,
 )
 from alite_backend.db.schemas import (
-    LemmasRecord,
-    LemmaCreate,
-    LemmaUpdate,
-    LemmaSearchParams,
-    LexiconRecord,
-    LexemeCreate,
-    LexemeUpdate,
-    LexemeReturn,
-    GramPropsRecord,
-    GramPropCreate,
-    GramPropUpdate,
-    GramPropReturn,
-    WordFormCreate,
-    WordFormUpdate,
-    WordFormReturn,
-    DefinitionsRecord,
-    DefinitionCreate,
-    DefinitionUpdate,
-    DefinitionReturn,
-    ExampleCreate,
-    ExampleUpdate,
-    ExampleReturn,
-    PronunciationCreate,
-    PronunciationUpdate,
-    PronunciationReturn,
-    LemRelCreate,
-    LemRelUpdate,
-    LemRelReturn,
-    LookupQueueCreate,
-    LookupQueueUpdate,
-    LookupQueueReturn,
-    LemDefCreate,
-    LemDefUpdate,
-    LemDefReturn,
+    DefExamplesRecord,
     DefExCreate,
-    DefExUpdate,
     DefExReturn,
+    DefExUpdate,
+    DefinitionCreate,
+    DefinitionReturn,
+    DefinitionsRecord,
+    DefinitionUpdate,
+    ExampleCreate,
+    ExampleReturn,
+    ExampleUpdate,
+    GramPropCreate,
+    GramPropReturn,
+    GramPropsRecord,
+    GramPropUpdate,
+    LemDefCreate,
+    LemDefReturn,
+    LemDefUpdate,
+    LemInLessListCreate,
+    LemInLessListReturn,
+    LemInLessListUpdate,
+    LemmaCreate,
+    LemmaSearchParams,
+    LemmasRecord,
+    LemmaUpdate,
     LemPronCreate,
     LemPronReturn,
     LemPronUpdate,
-    ModuleCreate,
-    ModuleUpdate,
-    ModuleReturn,
-    LessonListCreate,
-    LessonListUpdate,
-    LessonListReturn,
+    LemRelCreate,
+    LemRelReturn,
+    LemRelUpdate,
     LessListInModCreate,
-    LessListInModUpdate,
     LessListInModReturn,
-    LemInLessListCreate,
-    LemInLessListUpdate,
-    LemInLessListReturn,
-    DefExamplesRecord,
-    PronunciationsRecord,
-    RelatedLemmaRecord,
+    LessListInModUpdate,
+    LessonListCreate,
+    LessonListReturn,
+    LessonListUpdate,
+    LexemeCreate,
+    LexemeReturn,
+    LexemeUpdate,
+    LexiconRecord,
+    LookupQueueCreate,
+    LookupQueueReturn,
+    LookupQueueUpdate,
+    ModuleCreate,
+    ModuleReturn,
+    ModuleUpdate,
     ProcessedPayload,
+    PronunciationCreate,
+    PronunciationReturn,
+    PronunciationsRecord,
+    PronunciationUpdate,
+    RelatedLemmaRecord,
+    WordFormCreate,
+    WordFormReturn,
+    WordFormUpdate,
 )
 from alite_backend.words.funcs import remove_accents
-from alite_backend.db.crud.crud_base import CRUDBase
+from fastapi import HTTPException, status
+from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy.exc import (
+    DBAPIError,
+    IntegrityError,
+    NoResultFound,
+    ProgrammingError,
+    SQLAlchemyError,
+    StatementError,
+)
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +199,40 @@ class CRUDLemmas(CRUDBase[Lemma, LemmaCreate, LemmaUpdate]):
             query = query.filter(getattr(self.model, key) == value)
 
         return query.all()
+
+    def search_lemmas_fuzzy(self, db: Session, query_str: str, limit: int = 15):
+        """
+        Executes a case-insensitive trigram fuzzy match against Russian lemmas.
+        Falls back to a standard ILIKE query if pg_trgm similarity encounters an issue.
+        """
+        clean_query = query_str.strip()
+        if not clean_query:
+            return []
+
+        # Map column flexibly based on models.py (lem_text or lemText)[cite: 3, 9]
+        col = getattr(Lemma, "lemText", None) or getattr(Lemma, "lem_text", None)
+        if col is None:
+            raise AttributeError("Lemma model does not expose 'lemText' or 'lem_text'.")
+
+        try:
+            # pg_trgm similarity expression
+            similarity_expr = func.similarity(col, clean_query)
+
+            # Match if substring present OR similarity above threshold
+            return (
+                db.query(Lemma)
+                .filter(or_(col.ilike(f"%{clean_query}%"), similarity_expr > 0.25))
+                .order_by(similarity_expr.desc())
+                .limit(limit)
+                .all()
+            )
+        except Exception as exc:
+            # Prevent database session poison on missing extension/operator errors
+            logger.warning("Fuzzy query failed, executing raw ILIKE fallback: %s", exc)
+            db.rollback()
+            return (
+                db.query(Lemma).filter(col.ilike(f"%{clean_query}%")).limit(limit).all()
+            )
 
 
 crud_lemma = CRUDLemmas(Lemma)

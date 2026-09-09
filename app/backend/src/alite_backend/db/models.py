@@ -16,6 +16,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class EnumTargetLanguage(str, enum.Enum):
     RU = "ru"
+    EN = "en"
 
 
 class EnumAltNounType(str, enum.Enum):
@@ -162,6 +163,7 @@ class EnumItemFormat(str, enum.Enum):
     FITB = "fitb"
     MCQ = "mcq"
     FLASHCARD = "flashcard"
+    UNSCRAMBLE = "unscramble"
 
 
 class EnumWordItemType(str, enum.Enum):
@@ -197,8 +199,8 @@ class EnumWordItemType(str, enum.Enum):
     ADJV_GRAM_TO_FORM = "adjv_gram_to_form"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)
     # --- NOUNS ---
     # lemma (noun) <-> gender
-    NOUN_TO_GEND = "noun_to_gender"  # "What gender is [noun]?" (MCQ)
-    GEND_TO_NOUN = "gender_to_noun"  # "Which lemma(s) is/are [noun_gender]?" (MCQ)
+    NOUN_TO_GEND = "noun_to_gend"  # "What gender is [noun]?" (MCQ)
+    GEND_TO_NOUN = "gend_to_noun"  # "Which lemma(s) is/are [noun_gender]?" (MCQ)
     # lemma (noun) <-> animacy (bool)
     NOUN_TO_ANIM = "noun_to_anim"  # "Is [noun] animate or inanimate?" (MCQ)
     ANIM_TO_NOUN = "anim_to_noun"  # "Which lemma(s) is/are ["verb_aspect"]?" (MCQ)
@@ -211,8 +213,8 @@ class EnumWordItemType(str, enum.Enum):
     )
     # --- PARTICIPLES ---
     # participle <-> type (tense, mood)
-    PART_TYPE_TO_FORM = "part_type_to_form"  # "What form is type X?" (MCQ)
     PART_FORM_TO_TYPE = "part_form_to_type"  # "What type of participle is X?" (MCQ)
+    PART_TYPE_TO_FORM = "part_type_to_form"  # "What form is type X?" (MCQ)
 
     # --- VERBS ----
     # Aspect
@@ -255,6 +257,12 @@ class EnumItemDifficulty(str, enum.Enum):
     EASY = "easy"
     MEDIUM = "medium"
     DIFFICULT = "difficult"
+
+
+class EnumSystemTheme(str, enum.Enum):
+    LIGHT = "light"
+    DARK = "dark"
+    SYSTEM = "system"
 
 
 #

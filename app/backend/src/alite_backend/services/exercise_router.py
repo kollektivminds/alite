@@ -280,7 +280,7 @@ class ExerciseRouter:
             )  # type: ignore
             # specific_config = None
             specific_config = (
-                request.grammar_focus if request.grammar_focus.strategies else None  # type: ignore
+                request.grammar_focus.strategies if request.grammar_focus else None  # type: ignore
             )
             # create blueprints for all items of a strategy
             blueprints = strategy_instance.generate_item_blueprints(

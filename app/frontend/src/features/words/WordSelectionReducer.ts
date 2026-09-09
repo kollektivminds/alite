@@ -1,38 +1,37 @@
 // src/features/words/wordSelectionReducer.ts
 
-// Importing the core domain entities we defined for ALITE.
-// Ensure this path points to your central types file (e.g., src/types/index.ts)[cite: 3]
-import { Lemma, QualityConfig, WordSelectionState } from "../../types";
+// importing the core domain entities for ALITE.
+import { Lemma, UIConfigState, WordSelectionState } from "../../types/words";
 
-// 1. Action Definitions
+// action Definitions
 export type WordSelectionAction =
   | { type: "TOGGLE_LESSON_LIST"; payload: string }
+  | { type: "CLEAR_LESSON_LISTS" }
   | { type: "TOGGLE_EXCLUDE_LEMMA"; payload: string }
   | { type: "ADD_MANUAL_LEMMA"; payload: Lemma }
   | { type: "REMOVE_MANUAL_LEMMA"; payload: string }
-  // Added UPDATE_QUALITIES to handle the psychometric distractor settings.
-  // Using Partial<QualityConfig> allows us to update a single setting
-  // (like distractorCount) without passing the entire object every time.
-  | { type: "UPDATE_QUALITIES"; payload: Partial<QualityConfig> };
+  | { type: "UPDATE_QUALITIES"; payload: Partial<UIConfigState> };
 
-// 2. Default Configuration
-// Establishing baseline parameters for item generation[cite: 3].
-const defaultQualities: QualityConfig = {
-  itemFormat: "MULTIPLE_CHOICE",
-  strategy: "MORPHOLOGICAL_PARITY",
-  distractorCount: 3,
-  targetInflectionsOnly: true,
+// default configuration
+export const defaultPanelConfig: UIConfigState = {
+  itemFormats: [],
+  difficulty: "medium",
+  maxKeys: 1,
+  maxDistractors: 3,
+  maxItems: 10,
+  allowOddOneOut: true,
+  typeCounts: {},
 };
 
-// 3. Initial State
+// initial state
 export const initialState: WordSelectionState = {
   selectedLessonListIds: [],
   excludedLemmaIds: [],
   manualLemmas: [],
-  qualities: defaultQualities, // Hooked up the default qualities
+  qualities: defaultPanelConfig,
 };
 
-// 4. The Pure Reducer Function
+// the pure reducer function
 export function wordSelectionReducer(
   state: WordSelectionState,
   action: WordSelectionAction,
@@ -45,6 +44,13 @@ export function wordSelectionReducer(
         selectedLessonListIds: isSelected
           ? state.selectedLessonListIds.filter((id) => id !== action.payload)
           : [...state.selectedLessonListIds, action.payload],
+      };
+    }
+
+    case "CLEAR_LESSON_LISTS": {
+      return {
+        ...state,
+        selectedLessonListIds: [],
       };
     }
 

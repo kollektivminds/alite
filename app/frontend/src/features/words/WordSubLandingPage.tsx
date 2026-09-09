@@ -1,15 +1,11 @@
+// src/features/words/WordsSubLandingPage.tsx
 import React, { useMemo, useReducer } from "react";
-import { Lemma, LessonList, QualityConfig } from "../../types"; //[cite: 3]
+import { ExerciseContext, Lemma, LessonList } from "../../types/words"; //[cite: 3]
 
-// These child components will be built in subsequent steps.
-// Importing them now establishes the declarative layout contract.
+import { ExerciseConfigPanel } from "./ExerciseConfigPanel";
 import { LessonListPicker } from "./LessonListPicker";
 import { LessonWordPruner } from "./LessonWordPruner";
-import { QualitiesConfigPanel } from "./QualitiesConfigPanel";
-import { SelectedLemmaSummary } from "./SelectedLemmaSummary";
 import { SingleWordAdder } from "./SingleWordAdder";
-
-// The reducer will handle the interconnected state transitions.
 import { initialState, wordSelectionReducer } from "./WordSelectionReducer";
 
 interface WordsSubLandingPageProps {
@@ -17,7 +13,7 @@ interface WordsSubLandingPageProps {
   searchLemmasApi: (query: string) => Promise<Lemma[]>; //[cite: 2]
   onSubmitGeneration: (payload: {
     lemmaIds: string[];
-    qualities: QualityConfig;
+    qualities: ExerciseContext;
   }) => void; //[cite: 2]
 }
 
@@ -26,51 +22,43 @@ export const WordsSubLandingPage: React.FC<WordsSubLandingPageProps> = ({
   searchLemmasApi,
   onSubmitGeneration,
 }) => {
-  // 1. Centralized State Management
-  // We use useReducer here because selecting a lesson list, manually adding a word,
-  // and pruning distractors are highly interrelated actions that shouldn't be split
-  // across multiple disjointed useState hooks.
   const [state, dispatch] = useReducer(wordSelectionReducer, initialState);
 
-  // 2. Deterministic Data Derivation (Memoization)
-  // useMemo prevents expensive recalculations. If a user is typing a search query,
-  // we do not want React to rebuild this entire array of dictionary forms on every keystroke.
+  // extract active lemmas from toggled curriculum lists
   const activeLessonLemmas = useMemo(() => {
     const map = new Map<string, Lemma>();
-
-    // Extract unique lemmas only from the lesson lists the user has toggled "on"
     availableLessonLists
-      .filter((list) => state.selectedLessonListIds.includes(list.id))
-      .forEach((list) =>
-        list.has_lemma.forEach((lemma) => map.set(lemma.id, lemma)),
+      .filter((list) => state.selectedLessonListIds.includes(String(list.id)))
+      .forEach((list: any) =>
+        (list.has_lemma || []).forEach((lemma: any) => {
+          // guarantee the Lemma ID is stored as a string
+          const safeLemmaId = String(lemma.id);
+          map.set(safeLemmaId, lemma);
+        }),
       );
 
     return Array.from(map.values());
   }, [availableLessonLists, state.selectedLessonListIds]);
 
-  // Derive the final pool: (LessonBatches + ManualWords) - ExcludedSet[cite: 2]
+  // 2. Derive the final pool for pipeline submission
   const finalActiveLemmas = useMemo(() => {
     const combined = new Map<string, Lemma>();
-
-    activeLessonLemmas.forEach((l) => combined.set(l.id, l));
-    state.manualLemmas.forEach((l) => combined.set(l.id, l));
+    activeLessonLemmas.forEach((l: Lemma) => combined.set(l.id, l));
+    state.manualLemmas.forEach((l: Lemma) => combined.set(l.id, l));
 
     const exclusionSet = new Set(state.excludedLemmaIds);
     return Array.from(combined.values()).filter((l) => !exclusionSet.has(l.id));
   }, [activeLessonLemmas, state.manualLemmas, state.excludedLemmaIds]);
 
-  // 3. Pipeline Submission
   const handleGenerate = () => {
     onSubmitGeneration({
-      lemmaIds: finalActiveLemmas.map((l) => l.id),
+      lemmaIds: finalActiveLemmas.map((l: { id: any }) => l.id),
       qualities: state.qualities,
     });
   };
 
-  // 4. Declarative Layout
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      {/* Header */}
       <div className="mb-8 border-b border-gray-200 pb-5 dark:border-gray-700">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
           Target Lemma Assessment Configuration
@@ -81,55 +69,48 @@ export const WordsSubLandingPage: React.FC<WordsSubLandingPageProps> = ({
         </p>
       </div>
 
-      {/* 12-Column Grid Layout */}
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-12">
-        {/* Left Column: Vocabulary Construction (7 columns) */}
-        <div className="space-y-6 lg:col-span-7">
+        {/* Left Column: Vocabulary Construction Inputs & Staging */}
+        <div className="space-y-8 lg:col-span-7">
+          {/* Input 1: Batch Selection */}
           <LessonListPicker
             lessonLists={availableLessonLists}
             selectedIds={state.selectedLessonListIds}
-            onToggleList={(id) =>
+            onToggleList={(id: string) =>
               dispatch({ type: "TOGGLE_LESSON_LIST", payload: id })
             }
+            onClearAll={() => dispatch({ type: "CLEAR_LESSON_LISTS" })}
           />
 
+          {/* Input 2: Manual Search */}
           <SingleWordAdder
             onSearch={searchLemmasApi}
-            onSelectLemma={(lemma) =>
+            onSelectLemma={(lemma: any) =>
               dispatch({ type: "ADD_MANUAL_LEMMA", payload: lemma })
             }
           />
 
-          {/* Only render the pruner if there are actually list lemmas to prune */}
-          {activeLessonLemmas.length > 0 && (
-            <LessonWordPruner
-              lessonLemmas={activeLessonLemmas}
-              excludedIds={state.excludedLemmaIds}
-              onToggleExclude={(id) =>
-                dispatch({ type: "TOGGLE_EXCLUDE_LEMMA", payload: id })
-              }
-            />
-          )}
-
-          <SelectedLemmaSummary
-            activeLemmas={finalActiveLemmas}
+          {/* Master Staging Area: Replaces both the old pruner and the summary */}
+          <LessonWordPruner
+            lessonLemmas={activeLessonLemmas}
             manualLemmas={state.manualLemmas}
-            onRemoveManual={(id) =>
-              dispatch({ type: "REMOVE_MANUAL_LEMMA", payload: id })
-            }
-            onExcludeLemma={(id) =>
+            excludedIds={state.excludedLemmaIds}
+            onToggleExclude={(id: any) =>
               dispatch({ type: "TOGGLE_EXCLUDE_LEMMA", payload: id })
+            }
+            onRemoveManual={(id: any) =>
+              dispatch({ type: "REMOVE_MANUAL_LEMMA", payload: id })
             }
           />
         </div>
 
-        {/* Right Column: Generation Qualities Sticky Sidebar (5 columns) */}
+        {/* Right Column: Generation Qualities Sidebar */}
         <div className="lg:col-span-5">
-          <div className="sticky top-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-700 dark:bg-gray-800">
-            <QualitiesConfigPanel
-              config={state.qualities}
-              lemmaCount={finalActiveLemmas.length}
-              onChange={(updated) =>
+          <div className="sticky top-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+            <ExerciseConfigPanel
+              config={state.qualities} // Ensure this maps to ExerciseConfigState defined above
+              activeLemmas={finalActiveLemmas} // Pass the array to evaluate POS
+              onChange={(updated: any) =>
                 dispatch({ type: "UPDATE_QUALITIES", payload: updated })
               }
               onSubmit={handleGenerate}

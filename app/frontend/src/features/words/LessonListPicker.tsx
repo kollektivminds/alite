@@ -1,16 +1,18 @@
 import React from "react";
-import { LessonList } from "../../types";
+import { LessonList } from "../../types/words";
 
 interface LessonListPickerProps {
   lessonLists: LessonList[];
   selectedIds: string[];
   onToggleList: (id: string) => void;
+  onClearAll: () => void; // Declarative reset handler
 }
 
 export const LessonListPicker: React.FC<LessonListPickerProps> = ({
   lessonLists,
   selectedIds,
   onToggleList,
+  onClearAll,
 }) => {
   if (lessonLists.length === 0) {
     return (
@@ -20,8 +22,11 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
     );
   }
 
+  const hasSelections = selectedIds.length > 0;
+
   return (
     <section aria-labelledby="lesson-picker-heading">
+      {/* Header bar with counter and reset trigger */}
       <div className="mb-4 flex items-center justify-between">
         <h2
           id="lesson-picker-heading"
@@ -29,30 +34,42 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
         >
           1. Base Curriculum Modules
         </h2>
-        <span className="text-sm text-gray-500">
-          {selectedIds.length} list{selectedIds.length !== 1 ? "s" : ""}{" "}
-          selected
-        </span>
+
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">
+            {selectedIds.length} list{selectedIds.length !== 1 ? "s" : ""}{" "}
+            selected
+          </span>
+
+          {/* Render reset button only when active lists exist */}
+          {hasSelections && (
+            <button
+              type="button"
+              onClick={onClearAll}
+              className="text-xs font-semibold text-red-600 hover:text-red-700 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 rounded px-1.5 py-0.5 dark:text-red-400 dark:hover:text-red-300"
+              aria-label="Deselect all curriculum modules"
+            >
+              Deselect All
+            </button>
+          )}
+        </div>
       </div>
 
-      {/*
-        Scrollable Container
-        max-h-96 forces a strict height. overflow-y-auto enables the scrollbar.
-        pr-2 adds a touch of padding so the scrollbar doesn't overlap the border.
-      */}
       <div className="max-h-96 overflow-y-auto pr-2">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {lessonLists.map((list) => {
-            const isSelected = selectedIds.includes(list.id);
+            const safeListId = String(list.id);
+            const isSelected = selectedIds.includes(safeListId);
 
             return (
               <button
-                key={list.id}
+                key={safeListId}
                 type="button"
-                onClick={() => onToggleList(list.id)}
+                onClick={() => onToggleList(safeListId)}
                 aria-pressed={isSelected}
                 className={`
-                  relative flex cursor-pointer flex-col rounded-lg border p-4 text-left shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
+                  relative flex cursor-pointer flex-col rounded-lg border p-4 text-left shadow-sm
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
                   transition-all duration-200 ease-in-out
                   ${
                     isSelected
@@ -95,15 +112,6 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
                   </div>
                 </div>
 
-                {list.topic && (
-                  <span className="mt-1 block text-sm text-gray-500 dark:text-gray-400">
-                    {list.topic}
-                  </span>
-                )}
-                {/*
-                  Diagnostic check: If this renders "0 lexical items", your backend
-                  is not eager-loading the lemmas array.
-                */}
                 <span className="mt-2 block text-xs text-gray-400 dark:text-gray-500">
                   {list.has_lemma?.length || 0} lexical items
                 </span>

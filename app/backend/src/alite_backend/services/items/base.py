@@ -244,7 +244,7 @@ class BaseExerciseStrategy(ABC):
         if is_reverse is False:
             # user sees a Russian word and must select its grammatical properties.
             if target_attr == "all":
-                return f"Identify the complete grammatical parsing for the form '{word_form.text}':"
+                return f"Identify the complete grammatical parsing for the form '{word_form.word_form_gram}':"
             else:
                 # E.g., "What is the subst_case of..." -> "What is the case of..."
                 clean_attr = self._format_attribute_name(target_attr)
@@ -723,7 +723,10 @@ class BaseExerciseStrategy(ABC):
 
             # TODO: candidate for bkt
             item_focus = random.choice(allowed_foci)
-            target_attr, static_attrs = self._get_trait_mapping(pos_target=pos_target, focus=item_focus)  # type: ignore
+            if allowed_foci == "all":
+                target_attr, static_attrs = "all", []
+            else:
+                target_attr, static_attrs = self._get_trait_mapping(pos_target=pos_target, focus=item_focus)  # type: ignore
 
             # defective form filtering
             valid_forms = self._filter_valid_forms(

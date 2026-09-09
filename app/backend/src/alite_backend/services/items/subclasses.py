@@ -130,7 +130,7 @@ class MorphologicalStrategy(BaseExerciseStrategy):
 
         if focus:
             foci = (
-                config.strategies.get(focus, "all")
+                config.strategies.get(focus, ["all"])
                 if config and config.strategies
                 else "all"
             )

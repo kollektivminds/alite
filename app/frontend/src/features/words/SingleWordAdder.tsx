@@ -1,6 +1,5 @@
-// src/components/words/SingleWordAdder.tsx
-import React, { useEffect, useRef, useState } from "react";
-import { Lemma } from "../../types";
+import React, { useEffect, useState } from "react";
+import { Lemma } from "../../types/words";
 
 interface SingleWordAdderProps {
   onSearch: (query: string) => Promise<Lemma[]>;
@@ -11,130 +10,135 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
   onSearch,
   onSelectLemma,
 }) => {
-  const [query, setQuery] = useState<string>("");
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<Lemma[]>([]);
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isSearching, setIsSearching] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Close dropdown on outside click
   useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(e.target as Node)
-      ) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
-  }, []);
-
-  // Debounced API request to protect backend worker threads
-  useEffect(() => {
-    const trimmedQuery = query.trim();
-    if (trimmedQuery.length < 2) {
+    // 1. Guard Clause: Skip search if input is too short
+    if (query.trim().length < 2) {
       setResults([]);
-      setIsOpen(false);
-      setIsSearching(false);
+      setHasSearched(false);
+      setError(null);
       return;
     }
 
     setIsSearching(true);
+    setHasSearched(false);
+    setError(null);
+
+    // 2. Debounce Timer: Delays execution until typing pauses
     const debounceTimer = setTimeout(async () => {
       try {
-        const payload = await onSearch(trimmedQuery);
-        setResults(payload);
-        setIsOpen(true);
+        const data = await onSearch(query);
+        setResults(data);
       } catch (err) {
-        console.error("Failed to retrieve lemma candidates:", err);
+        console.error("Dictionary lookup failed:", err);
         setResults([]);
+        setError("Failed to query the database. Please try again.");
       } finally {
         setIsSearching(false);
+        setHasSearched(true);
       }
     }, 300);
 
+    // 3. Cleanup: Clears the timer if the query changes before 300ms
     return () => clearTimeout(debounceTimer);
   }, [query, onSearch]);
 
-  const handleSelect = (lemma: Lemma) => {
+  const handleSelection = (lemma: Lemma) => {
     onSelectLemma(lemma);
     setQuery("");
     setResults([]);
-    setIsOpen(false);
+    setHasSearched(false);
   };
 
   return (
-    <div ref={containerRef} className="relative mb-6 w-full max-w-lg">
-      <label
-        htmlFor="lemma-autocomplete-input"
-        className="block text-xs font-semibold uppercase tracking-wider text-gray-700 dark:text-gray-300"
-      >
-        Individual Lemma Addition
-      </label>
+    <section aria-labelledby="manual-add-heading" className="space-y-4">
+      <div>
+        <h3
+          id="manual-add-heading"
+          className="text-lg font-semibold text-gray-900 dark:text-gray-100"
+        >
+          Individual Lemma Lookup
+        </h3>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Search the database for specific dictionary forms to include.
+        </p>
+      </div>
 
-      <div className="relative mt-1.5">
+      <div className="relative w-full max-w-md">
+        <label htmlFor="lemma-search" className="sr-only">
+          Search dictionary form
+        </label>
         <input
-          id="lemma-autocomplete-input"
+          id="lemma-search"
           type="text"
-          lang="ru"
-          autoComplete="off"
+          role="combobox"
+          aria-expanded={results.length > 0}
+          aria-controls="search-results-listbox"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search Russian lemma (e.g. говорить, стол)..."
-          className="block w-full rounded-md border border-gray-300 bg-white py-2 pl-3 pr-10 text-sm placeholder-gray-400 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100 dark:placeholder-gray-500"
+          placeholder="e.g., собака, читать..."
+          className="w-full rounded-md border border-gray-300 px-4 py-2 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          autoComplete="off"
         />
 
         {isSearching && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <svg
-              className="h-4 w-4 animate-spin text-gray-400"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              />
-            </svg>
+          <div className="absolute right-3 top-2.5 text-sm text-gray-400">
+            Searching...
+          </div>
+        )}
+
+        {/* Error State Rendering */}
+        {error && (
+          <div className="mt-2 rounded-md bg-red-50 p-2 text-sm text-red-600 dark:bg-red-900/30 dark:text-red-400">
+            {error}
+          </div>
+        )}
+
+        {/* Dropdown Container */}
+        {!error && (results.length > 0 || (hasSearched && !isSearching)) && (
+          <div className="absolute z-10 mt-1 max-h-60 w-full overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+            {results.length > 0 ? (
+              <ul id="search-results-listbox" role="listbox">
+                {results.map((lemma) => {
+                  const displayText = lemma.lem_canon ?? lemma.lem_text ?? "—";
+                  return (
+                    <li key={lemma.id} role="option" aria-selected="false">
+                      <button
+                        type="button"
+                        onClick={() => handleSelection(lemma)}
+                        className="flex w-full items-center justify-between px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+                      >
+                        <span className="font-medium text-gray-900 dark:text-gray-100">
+                          {displayText}
+                        </span>
+                        <span className="text-xs text-gray-500 uppercase tracking-wider">
+                          {lemma.pos}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="px-4 py-3 text-sm text-gray-500">
+                <p>No matches found for "{query}".</p>
+                <button
+                  type="button"
+                  disabled
+                  className="mt-2 inline-flex items-center rounded border border-transparent bg-blue-100 px-2.5 py-1.5 text-xs font-medium text-blue-700 opacity-50 cursor-not-allowed"
+                >
+                  Request Pipeline Generation (Coming Soon)
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
-
-      {/* Floating suggestion list */}
-      {isOpen && results.length > 0 && (
-        <ul
-          role="listbox"
-          className="absolute z-20 mt-1 max-h-56 w-full overflow-y-auto rounded-md border border-gray-200 bg-white py-1 shadow-lg ring-1 ring-black/5 dark:border-gray-700 dark:bg-gray-800"
-        >
-          {results.map((lemma) => (
-            <li
-              key={lemma.id}
-              role="option"
-              aria-selected={false}
-              onClick={() => handleSelect(lemma)}
-              className="flex cursor-pointer items-center justify-between px-3.5 py-2 text-sm text-gray-800 hover:bg-indigo-50 hover:text-indigo-900 dark:text-gray-200 dark:hover:bg-indigo-950 dark:hover:text-indigo-200"
-            >
-              <span className="font-medium">{lemma.lemma}</span>
-              <span className="rounded bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-                {lemma.pos}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </section>
   );
 };

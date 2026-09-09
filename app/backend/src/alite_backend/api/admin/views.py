@@ -26,10 +26,12 @@ from alite_backend.db.models import (
     UserInGroup,
     WordForm,
 )
+from alite_backend.services import exercise_router
 from hypothesis import example
 from markupsafe import Markup
 from sqladmin import ModelView
 from starlette.requests import Request
+from tomlkit import item
 
 
 class LemmaAdminView(ModelView, model=Lemma):
@@ -166,7 +168,6 @@ class WordFormAdminView(ModelView, model=WordForm):
     #     WordForm.word_form_lexicon,
     # ]
 
-    # 3. Column Formatters:
     # Safely extract related attributes without triggering ad-hoc queries.
     column_formatters = {
         "lex_text": lambda model, attr: (
@@ -182,9 +183,25 @@ class DefinitionAdminView(ModelView, model=Definition):
     icon = "fa-solid" "fa-book"
     category = "Lemmas - Auxiliary"
 
-    column_list = [Definition.id, Definition.def_text, Definition.def_tags]  # type: ignore
+    column_list = [Definition.id, Definition.def_text, Definition.def_tags, Definition.lemmas, Definition.example]  # type: ignore
     column_sortable_list = [Definition.id, Definition.def_text, Definition.def_tags]  # type: ignore
+    column_searchable_list = [Definition.def_text]
     column_default_sort = [(Definition.id, False)]
+
+    page_size = 50
+
+
+class LemmaDefinitionAdminView(ModelView, model=LemmaDefinition):
+
+    name = "Lemma-Definition"
+    name_plural = "Lemma-Definitions"
+    icon = "fa-solid" "fa-book"
+    category = "Lemmas - Auxiliary"
+
+    column_list = [LemmaDefinition.lemma, LemmaDefinition.definition]  # type: ignore
+    # column_sortable_list = [Definition.id, Definition.def_text, Definition.def_tags]  # type: ignore
+    # column_searchable_list = [Definition.def_text]
+    # column_default_sort = [(LemmaDefinition.lem_id, False)]
 
     page_size = 50
 
@@ -211,6 +228,7 @@ class PronunciationAdminView(ModelView, model=Pronunciation):
     category = "Lemmas - Auxiliary"
 
     column_list = [Pronunciation.id, Pronunciation.pron_tags, Pronunciation.pron_text, Pronunciation.pron_type]  # type: ignore
+    column_searchable_list = [Pronunciation.pron_text]
     column_sortable_list = [Pronunciation.id, Pronunciation.pron_tags, Pronunciation.pron_text, Pronunciation.pron_type]  # type: ignore
     column_default_sort = [(Pronunciation.id, False)]
 
@@ -431,6 +449,21 @@ class UserAdminView(ModelView, model=User):
     form_excluded_columns = [User.created_at, User.exercises, User.in_group]  # type: ignore
 
 
+class ExerciseAdminView(ModelView, model=Exercise):
+    """
+    Administrative UI mapping for Generated Exercise Test Items.
+    """
+
+    name = "Exercise"
+    name_plural = "Exercises"
+    icon = "fa-solid fa-puzzle-piece"
+    category = "Assessment"
+
+    column_list = [Exercise.id, Exercise.user_id, Exercise.has_item, Exercise.start_time, Exercise.finish_time]  # type: ignore
+    column_sortable_list = [Item.item_type, Item.item_format]
+    page_size = 50
+
+
 class ItemAdminView(ModelView, model=Item):
     """
     Administrative UI mapping for Generated Exercise Test Items.
@@ -447,6 +480,12 @@ class ItemAdminView(ModelView, model=Item):
         Item.item_type,
         Item.item_format,
         Item.prompt,
+        Item.options,
+        Item.responses,
+        Item.settings,
+        Item.start_time,
+        Item.finish_time,
+        Item.ref_lems,
     ]  # type: ignore
     column_sortable_list = [Item.item_type, Item.item_format]
     page_size = 50
