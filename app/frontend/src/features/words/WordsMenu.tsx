@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { DifficultyLevel } from "../../types/exercise";
 import { ExerciseResponse, Lemma, LessonList } from "../../types/words";
 import { ExerciseContainer } from "../exercises/ExerciseContainer";
 import { WordsSubLandingPage } from "./WordSubLandingPage";
@@ -16,6 +17,8 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
   const [activeExercise, setActiveExercise] = useState<ExerciseResponse | null>(
     null,
   );
+  const [activeDifficulty, setActiveDifficulty] =
+    useState<DifficultyLevel | null>(null);
 
   // Execute the network request on component mount
   useEffect(() => {
@@ -104,7 +107,6 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
           max_distractors: payload.qualities.maxDistractors,
         },
         type_counts: activeTypeCounts,
-        // D. Optional: Explicitly send null or an empty object to satisfy the Optional[StrategyConfigs]
         grammar_focus: null,
       };
 
@@ -126,6 +128,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
 
       const result = await response.json();
       // console.log("Psychometric items generated:", result);
+      setActiveDifficulty(payload.qualities.difficulty);
       setActiveExercise(result);
 
       // Future implementation: Dispatch an action here to navigate the user
@@ -137,6 +140,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
 
   const handleExitExercise = () => {
     setActiveExercise(null);
+    setActiveDifficulty(null);
   };
 
   if (isLoading)
@@ -163,6 +167,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
       {activeExercise ? (
         <ExerciseContainer
           exerciseData={activeExercise}
+          difficulty={activeDifficulty}
           onExit={handleExitExercise}
         />
       ) : (

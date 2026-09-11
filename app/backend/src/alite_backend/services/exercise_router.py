@@ -1,6 +1,7 @@
 # app/backend/services/exercise_router.py
 import logging
 import random
+import uuid
 from typing import Any, Dict, Tuple
 
 from alite_backend.api import deps
@@ -27,6 +28,7 @@ EXERCISE_CONFIG = {
             "target_column": "pos",
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     EnumWordItemType.POS_TO_LEM: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -35,6 +37,7 @@ EXERCISE_CONFIG = {
             "target_column": "pos",
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.NOUN_TO_GEND: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -43,6 +46,7 @@ EXERCISE_CONFIG = {
             "target_column": "noun_gender",
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.GEND_TO_NOUN: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -51,6 +55,7 @@ EXERCISE_CONFIG = {
             "target_column": "noun_gender",
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.NOUN_TO_ANIM: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -59,6 +64,7 @@ EXERCISE_CONFIG = {
             "target_column": "noun_animacy",
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.ANIM_TO_NOUN: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -67,6 +73,7 @@ EXERCISE_CONFIG = {
             "target_column": "noun_animacy",
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.VERB_TO_ASPT: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -75,6 +82,7 @@ EXERCISE_CONFIG = {
             "target_column": "verb_aspect",
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.ASPT_TO_VERB: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -83,6 +91,7 @@ EXERCISE_CONFIG = {
             "target_column": "verb_aspect",
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.VERB_TO_TYPE: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -91,6 +100,7 @@ EXERCISE_CONFIG = {
             "target_column": "verb_type",
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.TYPE_TO_VERB: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -99,6 +109,7 @@ EXERCISE_CONFIG = {
             "target_column": "verb_type",
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.VERB_TO_TNRF: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -107,6 +118,7 @@ EXERCISE_CONFIG = {
             "target_column": "verb_trans_refl",
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.TNRF_TO_VERB: {
         "strategy_class": StandaloneAttributeStrategy,
@@ -115,6 +127,7 @@ EXERCISE_CONFIG = {
             "target_column": "verb_trans_refl",
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     # sibling-query types
     EnumWordItemType.LEM_TO_DEF: {
@@ -127,6 +140,7 @@ EXERCISE_CONFIG = {
             "junction_column": "def_id",
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.DEF_TO_LEM: {
         "strategy_class": SiblingAttributeStrategy,
@@ -138,6 +152,7 @@ EXERCISE_CONFIG = {
             "junction_column": "def_id",
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     EnumWordItemType.LEM_TO_PRON: {
         "strategy_class": SiblingAttributeStrategy,
@@ -149,6 +164,7 @@ EXERCISE_CONFIG = {
             "junction_column": "pron_id",
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.PRON_TO_LEM: {
         "strategy_class": SiblingAttributeStrategy,
@@ -160,6 +176,7 @@ EXERCISE_CONFIG = {
             "junction_column": "pron_id",
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     # morphology types
     EnumWordItemType.NOUN_FORM_TO_GRAM: {
@@ -168,6 +185,7 @@ EXERCISE_CONFIG = {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.NOUN_GRAM_TO_FORM: {
         "strategy_class": MorphologicalStrategy,
@@ -175,6 +193,7 @@ EXERCISE_CONFIG = {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     EnumWordItemType.ADJV_FORM_TO_GRAM: {
         "strategy_class": MorphologicalStrategy,
@@ -182,6 +201,7 @@ EXERCISE_CONFIG = {
             "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.ADJV_GRAM_TO_FORM: {
         "strategy_class": MorphologicalStrategy,
@@ -189,6 +209,7 @@ EXERCISE_CONFIG = {
             "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     # lemma-relation types
     EnumWordItemType.VERB_PAIR_TO_REL: {
@@ -198,6 +219,7 @@ EXERCISE_CONFIG = {
             "target_rel": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.VERB_TO_ASPT_PAIR: {
         "strategy_class": LemmaRelationStrategy,
@@ -206,6 +228,7 @@ EXERCISE_CONFIG = {
             "target_rel": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.LEM_LEM_TO_REL: {
         "strategy_class": LemmaRelationStrategy,
@@ -214,6 +237,7 @@ EXERCISE_CONFIG = {
             "target_rel": None,
             "is_reverse": False,
         },
+        "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.REL_TO_LEM_LEM: {
         "strategy_class": LemmaRelationStrategy,
@@ -222,6 +246,7 @@ EXERCISE_CONFIG = {
             "target_rel": None,
             "is_reverse": True,
         },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
 }
 
@@ -301,10 +326,6 @@ class ExerciseRouter:
                         "settings": specific_config,
                     }
                 )
-        # add to database
-        # db_exercise = models.Exercise(user_id=self.user_id)
-        # self.db.add(db_exercise)
-        # self.db.flush()
 
         response_items = []
 
@@ -332,7 +353,16 @@ class ExerciseRouter:
                 self.db.flush()
 
                 for opt in item_key + item_distractors:
-                    db_option = models.ItemOption
+                    db_option = models.ItemOption(
+                        option_text=opt,
+                        item_id=db_item.id,
+                        option_uuid=uuid.uuid4(),
+                        is_correct=True if opt in item_key else False,
+                        # explanation=None,
+                    )
+
+                    self.db.add(db_option)
+                    self.db.flush()
 
                 db_lem_in_item = models.LemmaInItem(
                     item_id=db_item.id, lem_id=pl["item_bp"].lem_id
@@ -353,7 +383,7 @@ class ExerciseRouter:
                     response_items.append(
                         schemas.FlashcardResponse(
                             item_id=db_item.id,
-                            front_text=item_prompt,
+                            prompt=item_prompt,
                             back_text=item_key,
                         )
                     )

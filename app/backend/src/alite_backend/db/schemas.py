@@ -997,7 +997,7 @@ class ExerciseResponse(BaseModel):
 
 class AnswerSubmission(BaseModel):
     item_id: int
-    selection: str
+    response: str
     response_time_ms: int
     attempt_num: int
 

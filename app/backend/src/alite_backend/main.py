@@ -16,6 +16,8 @@ from alite_backend.api.admin.views import (
     ExerciseAdminView,
     GramPropAdminView,
     ItemAdminView,
+    ItemOptionAdminView,
+    ItemResponseAdminView,
     LemmaAdminView,
     LemmaDefinitionAdminView,
     LemmaRelationAdminView,
@@ -79,6 +81,8 @@ admin_dashboard.add_view(SentenceTokenAdminView)
 admin_dashboard.add_view(ExerciseAdminView)
 admin_dashboard.add_view(ItemAdminView)
 admin_dashboard.add_view(LemmaDefinitionAdminView)
+admin_dashboard.add_view(ItemOptionAdminView)
+admin_dashboard.add_view(ItemResponseAdminView)
 
 # admin_dashboard.add_view(AnalyticsDashboardView)
 

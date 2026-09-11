@@ -10,6 +10,8 @@ from alite_backend.db.models import (
     Exercise,
     GramProp,
     Item,
+    ItemOption,
+    ItemResponse,
     Lemma,
     LemmaDefinition,
     LemmaPronunciation,
@@ -460,7 +462,13 @@ class ExerciseAdminView(ModelView, model=Exercise):
     category = "Assessment"
 
     column_list = [Exercise.id, Exercise.user_id, Exercise.has_item, Exercise.start_time, Exercise.finish_time]  # type: ignore
-    column_sortable_list = [Item.item_type, Item.item_format]
+    column_sortable_list = [
+        Exercise.id,
+        Exercise.user_id,
+        Exercise.start_time,
+        Exercise.finish_time,
+    ]
+    column_searchable_list = []
     page_size = 50
 
 
@@ -487,5 +495,56 @@ class ItemAdminView(ModelView, model=Item):
         Item.finish_time,
         Item.ref_lems,
     ]  # type: ignore
-    column_sortable_list = [Item.item_type, Item.item_format]
+    column_sortable_list = [
+        Item.id,
+        Item.item_type,
+        Item.item_format,
+        Item.start_time,
+        Item.finish_time,
+    ]
+    column_searchable_list = [Item.item_type, Item.item_format, Item.prompt]
+    page_size = 50
+
+
+class ItemOptionAdminView(ModelView, model=ItemOption):
+    """
+    Administrative UI mapping for Generated Exercise Test Items.
+    """
+
+    name = "Exercise Item Option"
+    name_plural = "Exercise Item Options"
+    icon = "fa-solid fa-puzzle-piece"
+    category = "Assessment"
+
+    column_list = [
+        ItemOption.option_text,
+        ItemOption.option_uuid,
+        ItemOption.item_id,
+        ItemOption.is_correct,
+        ItemOption.explanation,
+    ]  # type: ignore
+    column_sortable_list = [ItemOption.item_id, ItemOption.is_correct]  # type: ignore
+    column_searchable_list = [ItemOption.option_text, ItemOption.explanation]
+    page_size = 50
+
+
+class ItemResponseAdminView(ModelView, model=ItemResponse):
+    """
+    Administrative UI mapping for Generated Exercise Test Items.
+    """
+
+    name = "Exercise Item Response"
+    name_plural = "Exercise Item Responses"
+    icon = "fa-solid fa-puzzle-piece"
+    category = "Assessment"
+
+    column_list = [
+        ItemResponse.item_id,
+        ItemResponse.response,
+        ItemResponse.is_correct,
+        ItemResponse.response_time_ms,
+        ItemResponse.attempt_num,
+    ]  # type: ignore
+    column_sortable_list = [ItemResponse.item_id]  # type: ignore
+    column_searchable_list = [ItemResponse.item_id, ItemResponse.response]  # type: ignore
     page_size = 50

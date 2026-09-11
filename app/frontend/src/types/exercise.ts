@@ -10,7 +10,12 @@ export const ITEM_FORMAT = [
 
 export type ItemFormat = (typeof ITEM_FORMAT)[number];
 
-export type StrategyCategory = 'general' | 'adjectives' | 'nouns' | 'participles' | 'verbs';
+export type StrategyCategory =
+  | "general"
+  | "adjectives"
+  | "nouns"
+  | "participles"
+  | "verbs";
 
 export interface StrategyMetadata {
   id: WordItemStrategy;
@@ -20,57 +25,60 @@ export interface StrategyMetadata {
   reversible: boolean;
 }
 
-export const ITEM_STRATEGY_REGISTRY: Record<WordItemStrategy, StrategyMetadata> = {
+export const WORD_ITEM_STRATEGY_REGISTRY: Record<
+  WordItemStrategy,
+  StrategyMetadata
+> = {
   lem_to_pos: {
-    id: 'lem_to_pos',
-    label: 'word ↔ part of speech',
-    description: 'Tests identification of part of speech of a given word.',
-    category: 'general',
+    id: "lem_to_pos",
+    label: "word ↔ part of speech",
+    description: "Tests identification of part of speech of a given word.",
+    category: "general",
     reversible: true,
   },
   lem_to_def: {
-    id: 'lem_to_def',
-    label: 'word ↔ definition',
-    description: 'Tests identification of definition of a given word.',
-    category: 'general',
+    id: "lem_to_def",
+    label: "word ↔ definition",
+    description: "Tests identification of definition of a given word.",
+    category: "general",
     reversible: true,
   },
   lem_to_pron: {
-    id: 'lem_to_pron',
-    label: 'word ↔ pronunciation',
-    description: 'Tests identification of part of speech of a given word.',
-    category: 'general',
+    id: "lem_to_pron",
+    label: "word ↔ pronunciation",
+    description: "Tests identification of part of speech of a given word.",
+    category: "general",
     reversible: true,
   },
   lem_lem_to_rel: {
-    id: 'lem_lem_to_rel',
-    label: '2 words ↔ relationship',
-    description: 'Tests identification of part of speech of a given word.',
-    category: 'general',
+    id: "lem_lem_to_rel",
+    label: "2 words ↔ relationship",
+    description: "Tests identification of part of speech of a given word.",
+    category: "general",
     reversible: true,
   },
   adjv_form_to_type: {
-    id: 'adjv_form_to_type',
-    label: 'adjective form ↔ comparative / superlative',
-    description: 'Tests identification of part of speech of a given word.',
-    category: 'adjectives',
+    id: "adjv_form_to_type",
+    label: "adjective form ↔ comparative / superlative",
+    description: "Tests identification of part of speech of a given word.",
+    category: "adjectives",
     reversible: true,
   },
   adjv_form_to_gram: {
-    id: 'adjv_form_to_gram',
-    label: 'adjective form ↔ grammar type',
-    description: 'Tests identification of part of speech of a given word.',
-    category: 'adjectives',
+    id: "adjv_form_to_gram",
+    label: "adjective form ↔ grammar type",
+    description: "Tests identification of part of speech of a given word.",
+    category: "adjectives",
     reversible: true,
   },
   noun_to_gend: {
-    id: 'noun_to_gend',
-    label: 'noun ↔ gender',
-    description: 'Tests identification of gender of a given noun.',
-    category: 'nouns',
+    id: "noun_to_gend",
+    label: "noun ↔ gender",
+    description: "Tests identification of gender of a given noun.",
+    category: "nouns",
     reversible: true,
   },
-}
+};
 
 export const WORD_ITEM_STRATEGIES = [
   // lemmas
@@ -116,3 +124,21 @@ export const SENT_ITEM_STRATEGIES = [
 ] as const;
 
 export type SentItemStrategy = (typeof SENT_ITEM_STRATEGIES)[number];
+
+// Enforce strict typing so the compiler catches typos
+export type DifficultyLevel = "easy" | "medium" | "hard";
+
+// Define what settings change based on difficulty
+export interface DifficultySettings {
+  maxTries: number;
+  // Future scaffolding options:
+  // allowHints: boolean;
+  // timerMultiplier: number;
+}
+
+// The Configuration Map
+export const DIFFICULTY_MAP: Record<DifficultyLevel, DifficultySettings> = {
+  easy: { maxTries: 3 },
+  medium: { maxTries: 2 },
+  hard: { maxTries: 1 },
+};

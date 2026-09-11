@@ -112,8 +112,8 @@ export interface WordSelectionState {
 }
 
 interface ItemResponse {
-  itemFormat: string;
-  itemId: number;
+  item_format: string;
+  item_id: number;
   prompt: string;
 }
 
@@ -130,7 +130,7 @@ interface FITBResponse extends ItemResponse {
 }
 
 export interface ExerciseResponse {
-  exerciseId: number;
-  numQuestions: number;
-  responseData: Array<FlashcardResponse | MCQResponse | FITBResponse>;
+  exercise_id: number;
+  num_questions: number;
+  response_data: Array<FlashcardResponse | MCQResponse | FITBResponse>;
 }

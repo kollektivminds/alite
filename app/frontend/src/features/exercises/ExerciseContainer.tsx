@@ -1,8 +1,12 @@
 // src/features/exercises/ExerciseContainer.tsx
 import React, { useState } from "react";
+import { DIFFICULTY_MAP, DifficultyLevel } from "../../types/exercise";
 import { ExerciseResponse } from "../../types/words";
+import { ExerciseSummary } from "./ExerciseSummary";
+import { ItemFormatRouter } from "./ItemFormatRouter";
+import { ProgressBar } from "./ProgressBar";
 
-// Define the shape of our tracking data based on your requirements
+// Define the shape of tracking data
 interface AttemptRecord {
   itemId: number;
   startTime: number;
@@ -13,11 +17,13 @@ interface AttemptRecord {
 
 interface ExerciseContainerProps {
   exerciseData: ExerciseResponse;
+  difficulty: DifficultyLevel;
   onExit: () => void;
 }
 
 export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
   exerciseData,
+  difficulty,
   onExit,
 }) => {
   // 1. Phase Management
@@ -35,7 +41,7 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
   // Local state to manage the UI freeze and 'Continue' button visibility for the current item
   const [isItemResolved, setIsItemResolved] = useState<boolean>(false);
 
-  // 3. Start Exercise Handler
+  // start Exercise Handler
   const handleStartExercise = () => {
     setExerciseStartTime(Date.now());
     setPhase("active");
@@ -57,25 +63,25 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
     ]);
   };
 
-  // 4. The Core Evaluation Handler (To be passed to MCQDisplay)
+  // the Core Evaluation Handler
   const handleEvaluateOption = async (selectedOption: string) => {
     if (isItemResolved) return;
 
     const currentItem = exerciseData.response_data[currentIndex];
-    // Access the current attempt record we established when the item loaded
+    // access the current attempt record established when the item loaded
     const currentAttempt = attempts[attempts.length - 1];
 
-    // 1. Calculate the response time delta for your analytics
+    // calculate the response time delta for analytics
     const responseTimeMs = Date.now() - currentAttempt.startTime;
 
-    // 2. Derive the attempt number based on previously failed tries
+    // derive the attempt number based on previously failed tries
     const currentAttemptNum = currentAttempt.selectedDistractors.length + 1;
 
     try {
-      // 3. Construct payload strictly matching AnswerSubmission
+      // construct payload strictly matching AnswerSubmission
       const submissionPayload = {
         item_id: currentItem.item_id,
-        selection: selectedOption,
+        response: selectedOption,
         response_time_ms: responseTimeMs,
         attempt_num: currentAttemptNum,
       };
@@ -88,27 +94,41 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
 
       if (!response.ok) throw new Error("Evaluation failed");
 
-      // 4. Parse the response matching AnswerResult
+      // parse the response matching AnswerResult
       const result = await response.json();
 
-      // 5. Update UI state based on result.is_correct
       setAttempts((prev) => {
+        // 1. Shallow copy the main array
         const newAttempts = [...prev];
-        const attemptToUpdate = newAttempts[newAttempts.length - 1];
+
+        // 2. IMMUTABLE CLONE of the target object and its nested array
+        const targetIndex = newAttempts.length - 1;
+        const attemptToUpdate = {
+          ...newAttempts[targetIndex],
+          selectedDistractors: [
+            ...newAttempts[targetIndex].selectedDistractors,
+          ],
+        };
 
         if (result.is_correct) {
           attemptToUpdate.isCorrect = true;
           attemptToUpdate.endTime = Date.now();
           setIsItemResolved(true);
         } else {
+          // Now safe to push because we cloned the array above
           attemptToUpdate.selectedDistractors.push(selectedOption);
-          // Check against max tries (e.g., 2)
-          if (attemptToUpdate.selectedDistractors.length >= 2) {
+
+          // Get max tries from the configuration map[cite: 10, 12]
+          const maxTries = DIFFICULTY_MAP[difficulty].maxTries;
+
+          if (attemptToUpdate.selectedDistractors.length >= maxTries) {
             attemptToUpdate.endTime = Date.now();
             setIsItemResolved(true);
-            // Optionally display result.correct_answer or result.explanation here
           }
         }
+
+        // 3. Replace the old object reference with our newly mutated clone
+        newAttempts[targetIndex] = attemptToUpdate;
         return newAttempts;
       });
     } catch (error) {
@@ -129,35 +149,55 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
     }
   };
 
-  // 6. Declarative Rendering
+  const currentAttemptRecord = attempts[attempts.length - 1];
+  const maxTries = DIFFICULTY_MAP[difficulty].maxTries; //[cite: 12]
+  const currentTryNumber = currentAttemptRecord
+    ? currentAttemptRecord.selectedDistractors.length + 1
+    : 1;
+  const displayTry = Math.min(currentTryNumber, maxTries);
+
   return (
-    <div className="exercise-shell relative w-full h-full flex flex-col items-center">
-      {/* Top Progress Bar - Only in active phase */}
+    <div className="exercise-shell relative w-full min-h-[80vh] flex flex-col items-center">
       {phase === "active" && (
-        <div className="progress-bar-placeholder w-full h-4 bg-gray-200">
-          {/* Render colored segments based on the `attempts` array */}
-        </div>
+        <ProgressBar
+          currentIndex={currentIndex}
+          totalItems={exerciseData.num_questions}
+        />
       )}
 
-      {/* Main Content Area */}
       <div className="exercise-content flex-grow flex items-center justify-center w-full max-w-4xl p-6">
         {phase === "intro" && (
-          <div className="intro-screen">
-            {/* Render SummaryGrid with initial gray boxes */}
-            <button onClick={handleStartExercise}>Start Exercise</button>
-          </div>
+          <ExerciseSummary
+            phase={phase}
+            exerciseData={exerciseData}
+            attempts={attempts}
+            onAction={handleStartExercise}
+          />
         )}
 
         {phase === "active" && (
-          <div className="active-item-wrapper w-full">
-            {/* Render MCQDisplay here, passing the current item,
-                the handleEvaluateOption function, and the current attempts record
-                so it knows what to color red/green and when to freeze */}
+          <div className="active-item-wrapper w-full flex flex-col items-center">
+            {/* Visual Scaffolding Headers */}
+            <div className="w-full flex justify-between items-center mb-8 px-4 max-w-3xl">
+              <span className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                Item {currentIndex + 1} of {exerciseData.num_questions}
+              </span>
+              <span className="text-sm font-semibold text-slate-400 uppercase tracking-wider">
+                Attempt {displayTry} / {maxTries}
+              </span>
+            </div>
+
+            <ItemFormatRouter
+              item={exerciseData.response_data[currentIndex]}
+              attemptsRecord={currentAttemptRecord}
+              onEvaluate={handleEvaluateOption}
+              isResolved={isItemResolved}
+            />
 
             {isItemResolved && (
               <button
                 onClick={handleNextItem}
-                className="mt-8 bg-blue-600 text-white"
+                className="mt-8 px-8 py-3 rounded-lg font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
               >
                 Continue
               </button>
@@ -166,10 +206,12 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
         )}
 
         {phase === "conclusion" && (
-          <div className="conclusion-screen">
-            {/* Render SummaryGrid colored based on attempts, calculate total score */}
-            <button onClick={onExit}>Return to Menu</button>
-          </div>
+          <ExerciseSummary
+            phase={phase}
+            exerciseData={exerciseData}
+            attempts={attempts}
+            onAction={onExit}
+          />
         )}
       </div>
     </div>

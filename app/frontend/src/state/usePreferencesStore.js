@@ -1,6 +1,6 @@
-import { createStore } from "zustand/vanilla";
 import { useStore } from "zustand";
-import { persist } from 'zustand/middleware';
+import { persist } from "zustand/middleware";
+import { createStore } from "zustand/vanilla";
 
 export const preferencesStore = createStore(
   persist(
@@ -8,11 +8,11 @@ export const preferencesStore = createStore(
       // ===================================
       // 1. PERSISTENT STATE
       // ===================================
-      theme: 'system',
-      language: 'en',
-      difficulty: 'easy',
-      useReducedMotion: false, // Initial default value
-      
+      theme: "system",
+      language: "en",
+      difficulty: "medium",
+      useReducedMotion: false,
+
       favorites: [],
 
       // ===================================
@@ -34,45 +34,71 @@ export const preferencesStore = createStore(
       setTheme: (newTheme) => set({ theme: newTheme }),
       setLanguage: (newLang) => set({ language: newLang }),
       setDifficulty: (newDifficulty) => set({ difficulty: newDifficulty }),
-      toggleReducedMotion: () => set((state) => ({ useReducedMotion: !state.useReducedMotion })),
+      toggleReducedMotion: () =>
+        set((state) => ({ useReducedMotion: !state.useReducedMotion })),
 
       // --- Actions for the 'Favorites' feature ---
       saveFavorite: (name) => {
-        const { selectedPartsOfSpeech, verbOptions, nounOptions, pronounOptions, adjectiveOptions, participleOptions, numeralOptions } = get();
+        const {
+          selectedPartsOfSpeech,
+          verbOptions,
+          nounOptions,
+          pronounOptions,
+          adjectiveOptions,
+          participleOptions,
+          numeralOptions,
+        } = get();
         const newFavorite = {
           id: Date.now().toString(),
           name: name,
-          config: { selectedPartsOfSpeech, verbOptions, nounOptions, pronounOptions, adjectiveOptions, participleOptions, numeralOptions }
+          config: {
+            selectedPartsOfSpeech,
+            verbOptions,
+            nounOptions,
+            pronounOptions,
+            adjectiveOptions,
+            participleOptions,
+            numeralOptions,
+          },
         };
         set((state) => ({ favorites: [...state.favorites, newFavorite] }));
       },
 
       loadFavorite: (id) => {
-        const favorite = get().favorites.find(fav => fav.id === id);
+        const favorite = get().favorites.find((fav) => fav.id === id);
         if (favorite) {
           set({ ...favorite.config });
         }
       },
 
       deleteFavorite: (id) => {
-        set((state) => ({ favorites: state.favorites.filter(fav => fav.id !== id) }));
+        set((state) => ({
+          favorites: state.favorites.filter((fav) => fav.id !== id),
+        }));
       },
 
       // --- Actions for temporary selections ---
       resetCurrentSelection: () => {
         set({
-          selectedPartsOfSpeech: [], verbOptions: [], nounOptions: [],
-          pronounOptions: [], adjectiveOptions: [], participleOptions: [], numeralOptions: [],
+          selectedPartsOfSpeech: [],
+          verbOptions: [],
+          nounOptions: [],
+          pronounOptions: [],
+          adjectiveOptions: [],
+          participleOptions: [],
+          numeralOptions: [],
         });
       },
-      
+
       togglePartOfSpeech: (partOfSpeech) =>
         set((state) => ({
           openPartOfSpeechMenus: {
             ...state.openPartOfSpeechMenus,
             [partOfSpeech]: !state.openPartOfSpeechMenus[partOfSpeech],
           },
-          selectedPartsOfSpeech: state.selectedPartsOfSpeech.includes(partOfSpeech)
+          selectedPartsOfSpeech: state.selectedPartsOfSpeech.includes(
+            partOfSpeech,
+          )
             ? state.selectedPartsOfSpeech.filter((pos) => pos !== partOfSpeech)
             : [...state.selectedPartsOfSpeech, partOfSpeech],
         })),
@@ -85,7 +111,7 @@ export const preferencesStore = createStore(
         })),
     }),
     {
-      name: 'app-preferences-storage',
+      name: "app-preferences-storage",
       // We tell 'partialize' which parts of the state to save.
       partialize: (state) => ({
         theme: state.theme,
@@ -94,8 +120,9 @@ export const preferencesStore = createStore(
         favorites: state.favorites,
         useReducedMotion: state.useReducedMotion,
       }),
-    }
-  )
+    },
+  ),
 );
 
-export const usePreferencesStore = (selector) => useStore(preferencesStore, selector);
+export const usePreferencesStore = (selector) =>
+  useStore(preferencesStore, selector);

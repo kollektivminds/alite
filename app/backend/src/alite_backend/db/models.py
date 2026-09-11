@@ -912,12 +912,15 @@ class ItemResponse(Base, table=True):
     __tablename__: str = "student_responses"  # type: ignore
 
     user_id: int = Field(
-        foreign_key="users.id", index=True, unique=False, nullable=False
+        foreign_key="users.id",
+        index=True,
+        unique=False,
+        nullable=True,  # TODO change nullable
     )
     item_id: int = Field(
         foreign_key="items.id", index=True, unique=False, nullable=False
     )
-    selection: str = Field(index=False, unique=False, nullable=False)
+    response: str = Field(index=False, unique=False, nullable=False)
     is_correct: bool = Field(index=False, unique=False, nullable=False)
     response_time_ms: int = Field(index=False, unique=False, nullable=False)
     attempt_num: int = Field(index=False, unique=False, nullable=False)
