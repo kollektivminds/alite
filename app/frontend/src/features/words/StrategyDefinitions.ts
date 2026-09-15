@@ -9,10 +9,11 @@ export interface WordStrategyDefinition {
   description: string;
   stemExample: string;
   keyExample: string;
+  supportedFormats: EnumItemFormat[];
   pairDescription?: string;
   pairStemExample?: string;
   pairKeyExample?: string;
-  supportedFormats: EnumItemFormat[];
+  pairSupportedFormats?: EnumItemFormat[];
 }
 
 export const WordStrategyTooltips: WordStrategyDefinition[] = [

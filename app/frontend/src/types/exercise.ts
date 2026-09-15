@@ -131,7 +131,6 @@ export type DifficultyLevel = "easy" | "medium" | "hard";
 // Define what settings change based on difficulty
 export interface DifficultySettings {
   maxTries: number;
-  // Future scaffolding options:
   // allowHints: boolean;
   // timerMultiplier: number;
 }

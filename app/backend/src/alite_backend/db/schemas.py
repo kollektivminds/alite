@@ -1000,6 +1000,7 @@ class AnswerSubmission(BaseModel):
     response: str
     response_time_ms: int
     attempt_num: int
+    is_final_attempt: bool = False
 
 
 class AnswerResult(BaseModel):

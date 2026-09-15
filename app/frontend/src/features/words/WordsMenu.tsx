@@ -20,13 +20,13 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
   const [activeDifficulty, setActiveDifficulty] =
     useState<DifficultyLevel | null>(null);
 
-  // Execute the network request on component mount
+  // execute the network request on component mount
   useEffect(() => {
     const fetchInitialData = async () => {
       setIsLoading(true);
       setError(null);
       try {
-        // In production, use an environment variable (e.g., import.meta.env.VITE_API_URL).
+        // in production, use an environment variable (e.g., import.meta.env.VITE_API_URL).
         const response = await fetch(
           "http://0.0.0.0:8000/api/v1/lesslists/all",
         );
@@ -50,7 +50,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
     fetchInitialData();
   }, []);
 
-  // 1. Search Dictionary Forms
+  // search dictionary forms
   const handleSearchLemmasApi = async (query: string): Promise<Lemma[]> => {
     try {
       // URL encode the query to safely handle Cyrillic characters

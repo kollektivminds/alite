@@ -39,7 +39,7 @@ const RATING_OPTIONS: RatingOption[] = [
   {
     key: "struggled",
     label: "Struggled",
-    description: "Partial/Slow",
+    description: "Partial/Slow Recall",
     colorClass:
       "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 hover:border-amber-300",
     numericKey: "2",
@@ -47,7 +47,7 @@ const RATING_OPTIONS: RatingOption[] = [
   {
     key: "remembered",
     label: "Remembered",
-    description: "Recalled with effort",
+    description: "Easy/Quick recall",
     colorClass:
       "bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100 hover:border-blue-300",
     numericKey: "3",
@@ -69,12 +69,12 @@ export const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({
 }) => {
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
 
-  // Reset rotation state on question change
+  // reset rotation state on question change
   useEffect(() => {
     setIsFlipped(false);
   }, [item.item_id]);
 
-  // Keyboard accessibility: Space to flip, 1-4 to rate (only when flipped)
+  // keyboard accessibility: Space to flip, 1-4 to rate (only when flipped)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (isResolved) return;

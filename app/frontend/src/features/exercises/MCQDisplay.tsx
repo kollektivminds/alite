@@ -77,6 +77,11 @@ export const MCQDisplay: React.FC<MCQDisplayProps> = ({
 
       {/* Action Area: Submit or Continue */}
       <div className="h-16 flex items-center justify-center">
+        {isResolved && attemptsRecord.revealedAnswer && (
+          <div className="text-red-600 font-medium">
+            Correct Answer: {attemptsRecord.revealedAnswer}
+          </div>
+        )}
         {!isResolved ? (
           <button
             onClick={handleSubmit}

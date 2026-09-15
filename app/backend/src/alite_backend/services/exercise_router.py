@@ -384,7 +384,7 @@ class ExerciseRouter:
                         schemas.FlashcardResponse(
                             item_id=db_item.id,
                             prompt=item_prompt,
-                            back_text=item_key,
+                            back_text=item_key[0],
                         )
                     )
                 elif item_format == models.EnumItemFormat.FITB:

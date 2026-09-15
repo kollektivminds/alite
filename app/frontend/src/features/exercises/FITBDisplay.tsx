@@ -85,6 +85,11 @@ export const FITBDisplay: React.FC<FITBDisplayProps> = ({
 
         {/* Action Area */}
         <div className="h-16 flex items-center justify-center w-full">
+          {isResolved && attemptsRecord.revealedAnswer && (
+            <div className="text-red-600 font-medium">
+              Correct Answer: {attemptsRecord.revealedAnswer}
+            </div>
+          )}
           {!isResolved ? (
             <button
               type="submit"
