@@ -21,6 +21,7 @@ export const ItemFormatRouter: React.FC<ItemFormatRouterProps> = ({
     case "mcq":
       return (
         <MCQDisplay
+          key={item.item_id}
           item={item}
           attemptsRecord={attemptsRecord}
           onEvaluate={onEvaluate}
@@ -30,6 +31,7 @@ export const ItemFormatRouter: React.FC<ItemFormatRouterProps> = ({
     case "fitb":
       return (
         <FITBDisplay
+          key={item.item_id}
           item={item}
           attemptsRecord={attemptsRecord}
           onEvaluate={onEvaluate}
@@ -39,6 +41,7 @@ export const ItemFormatRouter: React.FC<ItemFormatRouterProps> = ({
     case "flashcard":
       return (
         <FlashcardDisplay
+          key={item.item_id}
           item={item}
           onEvaluate={onEvaluate}
           isResolved={isResolved}

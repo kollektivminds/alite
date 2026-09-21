@@ -35,7 +35,7 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
   const [attempts, setAttempts] = useState<AttemptRecord[]>([]);
   const [isItemResolved, setIsItemResolved] = useState<boolean>(false);
 
-  // Helper strictly requires the complete Item object, preventing undefined properties
+  // helper strictly requires the complete Item object, preventing undefined properties
   const startNewItemRecord = (item: ExerciseResponse["response_data"][0]) => {
     setAttempts((prev) => [
       ...prev,

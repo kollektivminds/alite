@@ -15,6 +15,7 @@ from alite_backend.db.models import (
     EnumPartOfSpeech,
     EnumPartType,
     EnumPartVoice,
+    EnumPronType,
     EnumSubstCase,
     EnumVerbAspect,
     EnumVerbMood,
@@ -95,7 +96,7 @@ from alite_backend.db.schemas import (
 )
 from alite_backend.words.funcs import remove_accents
 from fastapi import HTTPException, status
-from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy import and_, delete, func, or_, select, update
 from sqlalchemy.exc import (
     DBAPIError,
     IntegrityError,
@@ -104,45 +105,9 @@ from sqlalchemy.exc import (
     SQLAlchemyError,
     StatementError,
 )
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 
 logger = logging.getLogger(__name__)
-
-# O
-# H
-
-# complete_props = {
-#     # gram props
-#     "gram_tense": None,
-#     "irregular": None,
-#     "gram_num": None,
-#     "gram_gender": None,
-#     "conj_person": None,
-#     "verb_mood": None,
-#     "subst_case": None,
-#     "alt_adjv_type": None,
-#     "alt_noun_type": None,
-#     "part_type": None,
-#     "part_voice": None,
-# }
-
-
-# def _map_lemma(lemma_record: LemmasRecord):
-#     """_map_lemma _summary_
-
-#     Args:
-#         lemma_record (LemmasRecord): _description_
-
-#     Returns:
-#         _type_: _description_
-#     """
-#     mapped_lemma = Lemma(
-#         entry_key=lemma_record.entry_key,
-#         lem_text=lemma_record.lem_text,
-#         lem_canon=lemma_record.lem_canon,
-#         pos=lemma_record.pos,
-#     )
-#     return mapped_lemma
 
 
 def ensure_params(*required_args):
@@ -200,38 +165,106 @@ class CRUDLemmas(CRUDBase[Lemma, LemmaCreate, LemmaUpdate]):
 
         return query.all()
 
-    def search_lemmas_fuzzy(self, db: Session, query_str: str, limit: int = 15):
+    def search_lemmas_fuzzy(
+        self, db: Session, query_str: str, limit: int = 15
+    ) -> List[Lemma]:
         """
-        Executes a case-insensitive trigram fuzzy match against Russian lemmas.
-        Falls back to a standard ILIKE query if pg_trgm similarity encounters an issue.
+        Executes dual-script matching across Russian Cyrillic and Latin romanization.
+
+        Architecture:
+        1. Eagerly loads Lemma.pronunciations -> LemmaPronunciation.pronunciation to
+           prevent N+1 queries during Pydantic serialization.
+        2. Joins Pronunciation (ROMANIZATION only) via LemmaPronunciation foreign keys.
+        3. Evaluates trigram similarity and ILIKE patterns across both scripts simultaneously.
+        4. Groups by Lemma.id to eliminate duplicate rows caused by multiple pronunciations.
+        5. Provides an isolated ILIKE fallback if pg_trgm operators encounter runtime errors.
         """
         clean_query = query_str.strip()
         if not clean_query:
             return []
 
-        # Map column flexibly based on models.py (lem_text or lemText)[cite: 3, 9]
+        # Resolve Cyrillic column dynamically across model conventions
         col = getattr(Lemma, "lemText", None) or getattr(Lemma, "lem_text", None)
         if col is None:
-            raise AttributeError("Lemma model does not expose 'lemText' or 'lem_text'.")
+            raise AttributeError("Lemma model must expose 'lemText' or 'lem_text'.")
+
+        search_pattern = f"%{clean_query}%"
+
+        # Identify the relationship link on LemmaPronunciation to child Pronunciation
+        pron_rel = getattr(LemmaPronunciation, "pronunciation", None) or getattr(
+            LemmaPronunciation, "pron", None
+        )
+
+        # Base eager-loading options to fetch child associations in a single round-trip
+        eager_options = (
+            [selectinload(Lemma.pronunciations).selectinload(pron_rel)]
+            if pron_rel is not None
+            else [selectinload(Lemma.pronunciations)]
+        )
 
         try:
-            # pg_trgm similarity expression
-            similarity_expr = func.similarity(col, clean_query)
+            # 1. Trigram similarity metrics across Cyrillic and Latin columns
+            lemma_sim = func.similarity(col, clean_query)
+            pron_sim = func.similarity(Pronunciation.pron_text, clean_query)
+            combined_score = func.greatest(lemma_sim, func.coalesce(pron_sim, 0.0))
 
-            # Match if substring present OR similarity above threshold
+            # 2. Match predicate: Substring match OR Trigram threshold across either script
+            match_condition = or_(
+                col.ilike(search_pattern),
+                lemma_sim > 0.25,
+                Pronunciation.pron_text.ilike(search_pattern),
+                pron_sim > 0.25,
+            )
+
+            # 3. Main query: join association table and filter enum directly
             return (
                 db.query(Lemma)
-                .filter(or_(col.ilike(f"%{clean_query}%"), similarity_expr > 0.25))
-                .order_by(similarity_expr.desc())
+                .options(*eager_options)
+                .outerjoin(LemmaPronunciation, Lemma.id == LemmaPronunciation.lem_id)
+                .outerjoin(
+                    Pronunciation,
+                    and_(
+                        Pronunciation.id == LemmaPronunciation.pron_id,
+                        # Direct enum equality resolves without SQL function casting
+                        Pronunciation.pron_type == EnumPronType.ROMANIZATION,
+                    ),
+                )
+                .filter(match_condition)
+                .group_by(Lemma.id)
+                .order_by(func.max(combined_score).desc())
                 .limit(limit)
                 .all()
             )
+
         except Exception as exc:
-            # Prevent database session poison on missing extension/operator errors
-            logger.warning("Fuzzy query failed, executing raw ILIKE fallback: %s", exc)
+            # 4. Fallback branch: isolated ILIKE query if pg_trgm operators fail
+            logger.warning(
+                "Trigram matching failed (%s); rolling back to dual-script ILIKE fallback.",
+                exc,
+            )
             db.rollback()
+
+            fallback_condition = or_(
+                col.ilike(search_pattern),
+                Pronunciation.pron_text.ilike(search_pattern),
+            )
+
             return (
-                db.query(Lemma).filter(col.ilike(f"%{clean_query}%")).limit(limit).all()
+                db.query(Lemma)
+                .options(*eager_options)
+                .outerjoin(LemmaPronunciation, Lemma.id == LemmaPronunciation.lem_id)
+                .outerjoin(
+                    Pronunciation,
+                    and_(
+                        Pronunciation.id == LemmaPronunciation.pron_id,
+                        # Fixed in fallback as well to prevent secondary crashes
+                        Pronunciation.pron_type == EnumPronType.ROMANIZATION,
+                    ),
+                )
+                .filter(fallback_condition)
+                .group_by(Lemma.id)
+                .limit(limit)
+                .all()
             )
 
 

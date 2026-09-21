@@ -2,7 +2,7 @@
 # pydantic models for API data validation and response shaping
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from uuid import UUID
 
 from alite_backend.db.models import (
@@ -31,8 +31,10 @@ from pydantic import (
     Field,
     HttpUrl,
     JsonValue,
+    field_validator,
     model_validator,
 )
+from pyparsing import Opt
 
 #
 # --- Data Processing Schemas ---
@@ -405,6 +407,8 @@ class PronunciationUpdate(PronunciationBase):
 class PronunciationReturn(PronunciationUpdate):
     created_at: datetime
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 # Lemma Rels
 
@@ -726,7 +730,6 @@ class SentenceTokenBase(BaseModel):
     lex_raw: str = Field(description="Surface string as it appears in source text")
     lem_raw: str = Field(description="Raw dictionary lemma string")
 
-    # FIX 1: Change from List[Any] to Optional[Dict[str, Any]] to match the JSONB dictionary payload
     features: Optional[Dict[str, Any]] = Field(
         default_factory=dict,
         description="Morphological and syntactic feature map from NLP pipeline",
@@ -736,7 +739,6 @@ class SentenceTokenBase(BaseModel):
         default=False, description="Orthographic capitalization flag"
     )
 
-    # FIX 2: Allow None/NULL for optional punctuation surroundings
     punctuation_before: Optional[str] = Field(
         default=None, description="Punctuation attached before the token word boundary"
     )
@@ -927,6 +929,173 @@ class EnumGramExFocus(str, Enum):
     PART_TYPE = "part_type"
     PART_VOICE = "part_voice"
     PART_TENSE = "part_tense"
+
+
+STRATEGY_FORMATS: Dict[EnumWordItemType | EnumSentItemType, Set[EnumItemFormat]] = {
+    # words - lemmas
+    EnumWordItemType.LEM_TO_POS: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.POS_TO_LEM: {
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.LEM_TO_DEF: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.DEF_TO_LEM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.LEM_TO_PRON: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.PRON_TO_LEM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.LEM_LEM_TO_REL: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.REL_TO_LEM_LEM: {
+        EnumItemFormat.MCQ,
+    },
+    # words - adjectives
+    EnumWordItemType.ADJV_FORM_TO_TYPE: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.ADJV_TYPE_TO_LEM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.ADJV_FORM_TO_GRAM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.ADJV_GRAM_TO_FORM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    # words - nouns
+    EnumWordItemType.NOUN_TO_GEND: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.GEND_TO_NOUN: {
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.NOUN_TO_ANIM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.ANIM_TO_NOUN: {
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.NOUN_FORM_TO_GRAM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.NOUN_GRAM_TO_FORM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.NOUN_TO_DMIN_FORM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    # words - participles
+    EnumWordItemType.PART_FORM_TO_TYPE: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.PART_TYPE_TO_FORM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    # words - verbs
+    EnumWordItemType.VERB_TO_ASPT: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.ASPT_TO_VERB: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.VERB_PAIR_TO_REL: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.VERB_TO_ASPT_PAIR: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.VERB_TO_TYPE: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.TYPE_TO_VERB: {
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.VERB_TO_TNRF: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.TNRF_TO_VERB: {
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.VERB_TO_CONJ_FORM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.FITB,
+        EnumItemFormat.MCQ,
+    },
+    # sentences
+}
+
+
+class LemmaSearchResults(BaseModel):
+    id: int
+    lem_text: str
+    lem_canon: Optional[str] = None
+    pos: Optional[str] = None
+    pronunciations: List[PronunciationReturn] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("pronunciations", mode="before")
+    @classmethod
+    def extract_pronunciations_from_association(cls, raw_list: Any) -> list[Any]:
+        """
+        Intercepts the association table collection (LemmaPronunciation) and pulls
+        the attached Pronunciation model prior to schema validation.
+        """
+        if not raw_list:
+            return []
+
+        resolved: list[Any] = []
+        for entry in raw_list:
+            # Case 1: Raw dictionary or direct Pronunciation instance
+            if isinstance(entry, dict) or hasattr(entry, "pron_text"):
+                resolved.append(entry)
+            # Case 2: LemmaPronunciation association instance
+            elif hasattr(entry, "pronunciation") and entry.pronunciation is not None:
+                resolved.append(entry.pronunciation)
+            elif hasattr(entry, "pron") and entry.pron is not None:
+                resolved.append(entry.pron)
+
+        return resolved
 
 
 class StrategyConfigs(BaseModel):

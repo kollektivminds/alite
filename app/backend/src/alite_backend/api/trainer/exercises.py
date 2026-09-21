@@ -1,7 +1,7 @@
-import http
 import logging
+import re
 import unicodedata
-from typing import Optional, Tuple
+from typing import Iterable, Optional, Set, Tuple
 
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
@@ -37,37 +37,76 @@ async def create_custom_exercise(
     return generator.generate_exercise(request=request)
 
 
-def normalize_token(text: str) -> str:
+def normalize_token(
+    text: str, preserve_accents: bool = False, preserve_yo: bool = False
+) -> str:
     """
-    Normalizes Cyrillic strings by decomposing accents, removing combining
-    diacritics (stress marks), and case-folding to avoid false-negative evaluations.
+    Deterministically normalizes a Cyrillic token for psychometric evaluation.
+
+    Pipeline:
+    1. Strips leading/trailing whitespace and collapses internal whitespace runs.
+    2. Decomposes characters via Unicode Canonical Decomposition (NFD).
+    3. Strips combining diacritical marks (Unicode category 'Mn', including \u0301 acute accent),
+       unless preserve_accents is True.
+    4. Applies case-folding for case-insensitive matching.
+    5. Optionally normalizes 'ё' to 'е' to prevent false negatives.
+    6. Re-composes characters back to Canonical Composition (NFC).
     """
     if not text:
         return ""
-    decomposed = unicodedata.normalize("NFD", text.strip())
-    stripped = "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn")
-    return unicodedata.normalize("NFC", stripped).casefold()
+
+    # normalize whitespace
+    cleaned = re.sub(r"\s+", " ", text.strip())
+
+    # unicode NFD decomposition splits base characters from combining diacritics
+    decomposed = unicodedata.normalize("NFD", cleaned)
+
+    # strip combining diacritics (stress marks) if accents are not strictly tested
+    if not preserve_accents:
+        decomposed = "".join(
+            ch for ch in decomposed if unicodedata.category(ch) != "Mn"
+        )
+
+    # standard case-folding (more aggressive and comprehensive than .lower() across locales)
+    folded = decomposed.casefold()
+
+    # interchangeable Russian 'ё' -> 'е' normalization
+    if not preserve_yo:
+        folded = folded.replace("ё", "е")
+
+    # recompose to standard NFC representation
+    return unicodedata.normalize("NFC", folded)
 
 
-def check_answer(
-    db: Session, item_id: int, submitted_answer: str
-) -> tuple[bool, str | None]:
-    key_stmt = (
-        select(models.ItemOption.option_text)
-        .where(models.ItemOption.item_id == item_id)
-        .where(models.ItemOption.is_correct.is_(True))
+def evaluate_text_response(
+    submitted_answer: str,
+    acceptable_keys: Iterable[str],
+    preserve_accents: bool = False,
+) -> bool:
+    """
+    Evaluates a student's submission against an iterable of authorized keys.
+
+    Performs a single-pass O(1) set-membership test over normalized representations,
+    guaranteeing symmetry regardless of whether accents were passed via MCQ buttons
+    or typed into a standard unaccented FITB input.
+    """
+    if not submitted_answer or not acceptable_keys:
+        return False
+
+    # normalize student input once
+    normalized_submission = normalize_token(
+        submitted_answer, preserve_accents=preserve_accents
     )
-    keys = db.scalars(key_stmt).all()
 
-    if not keys:
-        return False, None
-
-    normalized_keys = {normalize_token(k) for k in keys}
-    is_correct = submitted_answer.strip().casefold() in {
-        k.strip().casefold() for k in keys
+    # build the authorized lookup set in a single comprehension
+    normalized_keys: Set[str] = {
+        normalize_token(k, preserve_accents=preserve_accents)
+        for k in acceptable_keys
+        if k
     }
-    # return the evaluation AND the first valid key as the canonical answer
-    return is_correct, keys[0]
+
+    # deterministic O(1) set membership check
+    return normalized_submission in normalized_keys
 
 
 def get_canonical_and_evaluation(
@@ -89,10 +128,11 @@ def get_canonical_and_evaluation(
         return False, None
 
     canonical_key = keys[0]
-    # Simple check; swap with normalize_token() if diacritic stripping is active
-    is_correct = submitted_answer.strip().casefold() in {
-        k.strip().casefold() for k in keys
-    }
+    # unified evaluation: handles accented MCQs and unaccented FITBs identically
+    is_correct = evaluate_text_response(
+        submitted_answer=submitted_answer,
+        acceptable_keys=keys,
+    )
     return is_correct, canonical_key
 
 
@@ -121,10 +161,9 @@ def evaluate_student_answer(
         canonical_answer: Optional[str] = None
         logger.debug("Item format: %s", item.item_format)
         # polymorphic branching: Flashcards have no objective keys
-        if item.item_format == "FLASHCARD":
+        if item.item_format == models.EnumItemFormat.FLASHCARD:
             # map rating to BKT success threshold ('remembered' and 'mastered' count as positive recall)
             is_correct = submission.response.lower() in {"remembered", "mastered"}
-            logger.debug("is correct: %s", is_correct)
             canonical_answer = None
         else:
             # objective verification against ItemOption

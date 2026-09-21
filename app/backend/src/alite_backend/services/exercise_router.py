@@ -316,16 +316,36 @@ class ExerciseRouter:
             )
             # assign format and add to item list
             for bp in blueprints:
-                exercise_payload.append(
-                    {
-                        "item_bp": bp,
-                        "item_type": item_strategy,
-                        "item_format": random.choice(
-                            request.exercise_context.ex_formats
-                        ),
-                        "settings": specific_config,
-                    }
-                )
+                requested_formats = request.exercise_context.ex_formats
+                supported_strategy_formats = schemas.STRATEGY_FORMATS.get(item_strategy)
+                if supported_strategy_formats:
+                    viable_formats = list(
+                        supported_strategy_formats & set(requested_formats)
+                    )
+                    if not viable_formats:
+                        logger.warning(
+                            "Strategy '%s' cannot be scheduled: requested formats %s have zero "
+                            "overlap with supported formats %s. Skipping %d blueprint(s).",
+                            item_strategy,
+                            requested_formats,
+                            supported_strategy_formats,
+                            len(blueprints),
+                        )
+                        continue
+                    elif len(viable_formats) > 0:
+                        chosen_format = random.choice(viable_formats)
+                        exercise_payload.append(
+                            {
+                                "item_bp": bp,
+                                "item_type": item_strategy,
+                                "item_format": chosen_format,
+                                "settings": specific_config,
+                            }
+                        )
+                    else:
+                        continue
+                else:
+                    continue
 
         response_items = []
 
