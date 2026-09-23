@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session, declarative_base
 logger = logging.getLogger(__name__)
 
 
-class BaseExerciseStrategy(ABC):
+class LemmaItemBaseStrategy(ABC):
     """Base class for creating exercises"""
 
     def __init__(self, db_session: Session, request_context: schemas.ExerciseContext):

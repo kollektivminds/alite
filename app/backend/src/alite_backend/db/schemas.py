@@ -22,9 +22,11 @@ from alite_backend.db.models import (
     EnumVerbType,
     EnumWordItemType,
 )
+from click import Option
 from pydantic import (
     UUID4,
     UUID5,
+    AliasChoices,
     BaseModel,
     ConfigDict,
     EmailStr,
@@ -887,9 +889,7 @@ class ItemResponseReturn(ItemResponseUpdate):
 
 class ExerciseContext(BaseModel):
     # Side-A menu items
-    # less_list_ids: Optional[List[int]]
-    # mod_ids: Optional[List[int]]
-    lem_ids: List[int]
+    lem_ids: Optional[List[int]]
     ex_formats: List[EnumItemFormat]
     difficulty: EnumItemDifficulty = EnumItemDifficulty.MEDIUM
     allow_odd_one_out: bool = False
@@ -1070,13 +1070,20 @@ class LemmaSearchResults(BaseModel):
     lem_text: str
     lem_canon: Optional[str] = None
     pos: Optional[str] = None
+    noun_gender: Optional[Any] = None
+    noun_animacy: Optional[Any] = None
+    verb_aspect: Optional[Any] = None
+
     pronunciations: List[PronunciationReturn] = []
 
+    definitions: List[DefinitionReturn] = Field(
+        default=[], validation_alias=AliasChoices("definitions", "lem_defs")
+    )
     model_config = ConfigDict(from_attributes=True)
 
     @field_validator("pronunciations", mode="before")
     @classmethod
-    def extract_pronunciations_from_association(cls, raw_list: Any) -> list[Any]:
+    def extract_pronunciations(cls, raw_list: Any) -> list[Any]:
         """
         Intercepts the association table collection (LemmaPronunciation) and pulls
         the attached Pronunciation model prior to schema validation.
@@ -1097,6 +1104,27 @@ class LemmaSearchResults(BaseModel):
 
         return resolved
 
+    @field_validator("definitions", mode="before")
+    @classmethod
+    def extract_definitions(cls, raw_collection: Any) -> list[Any]:
+        """
+        Unpacks target Definition instances from LemmaDefinition association rows,
+        preventing missing-field ResponseValidationErrors.
+        """
+        if not raw_collection:
+            return []
+        resolved = []
+        for item in raw_collection:
+            # Direct model or dictionary
+            if isinstance(item, dict) or hasattr(item, "def_text"):
+                resolved.append(item)
+            # Association row instance (e.g., LemmaDefinition.definition)
+            elif hasattr(item, "definition") and item.definition is not None:
+                resolved.append(item.definition)
+            elif hasattr(item, "def_") and item.def_ is not None:
+                resolved.append(item.def_)
+        return resolved
+
 
 class StrategyConfigs(BaseModel):
     # use optional attributes mapped directly to core strategy enums
@@ -1113,14 +1141,100 @@ class ExerciseRequest(BaseModel):
     type_counts: dict[Union[EnumWordItemType, EnumSentItemType], int]
 
 
+# sentence token requests
+
+
+class SentenceTokenContext(BaseModel):
+    """
+    Internal schema representing a single token from the `sentence_tokens` table.
+    Retains full grammatical and syntactic truth for generation and grading.
+    Never sent directly to the client for masked/interactive items.
+    """
+
+    tok_idx: int = Field(
+        ..., description="1-based index of the token within the sentence"
+    )
+    lex_raw: str = Field(..., description="Exact wordform as it appears in the text")
+    lem_raw: str = Field(..., description="Dictionary lemma form")
+    pos: Optional[str] = Field(None, description="Part of speech tag")
+    feats: Optional[dict[str, Any]] = Field(
+        default_factory=dict,
+        description="Morphological features (case, number, tense, etc.)",
+    )
+    head_idx: Optional[int] = Field(
+        None, description="tok_idx of the syntactic governor"
+    )
+    dep_rel: Optional[str] = Field(
+        None, description="Syntactic dependency relation tag (e.g. предик, квазиагент)"
+    )
+
+
+class DisplayToken(BaseModel):
+    """
+    Client-safe token model for rendering interactive sentences.
+    Allows frontend click-to-select, highlighting, and accessible blank rendering.
+    """
+
+    tok_idx: int = Field(..., description="Position index for UI layout")
+    text: str = Field(
+        ..., description="Display text (masked with placeholder if target)"
+    )
+    is_masked: bool = Field(
+        False, description="Indicates whether this token represents an input blank"
+    )
+    is_punctuation: bool = Field(
+        False, description="Helps frontend format spacing without leading spaces"
+    )
+
+
+class UnscrambleToken(BaseModel):
+    """
+    Client-safe token specifically for unscramble exercises.
+    Uses an ephemeral, non-sequential handle to prevent students from inspecting
+    the network payload or DOM to discover the correct word sequence.
+    """
+
+    token_handle: str = Field(
+        default_factory=lambda: uuid4().hex[:8],
+        description="Opaque unique identifier for client drag-and-drop state",
+    )
+    text: str = Field(
+        ..., description="The word or punctuation fragment to display on the chip"
+    )
+
+
 # Raw Exercise Responses
+
+
+class SentenceBlueprintContext(BaseModel):
+    """
+    Encapsulates sentence-specific metadata within an ItemBlueprint.
+    Keeps the root ItemBlueprint clean while providing sentence generators
+    with complete context for distractor validation and backend grading.
+    """
+
+    doc_id: Optional[int] = Field(None, description="Parent document ID")
+    sent_id: int = Field(..., description="Sentence database ID")
+    full_sentence: str = Field(..., description="Unmodified original sentence text")
+    tokens: list[SentenceTokenContext] = Field(
+        ..., description="Ordered raw tokens from the database"
+    )
+    target_token_indices: list[int] = Field(
+        default_factory=list,
+        description="Indices (tok_idx) of tokens targeted for blanking, MCQ options, or syntax labeling",
+    )
+    syntactic_focus: Optional[str] = Field(
+        None,
+        description="Target dependency relation or grammar quality (e.g., 'предик', 'Aspect=Perf')",
+    )
 
 
 class ItemBlueprint(BaseModel):
     prompt: str
     keys: str | List[str]
-    distractors: List[str]
-    lem_id: int
+    distractors: Optional[List[str]] = None
+    lem_id: Optional[int] = None
+    sentence_context: Optional[SentenceBlueprintContext] = None
 
 
 class ItemFormatBlueprints(BaseModel):
@@ -1143,22 +1257,49 @@ class MultipleChoiceResponse(BaseModel):
     item_id: int
     prompt: str
     options: List[str | int]
+    sentence_tokens: Optional[list[DisplayToken]] = None
 
 
 class FillInTheBlankResponse(BaseModel):
     item_format: EnumItemFormat = EnumItemFormat.FITB
     item_id: int
     prompt: str
-    parts: List[str]
+    parts: list[str] = Field(
+        default_factory=list,
+        description="Text fragments surrounding blanks: ['Она читает ', ' в парке.']",
+    )
+    sentence_tokens: Optional[list[DisplayToken]] = None
 
 
-ExerciseItems = FlashcardResponse | MultipleChoiceResponse | FillInTheBlankResponse
+class UnscrambleResponse(BaseModel):
+    """
+    Client deliverable for sentence unscrambling items.
+    Tokens are scrambled using a seeded or verified permutation that ensures
+    they do not match the original sequence. Keys and correct ordering are omitted.
+    """
+
+    item_format: EnumItemFormat = EnumItemFormat.UNSCRAMBLE
+    item_id: int
+    prompt: str = Field(
+        "Расставьте слова в правильном порядке:", description="Instructional prompt"
+    )
+    shuffled_tokens: list[UnscrambleToken] = Field(
+        ..., description="Permuted tokens with opaque identifiers for UI drag-and-drop"
+    )
+
+
+ExerciseItems = Union[
+    FlashcardResponse,
+    MultipleChoiceResponse,
+    FillInTheBlankResponse,
+    UnscrambleResponse,
+]
 
 
 class ExerciseResponse(BaseModel):
     exercise_id: int
     num_questions: int
-    response_data: List[ExerciseItems]
+    response_data: list[ExerciseItems]
 
 
 # User Item Response & Result

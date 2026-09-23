@@ -20,6 +20,7 @@ from alite_backend.api.admin.views import (
     ItemResponseAdminView,
     LemmaAdminView,
     LemmaDefinitionAdminView,
+    LemmaPronunciationAdminView,
     LemmaRelationAdminView,
     LessListAdminView,
     LexemeAdminView,
@@ -69,6 +70,7 @@ admin_dashboard.add_view(WordFormAdminView)
 admin_dashboard.add_view(DefinitionAdminView)
 admin_dashboard.add_view(ExampleAdminView)
 admin_dashboard.add_view(PronunciationAdminView)
+admin_dashboard.add_view(LemmaPronunciationAdminView)
 admin_dashboard.add_view(LemmaRelationAdminView)
 admin_dashboard.add_view(LookupQueueAdminView)
 admin_dashboard.add_view(ExampleAdminView)

@@ -34,10 +34,10 @@ def search_lemmas_api(
         results = crud_lemma.search_lemmas_fuzzy(db, query_str=q)
         return results
     except Exception as exc:
-        # 1. Output the complete stack trace directly to Docker container stdout
+        # output the complete stack trace directly to Docker container stdout
         logger.exception("Lemma search query failed for input '%s'", q)
 
-        # 2. Bubble up the exact error detail during development so the frontend can inspect it
+        # bubble up the exact error detail during development so the frontend can inspect it
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Database search error: {str(exc)}",

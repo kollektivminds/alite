@@ -1,11 +1,26 @@
 // src/types/words.ts
 
-// Represents a single Russian word in its dictionary form.
+export interface Pronunciation {
+  id: number | string;
+  pron_text: string;
+  pron_type: string;
+}
+
+export interface DefinitionItem {
+  id: number | string;
+  def_text: string;
+}
+
 export interface Lemma {
   id: string;
   lem_canon: string;
   lem_text: string;
   pos: string;
+  noun_gender?: string;
+  noun_animacy?: string;
+  verb_aspect?: string;
+  pronunciations?: Pronunciation[];
+  definitions?: DefinitionItem[];
 }
 
 // Represents a curated curriculum batch.

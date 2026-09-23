@@ -247,10 +247,15 @@ class EnumWordItemType(str, enum.Enum):
 
 
 class EnumSentItemType(str, enum.Enum):
-    FILL_IN_THE_FORM = "fill_in_the_form"
-    TAG_METADATA = "tag metadata"
+    CLOZE_NOUN_MORPH = "cloze_noun_morph"
+    CLOZE_VERB_MORPH = "cloze_verb_morph"
+    CLOZE_LEXICAL = "cloze_lexical"
+    LABEL_DEP_REL = "label_dep_rel"
+    LABEL_NOUN_CASE = "label_noun_case"
+    LABEL_VERB_ASPECT = "label_verb_aspect"
+    SYNTAX_FIND_HEAD = "syntax_find_head"
+    SYNTAX_FIND_SUBJECT = "syntax_find_subject"
     UNSCRAMBLE = "unscramble"
-    FILL_IN_THE_LEMMA = "fill_in_the_lemma"
 
 
 class EnumItemDifficulty(str, enum.Enum):
@@ -832,7 +837,6 @@ class Exercise(Base, table=True):
     __tablename__: str = "exercises"  # type: ignore
 
     user_id: int = Field(foreign_key="users.id", index=True)
-    # TODO: set this up to start at load
     start_time: datetime | None = Field(
         default_factory=get_utc_now,
         sa_column=Column(DateTime(timezone=True), nullable=False),
@@ -865,7 +869,6 @@ class Item(Base, table=True):
     options: Optional["ItemOption"] = Relationship(back_populates="in_item")
     responses: Optional[List["ItemResponse"]] = Relationship(back_populates="item")
     # meta
-    # TODO: set up to record times
     start_time: Optional[datetime] = Field(index=False, unique=False, nullable=True)
     finish_time: datetime | None = Field(index=False, unique=False, nullable=True)
 

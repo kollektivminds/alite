@@ -141,3 +141,26 @@ export const DIFFICULTY_MAP: Record<DifficultyLevel, DifficultySettings> = {
   medium: { maxTries: 2 },
   hard: { maxTries: 1 },
 };
+
+export interface Pronunciation {
+  id: number | string;
+  pron_text: string;
+  pron_type: string;
+}
+
+export interface DefinitionItem {
+  id: number | string;
+  def_text: string;
+}
+
+export interface LemmaSearchReturn {
+  id: string;
+  lem_canon: string;
+  lem_text: string;
+  pos: string;
+  noun_gender?: string;
+  noun_animacy?: string;
+  verb_aspect?: string;
+  pronunciations?: Pronunciation[];
+  definitions?: DefinitionItem[];
+}

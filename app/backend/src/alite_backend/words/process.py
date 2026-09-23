@@ -9,29 +9,29 @@ preparing data payloads for database insertion. It is designed to be the
 #!/usr/bin/env python
 # coding: utf-8
 import logging
-import uuid
 import re
-from typing import List, Dict, Any, Tuple
-from pydantic import ValidationError
+import uuid
+from typing import Any, Dict, List, Tuple
+
 from alite_backend.config import settings
-from alite_backend.db.schemas import FDAPIreturn, ProcessedPayload
 from alite_backend.db.models import (
-    EnumPartOfSpeech,
     EnumGramGender,
-    EnumVerbAspect,
-    EnumVerbTransRefl,
     EnumGramNum,
+    EnumPartOfSpeech,
     EnumPronType,
     EnumRelLemType,
+    EnumVerbAspect,
+    EnumVerbTransRefl,
 )
+from alite_backend.db.schemas import FDAPIreturn, ProcessedPayload, Quote
 from alite_backend.words.funcs import (
-    pos_dict,
-    sop_dict,
-    remove_accents,
     is_cyrillic,
+    pos_dict,
+    remove_accents,
+    sop_dict,
     zalizniak_to_type,
 )
-from alite_backend.db.schemas import Quote
+from pydantic import ValidationError
 
 logger = logging.getLogger(__name__)
 fixed_tags = {"canonical", "romanization", "table-tags"}
@@ -207,7 +207,7 @@ class ReturnedLemmaProcessor:
                                     "entry_key": entry_key,
                                     "pron_text": form_word,
                                     "pron_type": EnumPronType.ROMANIZATION,
-                                    "pron_tags": [],
+                                    "pron_tags": None,
                                 }
                             )
                         elif "class" in form.tags and pos == EnumPartOfSpeech.VERB:

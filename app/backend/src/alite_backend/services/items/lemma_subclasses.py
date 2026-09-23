@@ -6,7 +6,7 @@ from typing import Any, List
 
 from alite_backend.db import models, schemas
 from alite_backend.db.crud.item_crud import crud_exercise, crud_item
-from alite_backend.services.items.base import BaseExerciseStrategy
+from alite_backend.services.items.lemma_base import LemmaItemBaseStrategy
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 # GQ = grammar query (gram_props-based)
 
 
-class StandaloneAttributeStrategy(BaseExerciseStrategy):
+class LemmaStandaloneAttributeStrategy(LemmaItemBaseStrategy):
 
     def __init__(
         self,
@@ -52,7 +52,7 @@ class StandaloneAttributeStrategy(BaseExerciseStrategy):
         )
 
 
-class SiblingAttributeStrategy(BaseExerciseStrategy):
+class LemmaSiblingAttributeStrategy(LemmaItemBaseStrategy):
 
     def __init__(
         self,
@@ -94,7 +94,7 @@ class SiblingAttributeStrategy(BaseExerciseStrategy):
         )
 
 
-class MorphologicalStrategy(BaseExerciseStrategy):
+class LemmaMorphologicalStrategy(LemmaItemBaseStrategy):
 
     def __init__(
         self,
@@ -146,7 +146,7 @@ class MorphologicalStrategy(BaseExerciseStrategy):
             )
 
 
-class LemmaRelationStrategy(BaseExerciseStrategy):
+class LemmaRelationStrategy(LemmaItemBaseStrategy):
 
     def __init__(
         self,

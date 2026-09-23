@@ -325,6 +325,7 @@ class Loader:
             # logger.debug("New pron id: %d", new_pron.id)
 
         # create lem_prons
+        # TODO: figure out why romanization prons didn't get linked to lemmas
         for ek, pron_id in lem_pron_map.items():
             lem_id = lemma_id_map[ek]
             filters = {"lem_id": lem_id, "pron_id": pron_id}

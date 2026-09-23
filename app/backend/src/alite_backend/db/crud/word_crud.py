@@ -96,7 +96,7 @@ from alite_backend.db.schemas import (
 )
 from alite_backend.words.funcs import remove_accents
 from fastapi import HTTPException, status
-from sqlalchemy import and_, delete, func, or_, select, update
+from sqlalchemy import String, and_, cast, delete, func, or_, select, update
 from sqlalchemy.exc import (
     DBAPIError,
     IntegrityError,
@@ -184,50 +184,72 @@ class CRUDLemmas(CRUDBase[Lemma, LemmaCreate, LemmaUpdate]):
             return []
 
         # Resolve Cyrillic column dynamically across model conventions
-        col = getattr(Lemma, "lemText", None) or getattr(Lemma, "lem_text", None)
+        col = getattr(Lemma, "lem_canon", None) or getattr(Lemma, "lem_text", None)
         if col is None:
-            raise AttributeError("Lemma model must expose 'lemText' or 'lem_text'.")
+            raise AttributeError("Lemma model must expose 'lem_canon' or 'lem_text'.")
 
         search_pattern = f"%{clean_query}%"
 
         # Identify the relationship link on LemmaPronunciation to child Pronunciation
         pron_rel = getattr(LemmaPronunciation, "pronunciation", None) or getattr(
-            LemmaPronunciation, "pron", None
+            LemmaPronunciation, "pron_id", None
         )
 
-        # Base eager-loading options to fetch child associations in a single round-trip
-        eager_options = (
-            [selectinload(Lemma.pronunciations).selectinload(pron_rel)]
-            if pron_rel is not None
-            else [selectinload(Lemma.pronunciations)]
+        def_rel = getattr(LemmaDefinition, "definition", None) or getattr(
+            LemmaDefinition, "def_id", None
         )
+
+        eager_options = []
+
+        # Eager load pronunciations
+        if pron_rel is not None:
+            eager_options.append(
+                selectinload(Lemma.pronunciations).selectinload(pron_rel)
+            )
+        else:
+            eager_options.append(selectinload(Lemma.pronunciations))
+
+        # Eager load definitions (checking whether Lemma relates via 'definitions' or 'lem_defs')
+        if hasattr(Lemma, "definitions"):
+            if def_rel is not None:
+                eager_options.append(
+                    selectinload(Lemma.definitions).selectinload(def_rel)
+                )
+            else:
+                eager_options.append(selectinload(Lemma.definitions))
+        elif hasattr(Lemma, "lem_defs"):
+            if def_rel is not None:
+                eager_options.append(selectinload(Lemma.lem_defs).selectinload(def_rel))
+            else:
+                eager_options.append(selectinload(Lemma.lem_defs))
 
         try:
-            # 1. Trigram similarity metrics across Cyrillic and Latin columns
             lemma_sim = func.similarity(col, clean_query)
             pron_sim = func.similarity(Pronunciation.pron_text, clean_query)
             combined_score = func.greatest(lemma_sim, func.coalesce(pron_sim, 0.0))
 
-            # 2. Match predicate: Substring match OR Trigram threshold across either script
+            is_romanization = (
+                func.upper(cast(Pronunciation.pron_type, String)) == "ROMANIZATION"
+            )
+
             match_condition = or_(
                 col.ilike(search_pattern),
                 lemma_sim > 0.25,
-                Pronunciation.pron_text.ilike(search_pattern),
-                pron_sim > 0.25,
+                and_(
+                    is_romanization,
+                    or_(
+                        Pronunciation.pron_text.ilike(search_pattern),
+                        pron_sim > 0.25,
+                    ),
+                ),
             )
 
-            # 3. Main query: join association table and filter enum directly
             return (
                 db.query(Lemma)
                 .options(*eager_options)
                 .outerjoin(LemmaPronunciation, Lemma.id == LemmaPronunciation.lem_id)
                 .outerjoin(
-                    Pronunciation,
-                    and_(
-                        Pronunciation.id == LemmaPronunciation.pron_id,
-                        # Direct enum equality resolves without SQL function casting
-                        Pronunciation.pron_type == EnumPronType.ROMANIZATION,
-                    ),
+                    Pronunciation, Pronunciation.id == LemmaPronunciation.pron_id
                 )
                 .filter(match_condition)
                 .group_by(Lemma.id)
@@ -237,16 +259,15 @@ class CRUDLemmas(CRUDBase[Lemma, LemmaCreate, LemmaUpdate]):
             )
 
         except Exception as exc:
-            # 4. Fallback branch: isolated ILIKE query if pg_trgm operators fail
-            logger.warning(
-                "Trigram matching failed (%s); rolling back to dual-script ILIKE fallback.",
-                exc,
-            )
+            logger.warning("Fuzzy trigram query failed (%s); running fallback.", exc)
             db.rollback()
 
+            is_romanization = (
+                func.upper(cast(Pronunciation.pron_type, String)) == "ROMANIZATION"
+            )
             fallback_condition = or_(
                 col.ilike(search_pattern),
-                Pronunciation.pron_text.ilike(search_pattern),
+                and_(is_romanization, Pronunciation.pron_text.ilike(search_pattern)),
             )
 
             return (
@@ -254,12 +275,7 @@ class CRUDLemmas(CRUDBase[Lemma, LemmaCreate, LemmaUpdate]):
                 .options(*eager_options)
                 .outerjoin(LemmaPronunciation, Lemma.id == LemmaPronunciation.lem_id)
                 .outerjoin(
-                    Pronunciation,
-                    and_(
-                        Pronunciation.id == LemmaPronunciation.pron_id,
-                        # Fixed in fallback as well to prevent secondary crashes
-                        Pronunciation.pron_type == EnumPronType.ROMANIZATION,
-                    ),
+                    Pronunciation, Pronunciation.id == LemmaPronunciation.pron_id
                 )
                 .filter(fallback_condition)
                 .group_by(Lemma.id)

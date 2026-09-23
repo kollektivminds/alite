@@ -237,6 +237,21 @@ class PronunciationAdminView(ModelView, model=Pronunciation):
     page_size = 50
 
 
+class LemmaPronunciationAdminView(ModelView, model=LemmaPronunciation):
+
+    name = "Lemma-Pronunciation"
+    name_plural = "Lemma-Pronunciations"
+    icon = "fa-solid" "fa-book"
+    category = "Lemmas - Auxiliary"
+
+    column_list = [LemmaPronunciation.lem_id, LemmaPronunciation.lemma, LemmaPronunciation.pron_id, LemmaPronunciation.pronunciation]  # type: ignore
+    column_searchable_list = [LemmaPronunciation.pronunciation]
+    column_sortable_list = [LemmaPronunciation.lem_id, LemmaPronunciation.pron_id]  # type: ignore
+    column_default_sort = [(LemmaPronunciation.lem_id, False)]
+
+    page_size = 50
+
+
 class LemmaRelationAdminView(ModelView, model=LemmaRelation):
 
     name = "Lemma Relation"

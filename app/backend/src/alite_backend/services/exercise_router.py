@@ -7,22 +7,30 @@ from typing import Any, Dict, Tuple
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
 from alite_backend.db.schemas import EnumSentItemType, EnumWordItemType
-from alite_backend.services.items.base import BaseExerciseStrategy
-from alite_backend.services.items.subclasses import (
+from alite_backend.services.items.lemma_base import LemmaItemBaseStrategy
+from alite_backend.services.items.lemma_subclasses import (
+    LemmaMorphologicalStrategy,
     LemmaRelationStrategy,
-    MorphologicalStrategy,
-    SiblingAttributeStrategy,
-    StandaloneAttributeStrategy,
+    LemmaSiblingAttributeStrategy,
+    LemmaStandaloneAttributeStrategy,
 )
-from fastapi import APIRouter, Depends, HTTPException
+from alite_backend.services.items.sentence_subclasses import (
+    EnumDistractorMode,
+    EnumGraphQueryMode,
+    SentenceAnnotationStrategy,
+    SentenceClozeStrategy,
+    SentenceGraphStrategy,
+    SentenceUnscrambleStrategy,
+)
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
 EXERCISE_CONFIG = {
-    # zero-query types
+    # lemmas - zero-query types
     EnumWordItemType.LEM_TO_POS: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": None,
             "target_column": "pos",
@@ -31,7 +39,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     EnumWordItemType.POS_TO_LEM: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": None,
             "target_column": "pos",
@@ -40,7 +48,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.NOUN_TO_GEND: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_gender",
@@ -49,7 +57,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.GEND_TO_NOUN: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_gender",
@@ -58,7 +66,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.NOUN_TO_ANIM: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_animacy",
@@ -67,7 +75,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.ANIM_TO_NOUN: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_animacy",
@@ -76,7 +84,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.VERB_TO_ASPT: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_aspect",
@@ -85,7 +93,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.ASPT_TO_VERB: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_aspect",
@@ -94,7 +102,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.VERB_TO_TYPE: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_type",
@@ -103,7 +111,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.TYPE_TO_VERB: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_type",
@@ -112,7 +120,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.VERB_TO_TNRF: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_trans_refl",
@@ -121,7 +129,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.TNRF_TO_VERB: {
-        "strategy_class": StandaloneAttributeStrategy,
+        "strategy_class": LemmaStandaloneAttributeStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_trans_refl",
@@ -129,9 +137,9 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
-    # sibling-query types
+    # lemmas - sibling-query types
     EnumWordItemType.LEM_TO_DEF: {
-        "strategy_class": SiblingAttributeStrategy,
+        "strategy_class": LemmaSiblingAttributeStrategy,
         "kwargs": {
             "target_pos": None,
             "target_model": models.Definition,
@@ -143,7 +151,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.DEF_TO_LEM: {
-        "strategy_class": SiblingAttributeStrategy,
+        "strategy_class": LemmaSiblingAttributeStrategy,
         "kwargs": {
             "target_pos": None,
             "target_model": models.Definition,
@@ -155,7 +163,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     EnumWordItemType.LEM_TO_PRON: {
-        "strategy_class": SiblingAttributeStrategy,
+        "strategy_class": LemmaSiblingAttributeStrategy,
         "kwargs": {
             "target_pos": None,
             "target_model": models.Pronunciation,
@@ -167,7 +175,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.PRON_TO_LEM: {
-        "strategy_class": SiblingAttributeStrategy,
+        "strategy_class": LemmaSiblingAttributeStrategy,
         "kwargs": {
             "target_pos": None,
             "target_model": models.Pronunciation,
@@ -178,9 +186,9 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
-    # morphology types
+    # lemmas - morphology types
     EnumWordItemType.NOUN_FORM_TO_GRAM: {
-        "strategy_class": MorphologicalStrategy,
+        "strategy_class": LemmaMorphologicalStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "is_reverse": False,
@@ -188,7 +196,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.NOUN_GRAM_TO_FORM: {
-        "strategy_class": MorphologicalStrategy,
+        "strategy_class": LemmaMorphologicalStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "is_reverse": True,
@@ -196,7 +204,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     EnumWordItemType.ADJV_FORM_TO_GRAM: {
-        "strategy_class": MorphologicalStrategy,
+        "strategy_class": LemmaMorphologicalStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
             "is_reverse": False,
@@ -204,14 +212,14 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     EnumWordItemType.ADJV_GRAM_TO_FORM: {
-        "strategy_class": MorphologicalStrategy,
+        "strategy_class": LemmaMorphologicalStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
             "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
-    # lemma-relation types
+    # lemmas - relation types
     EnumWordItemType.VERB_PAIR_TO_REL: {
         "strategy_class": LemmaRelationStrategy,
         "kwargs": {
@@ -248,6 +256,88 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
+    # sentences - tokens
+    EnumSentItemType.CLOZE_NOUN_MORPH: {
+        "strategy_class": SentenceClozeStrategy,
+        "kwargs": {
+            "distractor_mode": EnumDistractorMode.INTRA_LEMMA,
+            "target_pos": "NOUN",
+            "show_lemma_hint": True,
+        },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
+    },
+    EnumSentItemType.CLOZE_VERB_MORPH: {
+        "strategy_class": SentenceClozeStrategy,
+        "kwargs": {
+            "distractor_mode": EnumDistractorMode.INTRA_LEMMA,
+            "target_pos": "VERB",
+            "show_lemma_hint": True,
+        },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
+    },
+    EnumSentItemType.CLOZE_LEXICAL: {
+        "strategy_class": SentenceClozeStrategy,
+        "kwargs": {
+            "distractor_mode": EnumDistractorMode.FEATURE_MATCHED,
+            "target_pos": None,
+            "show_lemma_hint": False,
+        },
+        "formats": [models.EnumItemFormat.MCQ],
+    },
+    # sentences - annotation items
+    EnumSentItemType.LABEL_DEP_REL: {
+        "strategy_class": SentenceAnnotationStrategy,
+        "kwargs": {
+            "target_property": "dep_rel",
+            "prompt_instruction": "Определите синтаксическую роль выделенного слова:",
+            "target_pos_filter": None,
+        },
+        "formats": [models.EnumItemFormat.MCQ],
+    },
+    EnumSentItemType.LABEL_NOUN_CASE: {
+        "strategy_class": SentenceAnnotationStrategy,
+        "kwargs": {
+            "target_property": "features.subst_case",
+            "prompt_instruction": "Определите падеж выделенного существительного в предложении:",
+            "target_pos_filter": "NOUN",
+        },
+        "formats": [models.EnumItemFormat.MCQ],
+    },
+    EnumSentItemType.LABEL_VERB_ASPECT: {
+        "strategy_class": SentenceAnnotationStrategy,
+        "kwargs": {
+            "target_property": "features.verb_aspect",
+            "prompt_instruction": "Определите вид выделенного глагола в предложении:",
+            "target_pos_filter": "VERB",
+        },
+        "formats": [models.EnumItemFormat.MCQ],
+    },
+    # sentences - syntax items
+    EnumSentItemType.SYNTAX_FIND_HEAD: {
+        "strategy_class": SentenceGraphStrategy,
+        "kwargs": {
+            "query_mode": EnumGraphQueryMode.FIND_GOVERNOR,
+            "focus_dep_rel": None,
+        },
+        "formats": [models.EnumItemFormat.MCQ],
+    },
+    EnumSentItemType.SYNTAX_FIND_SUBJECT: {
+        "strategy_class": SentenceGraphStrategy,
+        "kwargs": {
+            "query_mode": EnumGraphQueryMode.FIND_ROLE,
+            "focus_dep_rel": "предик",
+        },
+        "formats": [models.EnumItemFormat.MCQ],
+    },
+    # sentence - unscramble
+    EnumSentItemType.UNSCRAMBLE: {
+        "strategy_class": SentenceUnscrambleStrategy,
+        "kwargs": {
+            "min_tokens": 4,
+            "max_tokens": 10,
+        },
+        "formats": [models.EnumItemFormat.UNSCRAMBLE],
+    },
 }
 
 
@@ -258,11 +348,8 @@ class ExerciseRouter:
         self,
         db: Session,
         user_id: int,  # from endpoint
-        # exercise_request: schemas.ExerciseRequest,
     ):
         self.db = db
-        # self.exercise_request = exercise_request
-        # self.context = exercise_request.exercise_context
         self.user_id = user_id
         # create exercise record
         self.exercise_in = models.Exercise(user_id=self.user_id)
@@ -270,12 +357,9 @@ class ExerciseRouter:
         self.db.flush()
 
     def get_exercise_generator(
-        self, exercise_type: EnumWordItemType | models.EnumSentItemType
+        self, exercise_type: EnumWordItemType | EnumSentItemType
     ) -> Tuple[
-        StandaloneAttributeStrategy
-        | SiblingAttributeStrategy
-        | MorphologicalStrategy
-        | LemmaRelationStrategy,
+        Any,
         Dict[str, Any],
     ]:
 
@@ -291,11 +375,15 @@ class ExerciseRouter:
         exercise_payload = []
 
         if not request.exercise_context or not request.type_counts:
-            raise ValueError("No targets or generation formats provided.")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No target items or generation configurations provided.",
+            )
 
         for item_strategy, requested_qty in request.type_counts.items():
             if requested_qty <= 0:
                 continue
+
             # instantiate the class
             strategy_class, strategy_kwargs = self.get_exercise_generator(item_strategy)
             strategy_instance = strategy_class(
@@ -304,59 +392,62 @@ class ExerciseRouter:
                 **strategy_kwargs,
             )  # type: ignore
             # specific_config = None
-            specific_config = (
-                request.grammar_focus.strategies if request.grammar_focus else None  # type: ignore
-            )
+            # specific_config = (
+            #     request.grammar_focus.strategies if request.grammar_focus else None  # type: ignore
+            # )
             # create blueprints for all items of a strategy
             blueprints = strategy_instance.generate_item_blueprints(
                 num_items=requested_qty,
                 max_keys=request.exercise_context.max_keys,
                 max_distractors=request.exercise_context.max_distractors,
-                config=specific_config,
+                config=request.grammar_focus or None,
             )
+            if not blueprints:
+                continue
+
+            # Format arbitration: intersect requested formats with strategy capabilities
+            supported_formats = schemas.STRATEGY_FORMATS.get(
+                item_strategy, EXERCISE_CONFIG[item_strategy]["formats"]
+            )
+            viable_formats = list(
+                set(supported_formats) & set(request.exercise_context.ex_formats)
+            )
+
+            if not viable_formats:
+                logger.warning(
+                    "Skipping %s: requested formats %s incompatible with supported %s",
+                    item_strategy,
+                    request.exercise_context.ex_formats,
+                    supported_formats,
+                )
+                continue
+
             # assign format and add to item list
             for bp in blueprints:
-                requested_formats = request.exercise_context.ex_formats
-                supported_strategy_formats = schemas.STRATEGY_FORMATS.get(item_strategy)
-                if supported_strategy_formats:
-                    viable_formats = list(
-                        supported_strategy_formats & set(requested_formats)
-                    )
-                    if not viable_formats:
-                        logger.warning(
-                            "Strategy '%s' cannot be scheduled: requested formats %s have zero "
-                            "overlap with supported formats %s. Skipping %d blueprint(s).",
-                            item_strategy,
-                            requested_formats,
-                            supported_strategy_formats,
-                            len(blueprints),
-                        )
-                        continue
-                    elif len(viable_formats) > 0:
-                        chosen_format = random.choice(viable_formats)
-                        exercise_payload.append(
-                            {
-                                "item_bp": bp,
-                                "item_type": item_strategy,
-                                "item_format": chosen_format,
-                                "settings": specific_config,
-                            }
-                        )
-                    else:
-                        continue
-                else:
-                    continue
+                chosen_format = random.choice(viable_formats)
+                exercise_payload.append(
+                    {
+                        "item_bp": bp,
+                        "item_type": item_strategy,
+                        "item_format": chosen_format,
+                        "settings": request.grammar_focus,
+                    }
+                )
 
         response_items = []
 
         for idx, pl in enumerate(exercise_payload):
+            bp: schemas.ItemBlueprint = pl["item_bp"]
             item_format = pl["item_format"]
-            item_prompt = pl["item_bp"].prompt
-            item_key = pl["item_bp"].keys
-            item_distractors = pl["item_bp"].distractors
-            item_settings = (
-                pl["settings"].model_dump(mode="json") if pl["settings"] else None
-            )
+
+            item_settings = {}
+            # item_prompt = pl["item_bp"].prompt
+            # item_key = pl["item_bp"].keys
+            # item_distractors = pl["item_bp"].distractors
+            # item_settings = (
+            #     pl["settings"].model_dump(mode="json") if pl["settings"] else None
+            # )
+            # TODO
             db_item = models.Item(
                 ex_id=self.exercise_in.id,
                 order_in_ex=idx,
