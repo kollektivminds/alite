@@ -1,4 +1,5 @@
 import logging
+import random
 from typing import Any, Optional, Sequence
 
 from alite_backend.db.crud.crud_base import CRUDBase
@@ -118,18 +119,13 @@ class CRUDSentence(CRUDBase[Sentence, SentenceCreate, SentenceUpdate]):
 class CRUDSentenceToken(
     CRUDBase[SentenceToken, SentenceTokenCreate, SentenceTokenUpdate]
 ):
-    """
-    Token-level query operations for morphological harvesting and distractor generation.
-    """
+    """Token-level persistence and distractor harvesting."""
 
     def get_tokens_by_sentence(self, db: Session, sent_id: int) -> list[SentenceToken]:
-        """
-        Retrieves all tokens for a sentence ordered by their syntactic index.
-        """
         stmt = (
             select(SentenceToken)
             .where(SentenceToken.sent_id == sent_id)
-            .order_by(SentenceToken.tok_idx.asc())
+            .order_by(SentenceToken.token_idx.asc())
         )
         return list(db.scalars(stmt).all())
 
@@ -141,10 +137,7 @@ class CRUDSentenceToken(
         exclude_lex_raw: str,
         limit: int = 5,
     ) -> list[str]:
-        """
-        Harvests alternative inflected forms of the same lemma from the database.
-        Example: target is 'книгу', returns ['книга', 'книге', 'книгой'].
-        """
+        """Fetch distinct wordforms without SQL ORDER BY random()."""
         stmt = (
             select(SentenceToken.lex_raw)
             .where(
@@ -154,10 +147,16 @@ class CRUDSentenceToken(
                 )
             )
             .distinct()
-            .order_by(func.random())
-            .limit(limit)
         )
-        return list(db.scalars(stmt).all())
+        raw_candidates = list(db.scalars(stmt).all())
+
+        # In-memory case deduplication
+        deduped: dict[str, str] = {c.lower(): c for c in raw_candidates}
+        forms = list(deduped.values())
+
+        if len(forms) <= limit:
+            return forms
+        return random.sample(forms, limit)
 
     def get_feature_matched_distractors(
         self,
@@ -168,26 +167,28 @@ class CRUDSentenceToken(
         exclude_lem_raw: str,
         limit: int = 5,
     ) -> list[str]:
-        """
-        Samples word forms from different lemmas that match specified grammatical features.
-
-        Utilizes PostgreSQL JSONB containment (@>) or text casting depending on column type.
-        Assuming `feats` is stored as JSON/JSONB or structured mapping.
-        """
-        stmt = select(SentenceToken.lex_raw).where(
+        """Fetch random buffer without SQL DISTINCT, then deduplicate in memory."""
+        stmt = select(SentenceToken.lex_raw, SentenceToken.lem_raw).where(
             and_(
-                SentenceToken.pos == pos,
+                SentenceToken.features["pos"].as_string() == pos,
                 SentenceToken.lem_raw != exclude_lem_raw,
             )
         )
+        if feats:
+            stmt = stmt.where(SentenceToken.features.contains(feats))
 
-        # If features column is JSONB, filter by key-value containment
-        if feats and hasattr(SentenceToken, "feats"):
-            # Matches tokens where feats contains the required subset (e.g. Case, Gender, Number)
-            stmt = stmt.where(SentenceToken.feats.contains(feats))
+        stmt = stmt.order_by(func.random()).limit(limit * 5)
+        rows = db.execute(stmt).all()
 
-        stmt = stmt.distinct().order_by(func.random()).limit(limit)
-        return list(db.scalars(stmt).all())
+        unique: dict[str, str] = {}
+        for lex, lem in rows:
+            lower_lex = lex.lower()
+            if lower_lex not in unique:
+                unique[lower_lex] = lex
+            if len(unique) == limit:
+                break
+
+        return list(unique.values())
 
     def get_syntactic_relation_pool(
         self,
@@ -196,17 +197,17 @@ class CRUDSentenceToken(
         exclude_rel: Optional[str] = None,
         limit: int = 10,
     ) -> list[str]:
-        """
-        Returns distinct dependency relation labels (e.g., 'предик', '1-компл', 'сочин')
-        attested in the corpus for distractor generation in syntax annotation tasks.
-        """
+        """Fetch distinct relations and sample in memory."""
         stmt = select(SentenceToken.dep_rel).where(SentenceToken.dep_rel.is_not(None))
-
         if exclude_rel:
             stmt = stmt.where(SentenceToken.dep_rel != exclude_rel)
 
-        stmt = stmt.distinct().order_by(func.random()).limit(limit)
-        return list(db.scalars(stmt).all())
+        stmt = stmt.distinct()
+        relations = [r for r in db.scalars(stmt).all() if r and r != "пункт"]
+
+        if len(relations) <= limit:
+            return relations
+        return random.sample(relations, limit)
 
 
 crud_document = CRUDDocument(Document)

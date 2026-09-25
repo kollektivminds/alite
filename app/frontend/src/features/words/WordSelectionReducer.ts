@@ -1,7 +1,7 @@
 // src/features/words/wordSelectionReducer.ts
 
 // importing the core domain entities for ALITE.
-import { Lemma, UIConfigState, WordSelectionState } from "../../types/words";
+import { Lemma, UIConfigState, WordSelectionState } from "../../types";
 
 // action Definitions
 export type WordSelectionAction =

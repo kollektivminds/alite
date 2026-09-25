@@ -26,19 +26,17 @@ export interface Lemma {
 // Represents a curated curriculum batch.
 export interface LessonList {
   id: string;
-  name: string; // e.g., "Lesson 4: City Navigation"
+  name: string;
   has_lemma: Lemma[];
 }
 
 // The structural format of the final assessment item.
-export type EnumItemFormat = "mcq" | "fitb" | "flashcard" | "unscramble";
 export type EnumWordItemGroup =
   | "General"
   | "Adjectives"
   | "Nouns"
   | "Participles"
   | "Verbs";
-export type EnumItemDifficulty = "easy" | "medium" | "hard";
 
 export type EnumWordItemType =
   | "LEM_TO_POS"
@@ -71,11 +69,6 @@ export type EnumWordItemType =
   | "VERB_TO_CONJ_FORM"
   | "VERB_TO_TNRF"
   | "TNRF_TO_VERB";
-export type EnumSentenceItemType =
-  | "FILL_IN_THE_FORM"
-  | "TAG_METADATA"
-  | "UNSCRAMBLE"
-  | "FILL_IN_THE_LEMMA";
 
 export type EnumGramExFocus =
   | "SUBST_CASE"
@@ -88,35 +81,9 @@ export type EnumGramExFocus =
   | "PART_VOICE"
   | "PART_TENSE";
 
-// The final configuration payload sent to the backend.
-export interface ExerciseContext {
-  lemIds: number[];
-  itemFormats: EnumItemFormat[];
-  difficulty: EnumItemDifficulty;
-  allowOddOneOut: boolean;
-  maxKeys: number;
-  maxDistractors: number;
-}
-
-export interface UIConfigState {
-  itemFormat: EnumItemFormat[];
-  difficulty: EnumItemDifficulty;
-  allowOddOneOut: boolean;
-  maxKeys: number;
-  maxDistractors: number;
-  maxItems: number;
-  typeCounts: Record<EnumWordItemType | EnumSentenceItemType, number> | null;
-}
-
 export type focusKey = "substantives" | "participles" | "verbs";
 
 type GrammarFocus = Partial<Record<focusKey, EnumGramExFocus[]>>;
-
-export interface ExerciseRequest {
-  exerciseContext: ExerciseContext;
-  typeCounts: Record<EnumWordItemType | EnumSentenceItemType, number>;
-  grammarFocus?: GrammarFocus;
-}
 
 // The shape of our local UI state during the selection process.
 export interface WordSelectionState {
@@ -132,20 +99,25 @@ interface ItemResponse {
   prompt: string;
 }
 
-interface FlashcardResponse extends ItemResponse {
-  backText: string;
+export interface Pronunciation {
+  id: number | string;
+  pron_text: string;
+  pron_type: string;
 }
 
-interface MCQResponse extends ItemResponse {
-  options: string[];
+export interface DefinitionItem {
+  id: number | string;
+  def_text: string;
 }
 
-interface FITBResponse extends ItemResponse {
-  parts: string[];
-}
-
-export interface ExerciseResponse {
-  exercise_id: number;
-  num_questions: number;
-  response_data: Array<FlashcardResponse | MCQResponse | FITBResponse>;
+export interface LemmaSearchReturn {
+  id: string;
+  lem_canon: string;
+  lem_text: string;
+  pos: string;
+  noun_gender?: string;
+  noun_animacy?: string;
+  verb_aspect?: string;
+  pronunciations?: Pronunciation[];
+  definitions?: DefinitionItem[];
 }

@@ -1,5 +1,5 @@
 import React from "react";
-import { LessonList } from "../../types/words";
+import { LessonList } from "../../types";
 
 interface LessonListPickerProps {
   lessonLists: LessonList[];

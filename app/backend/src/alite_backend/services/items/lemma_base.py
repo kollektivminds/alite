@@ -244,7 +244,7 @@ class LemmaItemBaseStrategy(ABC):
         if is_reverse is False:
             # user sees a Russian word and must select its grammatical properties.
             if target_attr == "all":
-                return f"Identify the complete grammatical parsing for the form '{word_form.word_form_gram}':"
+                return f"Identify the complete grammatical parsing for the form '{lexeme.lex_text or lexeme.lex_text_clean}':"
             else:
                 # E.g., "What is the subst_case of..." -> "What is the case of..."
                 clean_attr = self._format_attribute_name(target_attr)

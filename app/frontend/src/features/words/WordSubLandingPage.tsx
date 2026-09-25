@@ -1,7 +1,6 @@
 // src/features/words/WordsSubLandingPage.tsx
 import React, { useMemo, useReducer } from "react";
-import { ExerciseContext, Lemma, LessonList } from "../../types/words"; //[cite: 3]
-
+import { ExerciseContext, Lemma, LessonList } from "../../types";
 import { ExerciseConfigPanel } from "./ExerciseConfigPanel";
 import { LessonListPicker } from "./LessonListPicker";
 import { LessonWordPruner } from "./LessonWordPruner";

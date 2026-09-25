@@ -900,7 +900,7 @@ class ItemOption(SQLModel, table=True):
     )
     option_text: str = Field(index=False, unique=False, nullable=False)
     is_correct: bool = Field(default=False, index=False, unique=False, nullable=False)
-    explanation: str = Field(index=False, unique=False, nullable=True)
+    explanation: Optional[str] = Field(index=False, unique=False, nullable=True)
     created_at: datetime = Field(
         default_factory=get_utc_now,
         # sa_column=Column(DateTime(timezone=True), nullable=False),

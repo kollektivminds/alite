@@ -261,7 +261,7 @@ EXERCISE_CONFIG = {
         "strategy_class": SentenceClozeStrategy,
         "kwargs": {
             "distractor_mode": EnumDistractorMode.INTRA_LEMMA,
-            "target_pos": "NOUN",
+            "target_pos": models.EnumPartOfSpeech.NOUN,
             "show_lemma_hint": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
@@ -270,7 +270,7 @@ EXERCISE_CONFIG = {
         "strategy_class": SentenceClozeStrategy,
         "kwargs": {
             "distractor_mode": EnumDistractorMode.INTRA_LEMMA,
-            "target_pos": "VERB",
+            "target_pos": models.EnumPartOfSpeech.VERB,
             "show_lemma_hint": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
@@ -289,7 +289,7 @@ EXERCISE_CONFIG = {
         "strategy_class": SentenceAnnotationStrategy,
         "kwargs": {
             "target_property": "dep_rel",
-            "prompt_instruction": "Определите синтаксическую роль выделенного слова:",
+            "prompt_instruction": "What is the syntactical role of the highlighted word?",
             "target_pos_filter": None,
         },
         "formats": [models.EnumItemFormat.MCQ],
@@ -298,8 +298,8 @@ EXERCISE_CONFIG = {
         "strategy_class": SentenceAnnotationStrategy,
         "kwargs": {
             "target_property": "features.subst_case",
-            "prompt_instruction": "Определите падеж выделенного существительного в предложении:",
-            "target_pos_filter": "NOUN",
+            "prompt_instruction": "What is the case of the highlighted noun?",
+            "target_pos_filter": models.EnumPartOfSpeech.NOUN,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -307,8 +307,8 @@ EXERCISE_CONFIG = {
         "strategy_class": SentenceAnnotationStrategy,
         "kwargs": {
             "target_property": "features.verb_aspect",
-            "prompt_instruction": "Определите вид выделенного глагола в предложении:",
-            "target_pos_filter": "VERB",
+            "prompt_instruction": "What is the aspect of the highlighted verb?",
+            "target_pos_filter": models.EnumPartOfSpeech.VERB,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -334,7 +334,7 @@ EXERCISE_CONFIG = {
         "strategy_class": SentenceUnscrambleStrategy,
         "kwargs": {
             "min_tokens": 4,
-            "max_tokens": 10,
+            "max_tokens": 15,
         },
         "formats": [models.EnumItemFormat.UNSCRAMBLE],
     },
@@ -441,13 +441,20 @@ class ExerciseRouter:
             item_format = pl["item_format"]
 
             item_settings = {}
-            # item_prompt = pl["item_bp"].prompt
-            # item_key = pl["item_bp"].keys
-            # item_distractors = pl["item_bp"].distractors
-            # item_settings = (
-            #     pl["settings"].model_dump(mode="json") if pl["settings"] else None
-            # )
-            # TODO
+            if pl["settings"]:
+                item_settings["grammar_focus"] = pl["settings"].model_dump(mode="json")
+            if bp.sentence_context:
+                item_settings["sent_id"] = bp.sentence_context.sent_id
+                item_settings["target_indices"] = (
+                    bp.sentence_context.target_token_indices
+                )
+            item_prompt = pl["item_bp"].prompt
+            item_keys = pl["item_bp"].keys
+            item_distractors = pl["item_bp"].distractors
+            item_options = item_keys + item_distractors
+            item_settings = (
+                pl["settings"].model_dump(mode="json") if pl["settings"] else None
+            )
             db_item = models.Item(
                 ex_id=self.exercise_in.id,
                 order_in_ex=idx,
@@ -459,57 +466,72 @@ class ExerciseRouter:
                 finish_time=None,
             )
 
-            if db_item:
-                self.db.add(db_item)
-                self.db.flush()
+            self.db.add(db_item)
+            self.db.flush()
 
-                for opt in item_key + item_distractors:
-                    db_option = models.ItemOption(
-                        option_text=opt,
-                        item_id=db_item.id,
-                        option_uuid=uuid.uuid4(),
-                        is_correct=True if opt in item_key else False,
-                        # explanation=None,
-                    )
-
-                    self.db.add(db_option)
-                    self.db.flush()
-
-                db_lem_in_item = models.LemmaInItem(
-                    item_id=db_item.id, lem_id=pl["item_bp"].lem_id
+            for opt in item_options:
+                db_option = models.ItemOption(
+                    option_text=opt,
+                    item_id=db_item.id,
+                    option_uuid=uuid.uuid4(),
+                    is_correct=True if opt in bp.keys else False,
+                    explanation=None,
                 )
-                self.db.add(db_lem_in_item)
+
+                self.db.add(db_option)
                 self.db.flush()
 
-                options = item_key + item_distractors
-                random.shuffle(options)
+            db_lem_in_item = models.LemmaInItem(item_id=db_item.id, lem_id=bp.lem_id)
+            self.db.add(db_lem_in_item)
+            self.db.flush()
 
-                if item_format == models.EnumItemFormat.MCQ:
-                    response_items.append(
-                        schemas.MultipleChoiceResponse(
-                            item_id=db_item.id, prompt=item_prompt, options=options
-                        )
-                    )
-                elif item_format == models.EnumItemFormat.FLASHCARD:
-                    response_items.append(
-                        schemas.FlashcardResponse(
-                            item_id=db_item.id,
-                            prompt=item_prompt,
-                            back_text=item_key[0],
-                        )
-                    )
-                elif item_format == models.EnumItemFormat.FITB:
-                    response_items.append(
-                        schemas.FillInTheBlankResponse(
-                            item_id=db_item.id,
-                            prompt=item_prompt,
-                            parts=item_key,
-                        )
-                    )
-                else:
-                    continue
+            random.shuffle(item_options)
 
-        self.db.commit()  # Save transaction securely
+            if item_format == models.EnumItemFormat.MCQ:
+                response_items.append(
+                    schemas.MultipleChoiceResponse(
+                        item_id=db_item.id, prompt=bp.prompt, options=item_options
+                    )
+                )
+            elif item_format == models.EnumItemFormat.FLASHCARD:
+                response_items.append(
+                    schemas.FlashcardResponse(
+                        item_id=db_item.id,
+                        prompt=item_prompt,
+                        back_text=item_keys[0],
+                    )
+                )
+            elif item_format == models.EnumItemFormat.FITB:
+                response_items.append(
+                    schemas.FillInTheBlankResponse(
+                        item_id=db_item.id,
+                        prompt=item_prompt,
+                        parts=item_keys,
+                    )
+                )
+            elif item_format == schemas.EnumItemFormat.UNSCRAMBLE:
+                sent_ctx = bp.sentence_context
+                raw_tokens = [t.lex_raw for t in sent_ctx.tokens]
+
+                # generate opaque handles for drag-and-drop
+                unscramble_tokens = [
+                    schemas.UnscrambleToken(text=tok) for tok in raw_tokens
+                ]
+
+                # shuffle guaranteeing non-identity with original
+                shuffled = list(unscramble_tokens)
+                while [t.text for t in shuffled] == raw_tokens and len(raw_tokens) > 1:
+                    random.shuffle(shuffled)
+
+                response_items.append(
+                    schemas.UnscrambleResponse(
+                        item_id=db_item.id,
+                        prompt="Rearrange the words in the correct order:",
+                        shuffled_tokens=shuffled,
+                    )
+                )
+
+        self.db.commit()
 
         return schemas.ExerciseResponse(
             exercise_id=self.exercise_in.id,  # type: ignore

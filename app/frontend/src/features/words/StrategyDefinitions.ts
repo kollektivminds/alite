@@ -1,4 +1,5 @@
-import { EnumItemFormat, EnumWordItemGroup } from "../../types/words";
+import { EnumItemFormat } from "../../types";
+import { EnumWordItemGroup } from "../../types/words";
 
 // tooltips for menu
 export interface WordStrategyDefinition {

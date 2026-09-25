@@ -1,12 +1,13 @@
 import { useStore } from "zustand";
 import { persist } from "zustand/middleware";
 import { createStore } from "zustand/vanilla";
+// import { ITEM_DIFFICULTY } from "../types";
 
 export const preferencesStore = createStore(
   persist(
     (set, get) => ({
       // ===================================
-      // 1. PERSISTENT STATE
+      // PERSISTENT STATE
       // ===================================
       theme: "system",
       language: "en",
@@ -16,7 +17,7 @@ export const preferencesStore = createStore(
       favorites: [],
 
       // ===================================
-      // 2. TRANSIENT (IN-MEMORY) STATE
+      // TRANSIENT (IN-MEMORY) STATE
       // ===================================
       selectedPartsOfSpeech: [],
       openPartOfSpeechMenus: {},
@@ -28,7 +29,7 @@ export const preferencesStore = createStore(
       numeralOptions: [],
 
       // ===================================
-      // 3. ACTIONS
+      // ACTIONS
       // ===================================
 
       setTheme: (newTheme) => set({ theme: newTheme }),

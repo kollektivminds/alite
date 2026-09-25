@@ -15,7 +15,7 @@ from typing import Any, Optional
 from uuid import uuid4
 
 from alite_backend.db import models, schemas
-from alite_backend.db.models import Sentence, SentenceToken
+from alite_backend.db.models import EnumPartOfSpeech, Sentence, SentenceToken
 from alite_backend.services.items.sentence_base import SentenceItemBaseStrategy
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
@@ -39,11 +39,7 @@ class EnumGraphQueryMode(str, Enum):
     FIND_ROLE = "find_role"  # "Find the subject / direct object in this clause"
 
 
-# ============================================================================
-# 1. Sentence Cloze Strategy (Fill-In-The-Blank & Word Choice MCQs)
-# ============================================================================
-
-
+# sentence cloze strategy (fill-in-the-blank & word choice mcqs)
 class SentenceClozeStrategy(SentenceItemBaseStrategy):
     """
     Generates items where a target token within a sentence is blanked out.
@@ -56,7 +52,7 @@ class SentenceClozeStrategy(SentenceItemBaseStrategy):
         db_session: Session,
         request_context: schemas.ExerciseContext,
         distractor_mode: EnumDistractorMode = EnumDistractorMode.INTRA_LEMMA,
-        target_pos: Optional[str] = None,
+        target_pos: Optional[EnumPartOfSpeech] = None,
         show_lemma_hint: bool = False,
     ) -> None:
         super().__init__(db_session, request_context)
@@ -73,11 +69,9 @@ class SentenceClozeStrategy(SentenceItemBaseStrategy):
     ) -> list[schemas.ItemBlueprint]:
         blueprints: list[schemas.ItemBlueprint] = []
 
-        # 1. Fetch candidate sentences satisfying token length & POS constraints
+        # fetch candidate sentences satisfying token length & POS constraints
         candidates = self._get_candidate_sentences(
             limit=num_items * 3,
-            min_tokens=6,
-            max_tokens=25,
             required_pos=self.target_pos,
         )
 
@@ -85,7 +79,7 @@ class SentenceClozeStrategy(SentenceItemBaseStrategy):
             if len(blueprints) >= num_items:
                 break
 
-            # 2. Filter candidate tokens inside the sentence eligible for masking
+            # filter candidate tokens inside the sentence eligible for masking
             eligible_tokens = [
                 t
                 for t in sentence.tokens
@@ -102,7 +96,7 @@ class SentenceClozeStrategy(SentenceItemBaseStrategy):
 
             target_token = random.choice(eligible_tokens)
 
-            # 3. Harvest distractors according to configured mode
+            # harvest distractors according to configured mode
             distractors: list[str] = []
             if self.distractor_mode == EnumDistractorMode.INTRA_LEMMA:
                 distractors = self.fetch_intra_lemma_distractors(
@@ -111,7 +105,7 @@ class SentenceClozeStrategy(SentenceItemBaseStrategy):
                 )
             elif self.distractor_mode == EnumDistractorMode.FEATURE_MATCHED:
                 required_feats = target_token.features or {}
-                # Match POS and Case/Tense/Number, stripping non-comparable keys
+                # match pos and case/tense/number, stripping non-comparable keys
                 filter_feats = {
                     k: v
                     for k, v in required_feats.items()
@@ -124,22 +118,22 @@ class SentenceClozeStrategy(SentenceItemBaseStrategy):
                     limit=max_distractors,
                 )
 
-            # Graceful degradation: ensure option pool sufficiency
+            # graceful degradation: ensure option pool sufficiency
             if len(distractors) < max_distractors:
                 continue
 
-            # 4. Construct client-safe cloze representation
+            # construct client-safe cloze representation
             masked_prompt, display_tokens, _ = self.mask_sentence_for_cloze(
                 sentence=sentence,
                 masked_token_indices=[target_token.token_idx],
                 placeholder="[___]",
             )
 
-            # Append hint if enabled (e.g. for beginner curriculum tracks)
+            # append hint if enabled (e.g. for beginner curriculum tracks)
             if self.show_lemma_hint and target_token.lem_raw:
                 masked_prompt = f"{masked_prompt} ({target_token.lem_raw})"
 
-            # 5. Build blueprint context preserving ground-truth validation data
+            # build blueprint context preserving ground-truth validation data
             bp_context = self.build_sentence_blueprint_context(
                 sentence=sentence,
                 target_indices=[target_token.token_idx],
@@ -159,9 +153,7 @@ class SentenceClozeStrategy(SentenceItemBaseStrategy):
         return blueprints
 
 
-# ============================================================================
-# 2. Sentence Annotation Strategy (Categorical Property MCQs)
-# ============================================================================
+# sentence annotation strategy (categorical property mcqs)
 
 
 class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
@@ -169,14 +161,13 @@ class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
     Displays an intact sentence with a target token highlighted.
     Prompts the user to identify a categorical attribute (e.g. Case, Verb Aspect,
     Part of Speech, or SynTagRus Dependency Relation).
-    Options are drawn from the linguistic taxonomy, NOT the sentence words.
     """
 
     def __init__(
         self,
         db_session: Session,
         request_context: schemas.ExerciseContext,
-        target_property: str,  # e.g., "dep_rel" or "features.subst_case"
+        target_property: str,
         prompt_instruction: str,
         target_pos_filter: Optional[str] = None,
     ) -> None:
@@ -186,7 +177,6 @@ class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
         self.target_pos_filter = target_pos_filter
 
     def _extract_token_property(self, token: SentenceToken) -> Optional[str]:
-        """Resolves target attribute either from top-level column or JSONB features."""
         if self.target_property == "dep_rel":
             return token.dep_rel
         if self.target_property.startswith("features."):
@@ -214,7 +204,6 @@ class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
             if len(blueprints) >= num_items:
                 break
 
-            # Find tokens that possess a valid value for the target property
             valid_tokens = [
                 t
                 for t in sentence.tokens
@@ -232,7 +221,7 @@ class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
             target_tok = random.choice(valid_tokens)
             correct_val = str(self._extract_token_property(target_tok))
 
-            # Mine categorical distractors
+            # Mine categorical distractors safely without DISTINCT + ORDER BY random()
             if self.target_property == "dep_rel":
                 stmt = (
                     select(SentenceToken.dep_rel)
@@ -244,12 +233,9 @@ class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
                         )
                     )
                     .distinct()
-                    .order_by(func.random())
-                    .limit(max_distractors)
                 )
-                distractors = list(self.db.scalars(stmt).all())
+                pool = [r for r in self.db.scalars(stmt).all() if r]
             else:
-                # If morphological, pull alternate feature values from corpus
                 feature_key = self.target_property.split(".")[-1]
                 stmt = (
                     select(SentenceToken.features[feature_key].as_string())
@@ -261,15 +247,15 @@ class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
                         )
                     )
                     .distinct()
-                    .order_by(func.random())
-                    .limit(max_distractors)
                 )
-                distractors = [d for d in self.db.scalars(stmt).all() if d]
+                pool = [d for d in self.db.scalars(stmt).all() if d]
 
-            if len(distractors) < max_distractors:
+            if len(pool) < max_distractors:
                 continue
 
-            # Render sentence highlighting the target token: e.g. "Она читает **книгу** в парке."
+            # Randomize candidate options in Python
+            distractors = random.sample(pool, max_distractors)
+
             rendered_sentence = self.render_reconstructed_sentence(sentence.tokens)
             prompt = (
                 f"{self.prompt_instruction}\n\n"
@@ -287,7 +273,7 @@ class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
                 schemas.ItemBlueprint(
                     prompt=prompt,
                     keys=[correct_val],
-                    distractors=distractors[:max_distractors],
+                    distractors=distractors,
                     lem_id=target_tok.lem_id,
                     sentence_context=bp_context,
                 )
@@ -296,9 +282,7 @@ class SentenceAnnotationStrategy(SentenceItemBaseStrategy):
         return blueprints
 
 
-# ============================================================================
-# 3. Sentence Graph Strategy (Constituent Search & Dependency Edge MCQs)
-# ============================================================================
+# sentence graph strategy (constituent search & dependency edge mcqs)
 
 
 class SentenceGraphStrategy(SentenceItemBaseStrategy):
@@ -345,7 +329,7 @@ class SentenceGraphStrategy(SentenceItemBaseStrategy):
             key_token: Optional[SentenceToken] = None
             prompt: str = ""
 
-            # Scenario A: Find the Governor/Head of word X
+            # scenario a: find the governor/head of word x
             if self.query_mode == EnumGraphQueryMode.FIND_GOVERNOR:
                 eligible_tokens = [
                     t
@@ -361,12 +345,12 @@ class SentenceGraphStrategy(SentenceItemBaseStrategy):
                 if not key_token:
                     continue
                 prompt = (
-                    f"От какого слова в предложении синтаксически зависит выделенное слово?\n\n"
+                    f"On which word in the current sentence does the highlighted word depend?\n\n"
                     f"«{self.render_reconstructed_sentence(sentence.tokens)}»\n"
-                    f"(Зависимое слово: **{target_token.lex_raw}**)"
+                    f"(dependent word: **{target_token.lex_raw}**)"
                 )
 
-            # Scenario B: Find by Syntactic Role (e.g., Subject / 'предик')
+            # scenario b: find by syntactic role (e.g., subject / 'предик')
             elif self.query_mode == EnumGraphQueryMode.FIND_ROLE and self.focus_dep_rel:
                 role_tokens = [
                     t for t in sentence.tokens if t.dep_rel == self.focus_dep_rel
@@ -376,19 +360,19 @@ class SentenceGraphStrategy(SentenceItemBaseStrategy):
                 key_token = role_tokens[0]
                 target_token = key_token
                 role_label = (
-                    "подлежащее"
+                    "subject"
                     if self.focus_dep_rel == "предик"
-                    else f"член с отношением '{self.focus_dep_rel}'"
+                    else f"rel: '{self.focus_dep_rel}'"
                 )
                 prompt = (
-                    f"Найдите в предложении {role_label}:\n\n"
+                    f"Find the {role_label} in the sentence:\n\n"
                     f"«{self.render_reconstructed_sentence(sentence.tokens)}»"
                 )
 
             if not key_token or not target_token:
                 continue
 
-            # Distractors are sibling content words from the SAME sentence
+            # distractors are sibling content words from the SAME sentence
             candidate_distractor_tokens = [
                 t
                 for t in sentence.tokens
@@ -398,7 +382,7 @@ class SentenceGraphStrategy(SentenceItemBaseStrategy):
             if len(candidate_distractor_tokens) < max_distractors:
                 continue
 
-            # Pick distinct wordforms
+            # pick distinct wordforms
             distractors = list(
                 {
                     t.lex_raw
@@ -428,9 +412,7 @@ class SentenceGraphStrategy(SentenceItemBaseStrategy):
         return blueprints
 
 
-# ============================================================================
-# 4. Sentence Unscramble Strategy (Syntactic Ordering & Permutation)
-# ============================================================================
+# sentence unscramble strategy (syntactic ordering & permutation)
 
 
 class SentenceUnscrambleStrategy(SentenceItemBaseStrategy):
@@ -444,8 +426,8 @@ class SentenceUnscrambleStrategy(SentenceItemBaseStrategy):
         self,
         db_session: Session,
         request_context: schemas.ExerciseContext,
-        min_tokens: int = 4,
-        max_tokens: int = 12,  # Cognitive load threshold for drag-and-drop
+        min_tokens: int,
+        max_tokens: int,
     ) -> None:
         super().__init__(db_session, request_context)
         self.min_tokens = min_tokens
@@ -470,16 +452,16 @@ class SentenceUnscrambleStrategy(SentenceItemBaseStrategy):
             if len(blueprints) >= num_items:
                 break
 
-            # Filter out standalone punctuation for dragging ease: attach to words
-            # or retain lexical tokens
+            # filter out standalone punctuation for dragging ease:
+            # attach to words or retain lexical tokens
             content_tokens = [t for t in sentence.tokens if t.dep_rel != "пункт"]
             if len(content_tokens) < self.min_tokens:
                 continue
 
-            # Original sequential token strings
+            # original sequential token strings
             original_words = [t.lex_raw for t in content_tokens]
 
-            # Enforce non-identity permutation
+            # enforce non-identity permutation
             shuffled_words = list(original_words)
             attempts = 0
             while shuffled_words == original_words and attempts < 10:
@@ -495,7 +477,7 @@ class SentenceUnscrambleStrategy(SentenceItemBaseStrategy):
                 syntactic_focus="Unscramble:LinearOrder",
             )
 
-            # In ItemBlueprint, keys holds the canonical ordered tokens;
+            # in ItemBlueprint, keys holds the canonical ordered tokens;
             # distractors holds the permuted token sequence
             blueprints.append(
                 schemas.ItemBlueprint(

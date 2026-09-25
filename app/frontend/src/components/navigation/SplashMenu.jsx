@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import ParagraphsMenu from "../../features/paragraphs/ParagraphsMenu.jsx";
-import SentencesMenu from "../../features/sentences/SentencesMenu.jsx";
-import { WordsMenu } from "../../features/words/WordsMenu.tsx";
+import ParagraphsMenu from "../../features/paragraphs/ParagraphsMenu";
+import SentencesMenu from "../../features/sentences/SentencesMenu";
+import { WordsMenu } from "../../features/words/WordsMenu";
 
 function SplashMenu() {
   const { t } = useTranslation();

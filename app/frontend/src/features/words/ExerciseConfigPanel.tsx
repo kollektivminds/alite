@@ -6,7 +6,7 @@ import {
   EnumItemFormat,
   EnumWordItemGroup,
   Lemma,
-} from "../../types/words";
+} from "../../types";
 import {
   WordStrategyDefinition,
   WordStrategyTooltips,
@@ -288,7 +288,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               <input
                 type="checkbox"
                 id="odd-one-out-toggle"
-                checked={config.allowOddOneOut}
+                // checked={config.allowOddOneOut}
                 defaultChecked={false}
                 onChange={(e) => onChange({ allowOddOneOut: e.target.checked })}
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"

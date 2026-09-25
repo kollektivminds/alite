@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { DifficultyLevel } from "../../types/exercise";
-import { ExerciseResponse, Lemma, LessonList } from "../../types/words";
+import { useTranslation } from "react-i18next";
+// import { EnumItemDifficulty, ExerciseResponse } from "../../types/exercise";
+import {
+  EnumItemDifficulty,
+  ExerciseResponse,
+  Lemma,
+  LessonList,
+} from "../../types";
 import { ExerciseContainer } from "../exercises/ExerciseContainer";
 import { WordsSubLandingPage } from "./WordSubLandingPage";
 
@@ -9,6 +15,7 @@ interface WordsMenuProps {
 }
 
 export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
+  const { t } = useTranslation();
   const [availableLessonLists, setAvailableLessonLists] = useState<
     LessonList[]
   >([]);
@@ -18,7 +25,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
     null,
   );
   const [activeDifficulty, setActiveDifficulty] =
-    useState<DifficultyLevel | null>(null);
+    useState<EnumItemDifficulty | null>(null);
 
   // execute the network request on component mount
   useEffect(() => {
@@ -159,7 +166,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
           onClick={onBack}
           className="absolute -top-12 left-0 mb-4 text-sm font-semibold text-blue-600 hover:underline"
         >
-          ← Back
+          ← {t("back")}
         </button>
       )}
 
