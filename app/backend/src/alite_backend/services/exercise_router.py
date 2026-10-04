@@ -2,6 +2,7 @@
 import logging
 import random
 import uuid
+from enum import Enum
 from typing import Any, Dict, Tuple
 
 from alite_backend.api import deps
@@ -257,7 +258,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
     # sentences - tokens
-    EnumSentItemType.CLOZE_NOUN_MORPH: {
+    EnumSentItemType.NOUN_MORPH: {
         "strategy_class": SentenceClozeStrategy,
         "kwargs": {
             "distractor_mode": EnumDistractorMode.INTRA_LEMMA,
@@ -266,7 +267,16 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
-    EnumSentItemType.CLOZE_VERB_MORPH: {
+    EnumSentItemType.ADJECTIVE_MORPH: {
+        "strategy_class": SentenceClozeStrategy,
+        "kwargs": {
+            "distractor_mode": EnumDistractorMode.INTRA_LEMMA,
+            "target_pos": models.EnumPartOfSpeech.ADJECTIVE,
+            "show_lemma_hint": True,
+        },
+        "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
+    },
+    EnumSentItemType.VERB_MORPH: {
         "strategy_class": SentenceClozeStrategy,
         "kwargs": {
             "distractor_mode": EnumDistractorMode.INTRA_LEMMA,
@@ -275,7 +285,7 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
-    EnumSentItemType.CLOZE_LEXICAL: {
+    EnumSentItemType.LEXICAL: {
         "strategy_class": SentenceClozeStrategy,
         "kwargs": {
             "distractor_mode": EnumDistractorMode.FEATURE_MATCHED,
@@ -285,7 +295,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     # sentences - annotation items
-    EnumSentItemType.LABEL_DEP_REL: {
+    EnumSentItemType.DEP_REL: {
         "strategy_class": SentenceAnnotationStrategy,
         "kwargs": {
             "target_property": "dep_rel",
@@ -294,7 +304,7 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
-    EnumSentItemType.LABEL_NOUN_CASE: {
+    EnumSentItemType.NOUN_CASE: {
         "strategy_class": SentenceAnnotationStrategy,
         "kwargs": {
             "target_property": "features.subst_case",
@@ -303,7 +313,7 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
-    EnumSentItemType.LABEL_VERB_ASPECT: {
+    EnumSentItemType.VERB_ASPECT: {
         "strategy_class": SentenceAnnotationStrategy,
         "kwargs": {
             "target_property": "features.verb_aspect",
@@ -313,7 +323,7 @@ EXERCISE_CONFIG = {
         "formats": [models.EnumItemFormat.MCQ],
     },
     # sentences - syntax items
-    EnumSentItemType.SYNTAX_FIND_HEAD: {
+    EnumSentItemType.FIND_HEAD: {
         "strategy_class": SentenceGraphStrategy,
         "kwargs": {
             "query_mode": EnumGraphQueryMode.FIND_GOVERNOR,
@@ -321,7 +331,7 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
-    EnumSentItemType.SYNTAX_FIND_SUBJECT: {
+    EnumSentItemType.FIND_SUBJECT: {
         "strategy_class": SentenceGraphStrategy,
         "kwargs": {
             "query_mode": EnumGraphQueryMode.FIND_ROLE,
@@ -410,7 +420,7 @@ class ExerciseRouter:
                 item_strategy, EXERCISE_CONFIG[item_strategy]["formats"]
             )
             viable_formats = list(
-                set(supported_formats) & set(request.exercise_context.ex_formats)
+                set(supported_formats) & set(request.exercise_context.ex_formats)  # type: ignore
             )
 
             if not viable_formats:
@@ -434,13 +444,28 @@ class ExerciseRouter:
                     }
                 )
 
-        response_items = []
+        response_items: list[schemas.ExerciseItems] = []
 
         for idx, pl in enumerate(exercise_payload):
             bp: schemas.ItemBlueprint = pl["item_bp"]
-            item_format = pl["item_format"]
+            raw_item_format = pl["item_format"]
+            raw_item_type = pl["item_type"]
 
-            item_settings = {}
+            # 1. Unpack item_type to string (matches VARCHAR(64) column)
+            item_type_str: str = (
+                raw_item_type.value
+                if isinstance(raw_item_type, Enum)
+                else str(raw_item_type)
+            )
+
+            # 2. Defensive assertion: item_format must be an EnumItemFormat instance
+            if not isinstance(raw_item_format, models.EnumItemFormat):
+                raise TypeError(
+                    f"Expected EnumItemFormat instance, received {type(raw_item_format)}: {raw_item_format}"
+                )
+
+            # 3. Settings JSON containing syntactic metadata for evaluation
+            item_settings: dict[str, Any] = {}
             if pl["settings"]:
                 item_settings["grammar_focus"] = pl["settings"].model_dump(mode="json")
             if bp.sentence_context:
@@ -448,89 +473,143 @@ class ExerciseRouter:
                 item_settings["target_indices"] = (
                     bp.sentence_context.target_token_indices
                 )
-            item_prompt = pl["item_bp"].prompt
-            item_keys = pl["item_bp"].keys
-            item_distractors = pl["item_bp"].distractors
-            item_options = item_keys + item_distractors
-            item_settings = (
-                pl["settings"].model_dump(mode="json") if pl["settings"] else None
-            )
+
+            # 4. Instantiate parent Item record
+            # SQLAlchemy will serialize raw_item_format using its .name ('UNSCRAMBLE')
             db_item = models.Item(
-                ex_id=self.exercise_in.id,
+                ex_id=self.exercise_in.id,  # type: ignore
                 order_in_ex=idx,
-                item_type=pl["item_type"],
-                item_format=item_format,
-                prompt=item_prompt,
+                item_type=item_type_str,
+                item_format=raw_item_format,
+                prompt=bp.prompt,
                 settings=item_settings,
                 start_time=None,
                 finish_time=None,
             )
-
             self.db.add(db_item)
-            self.db.flush()
+            self.db.flush()  # Hydrates db_item.id for foreign keys
 
-            for opt in item_options:
-                db_option = models.ItemOption(
-                    option_text=opt,
-                    item_id=db_item.id,
-                    option_uuid=uuid.uuid4(),
-                    is_correct=True if opt in bp.keys else False,
-                    explanation=None,
+            # 5. Guarded lemma association (null-safe for sentence unscramble drills)
+            if bp.lem_id is not None:
+                db_lem_in_item = models.LemmaInItem(
+                    item_id=db_item.id,  # type: ignore
+                    lem_id=bp.lem_id,
                 )
+                self.db.add(db_lem_in_item)
 
-                self.db.add(db_option)
-                self.db.flush()
+            # 6. Normalize keys and distractors to string lists
+            canonical_keys: list[str] = (
+                bp.keys if isinstance(bp.keys, list) else [str(bp.keys)]
+            )
+            distractor_list: list[str] = bp.distractors or []
 
-            db_lem_in_item = models.LemmaInItem(item_id=db_item.id, lem_id=bp.lem_id)
-            self.db.add(db_lem_in_item)
-            self.db.flush()
+            # -----------------------------------------------------------------
+            # 7. Deliverable Construction & Option Persistence
+            # -----------------------------------------------------------------
+            if raw_item_format == models.EnumItemFormat.UNSCRAMBLE:
+                # bp.keys holds the canonical ordered tokens: ['Она', 'читает', 'книгу']
+                token_strings = canonical_keys
 
-            random.shuffle(item_options)
-
-            if item_format == models.EnumItemFormat.MCQ:
-                response_items.append(
-                    schemas.MultipleChoiceResponse(
-                        item_id=db_item.id, prompt=bp.prompt, options=item_options
-                    )
-                )
-            elif item_format == models.EnumItemFormat.FLASHCARD:
-                response_items.append(
-                    schemas.FlashcardResponse(
-                        item_id=db_item.id,
-                        prompt=item_prompt,
-                        back_text=item_keys[0],
-                    )
-                )
-            elif item_format == models.EnumItemFormat.FITB:
-                response_items.append(
-                    schemas.FillInTheBlankResponse(
-                        item_id=db_item.id,
-                        prompt=item_prompt,
-                        parts=item_keys,
-                    )
-                )
-            elif item_format == schemas.EnumItemFormat.UNSCRAMBLE:
-                sent_ctx = bp.sentence_context
-                raw_tokens = [t.lex_raw for t in sent_ctx.tokens]
-
-                # generate opaque handles for drag-and-drop
-                unscramble_tokens = [
-                    schemas.UnscrambleToken(text=tok) for tok in raw_tokens
+                # Generate opaque UUID handles for student interaction state
+                # Prevents sequential DOM / network inspection tampering
+                handle_token_pairs = [
+                    (uuid.uuid4().hex[:8], word) for word in token_strings
                 ]
 
-                # shuffle guaranteeing non-identity with original
-                shuffled = list(unscramble_tokens)
-                while [t.text for t in shuffled] == raw_tokens and len(raw_tokens) > 1:
-                    random.shuffle(shuffled)
+                # Store solution positions in ItemOption for server-side grading
+                option_records = [
+                    models.ItemOption(
+                        item_id=db_item.id,  # type: ignore
+                        option_text=word,
+                        option_uuid=uuid.uuid4(),
+                        is_correct=True,
+                        explanation=f"position:{pos}",
+                    )
+                    for pos, (_, word) in enumerate(handle_token_pairs)
+                ]
+                self.db.add_all(option_records)
+                self.db.flush()
+
+                # Enforce non-identity shuffling on student deliverable
+                shuffled_pairs = list(handle_token_pairs)
+                if len(shuffled_pairs) > 1:
+                    attempts = 0
+                    while [
+                        p[1] for p in shuffled_pairs
+                    ] == token_strings and attempts < 10:
+                        random.shuffle(shuffled_pairs)
+                        attempts += 1
 
                 response_items.append(
                     schemas.UnscrambleResponse(
-                        item_id=db_item.id,
-                        prompt="Rearrange the words in the correct order:",
-                        shuffled_tokens=shuffled,
+                        item_id=db_item.id,  # type: ignore
+                        prompt=bp.prompt,
+                        shuffled_tokens=[
+                            schemas.UnscrambleToken(token_handle=h, text=w)
+                            for h, w in shuffled_pairs
+                        ],
                     )
                 )
 
+            elif raw_item_format == models.EnumItemFormat.MCQ:
+                all_options = canonical_keys + distractor_list
+
+                option_records = [
+                    models.ItemOption(
+                        item_id=db_item.id,  # type: ignore
+                        option_text=opt,
+                        option_uuid=uuid.uuid4(),
+                        is_correct=(opt in canonical_keys),
+                        explanation=None,
+                    )
+                    for opt in all_options
+                ]
+                self.db.add_all(option_records)
+                self.db.flush()
+
+                shuffled_options = list(all_options)
+                random.shuffle(shuffled_options)
+
+                response_items.append(
+                    schemas.MultipleChoiceResponse(
+                        item_id=db_item.id,  # type: ignore
+                        prompt=bp.prompt,
+                        options=shuffled_options,  # type: ignore
+                    )
+                )
+
+            elif raw_item_format == models.EnumItemFormat.FITB:
+                option_records = [
+                    models.ItemOption(
+                        item_id=db_item.id,  # type: ignore
+                        option_text=key,
+                        option_uuid=uuid.uuid4(),
+                        is_correct=True,
+                        explanation=None,
+                    )
+                    for key in canonical_keys
+                ]
+                self.db.add_all(option_records)
+                self.db.flush()
+
+                response_items.append(
+                    schemas.FillInTheBlankResponse(
+                        item_id=db_item.id,  # type: ignore
+                        prompt=bp.prompt,
+                        parts=canonical_keys,
+                    )
+                )
+
+            elif raw_item_format == models.EnumItemFormat.FLASHCARD:
+                response_items.append(
+                    schemas.FlashcardResponse(
+                        item_id=db_item.id,  # type: ignore
+                        prompt=bp.prompt,
+                        back_text=canonical_keys[0],
+                    )
+                )
+
+        # Commit all items and options atomically
         self.db.commit()
 
         return schemas.ExerciseResponse(

@@ -31,7 +31,20 @@
     "numerals": "Числительные"
   },
   "sentencesMenu": {
-    "sentence_forms": "Формы предложения"
+    "sentence_forms": "Формы предложения",
+    "title": "Sentences",
+    "instructions": "Choose which sentence-level exercises and how many you wish to complete during this session.",
+    "strategies": {
+      "gramForms": "Grammatical Forms (Morphology)",
+      "nounMorph": "Noun Declensions",
+      "adjectiveMorph": "Adjective Declensions",
+      "verbMorph": "Verb Conjugations",
+      "lexical": "Lexical",
+      "unscramble": "Unscramble",
+      "depRel": "Dependency Relationships",
+      "findHead": "Find Head",
+      "findSubject": "Find Subject"
+    }
   },
   "paragraphsMenu": {
     "paragraph_forms": "Формы абзаца"
@@ -75,5 +88,28 @@
     "hard": "Тяжёлая",
     "reduce_motion": "Отключить эффекты анимации"
   },
-  "language": "Lang"
+  "language": "Lang",
+  "exercises": {
+    "settings": {
+      "exerciseSettings": "Exercise Settings",
+      "targetItemQuant": "Target Question Count",
+      "difficultyLevel": "Difficulty Level",
+      "keysItem": "Keys / Item",
+      "distractorsItem": "Distractors / Item",
+      "allowOoo": "Allow Odd-One-Out",
+      "maxKeys": "Maximum # of Keys",
+      "maxDistractors": "Maximum # of Distractors"
+    },
+    "formats": {
+      "availableFormats": "Available Formats",
+      "cloze": "Fill-in-the-Blank",
+      "clozeAbbr": "FITB",
+      "unscramble": "Unscramble",
+      "wordOrder": "Word Order",
+      "syntax": "Syntax",
+      "multipleChoice": "Multiple-Choice Question",
+      "multipleChoiceAbbr": "MCQ",
+      "flashcards": "Flashcards"
+    }
+  }
 }

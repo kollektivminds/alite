@@ -24,11 +24,5 @@ export interface StrategyDefinition {
   id: string;
   labelKey: string;
   descriptionKey: string;
-  defaultFormat: EnumItemFormat;
   supportedFormats: EnumItemFormat[];
-}
-
-export interface StrategyGroup {
-  groupKey: string;
-  strategies: StrategyDefinition[];
 }

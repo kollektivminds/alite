@@ -5,7 +5,6 @@ from typing import Iterable, Optional, Set, Tuple
 
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
-from alite_backend.services import exercise_router
 from alite_backend.services.exercise_router import ExerciseRouter
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import false, select
@@ -117,9 +116,9 @@ def get_canonical_and_evaluation(
     Guarantees a tuple return even if no options exist, preventing IndexErrors.
     """
     stmt = (
-        select(models.ItemOption.option_text)
+        select(models.ItemOption.option_text)  # type: ignore
         .where(models.ItemOption.item_id == item_id)
-        .where(models.ItemOption.is_correct.is_(True))
+        .where(models.ItemOption.is_correct.is_(True))  # type: ignore
     )
     keys = db.scalars(stmt).all()
 
@@ -150,7 +149,7 @@ def evaluate_student_answer(
     try:
         # verify item existence
         item = db.scalar(
-            select(models.Item).where(models.Item.id == submission.item_id)
+            select(models.Item).where(models.Item.id == submission.item_id)  # type: ignore
         )
         if not item:
             raise HTTPException(
@@ -173,7 +172,7 @@ def evaluate_student_answer(
 
         # log response telemetry safely
         response_record = models.ItemResponse(
-            user_id=current_user.id,
+            user_id=current_user.id,  # type: ignore
             item_id=submission.item_id,
             response=submission.response.strip(),
             is_correct=is_correct,

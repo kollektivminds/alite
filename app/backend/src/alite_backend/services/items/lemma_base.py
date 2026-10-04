@@ -1057,7 +1057,7 @@ class LemmaItemBaseStrategy(ABC):
         if len(candidate_pairs) < num_items:
             num_items = len(candidate_pairs)
             if num_items == 0:
-                return []
+                return []  # type: ignore
 
         for source_id, specific_rel_type in candidate_pairs:
             if len(blueprints) >= num_items:
@@ -1170,7 +1170,7 @@ class LemmaItemBaseStrategy(ABC):
 
             blueprints.append(blueprint)
 
-        return blueprints
+        return blueprints  # type: ignore
 
     # --- ABSTRACT METHOD ---
 

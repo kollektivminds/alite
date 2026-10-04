@@ -3,7 +3,7 @@
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from alite_backend.db.models import (
     EnumGramGender,
@@ -1134,11 +1134,14 @@ class StrategyConfigs(BaseModel):
     ]
 
 
+AnyItemType = Union[EnumWordItemType, EnumSentItemType]
+
+
 class ExerciseRequest(BaseModel):
     # Side-A + Side-B items = request
     exercise_context: ExerciseContext
     grammar_focus: Optional[StrategyConfigs] = None
-    type_counts: dict[Union[EnumWordItemType, EnumSentItemType], int]
+    type_counts: dict[AnyItemType, int]
 
 
 # sentence token requests

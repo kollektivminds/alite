@@ -37,24 +37,27 @@ export const SentenceExerciseConfigPanel: React.FC<Props> = ({
   const { t } = useTranslation();
 
   const availableFormats: { id: ItemFormat; label: string }[] = [
-    { id: "mcq", label: t("formats.mcq", "Выбор варианта (MCQ)") },
-    { id: "fitb", label: t("formats.fitb", "Заполнение пропусков (FITB)") },
+    { id: "mcq", label: t("exercises.formats.multipleChoice") },
+    {
+      id: "fitb",
+      label: t("exercises.formats.cloze"),
+    },
     {
       id: "unscramble",
-      label: t("formats.unscramble", "Расстановка слов (Unscramble)"),
+      label: t("exercises.formats.unscramble"),
     },
   ];
 
   return (
     <div className="bg-white p-6 rounded-xl border border-stone-200 shadow-xs flex flex-col gap-6 sticky top-6">
       <h3 className="text-lg font-semibold text-stone-800 border-b border-stone-100 pb-3">
-        {t("exerciseConfig.parameters", "Параметры тренировки")}
+        {t("exercises.settings.exerciseSettings")}
       </h3>
 
       {/* Allowed Formats */}
       <div>
         <label className="text-xs font-semibold uppercase tracking-wider text-stone-500 block mb-2">
-          {t("exerciseConfig.formats", "Доступные форматы")}
+          {t("exercises.formats.availableFormats")}
         </label>
         <div className="flex flex-col gap-2">
           {availableFormats.map((fmt) => (
@@ -77,28 +80,23 @@ export const SentenceExerciseConfigPanel: React.FC<Props> = ({
       {/* Difficulty Setting */}
       <div>
         <label className="text-xs font-semibold uppercase tracking-wider text-stone-500 block mb-2">
-          {t("exerciseConfig.difficulty", "Уровень сложности")}
+          {t("exercises.settings.difficultyLevel")}
         </label>
         <select
           value={difficulty}
           onChange={(e) => onDifficultyChange(e.target.value as ItemDifficulty)}
           className="w-full bg-stone-50 border border-stone-300 rounded-lg p-2 text-sm text-stone-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500"
         >
-          <option value="easy">
-            {t("difficulty.easy", "Начальный (с подсказкой леммы)")}
-          </option>
-          <option value="medium">
-            {t("difficulty.medium", "Средний (стандартный)")}
-          </option>
-          <option value="hard">{t("difficulty.hard", "Продвинутый")}</option>
+          <option value="easy">{t("modalSettings.easy")}</option>
+          <option value="medium">{t("modalSettings.medium")}</option>
+          <option value="hard">{t("modalSettings.hard")}</option>
         </select>
       </div>
 
       {/* Distractor Count */}
       <div>
         <label className="text-xs font-semibold uppercase tracking-wider text-stone-500 block mb-2">
-          {t("exerciseConfig.max_distractors", "Количество дистракторов")}:{" "}
-          {maxDistractors}
+          {t("exercises.settings.maxDistractors")}: {maxDistractors}
         </label>
         <input
           type="range"

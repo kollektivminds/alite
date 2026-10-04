@@ -7,17 +7,17 @@ from pathlib import Path
 
 
 def load_json(file_path):
-    with open(file_path, 'r', encoding='utf-8') as f:
+    with open(file_path, "r", encoding="utf-8") as f:
         return json.load(f)
 
 
 def save_json(data, file_path):
-    with open(file_path, 'w', encoding='utf-8') as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
 
 
 def collect_paths(data, prefix=""):
-    """ Recursively collect JSON keys paths as dot-separated strings """
+    """Recursively collect JSON keys paths as dot-separated strings"""
     paths = set()
     for key, value in data.items():
         current_path = f"{prefix}.{key}" if prefix else key
@@ -28,20 +28,36 @@ def collect_paths(data, prefix=""):
 
 
 def merge_keys(source, target):
-    """ Recursively merge keys from source into target """
+    """Recursively merge keys from source into target"""
     for key, value in source.items():
         if key not in target:
-            target[key] = value# if not isinstance(value, dict) else {}
+            target[key] = value  # if not isinstance(value, dict) else {}
         elif isinstance(value, dict) and isinstance(target[key], dict):
             merge_keys(value, target[key])
     return target
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Compare or synchronize JSON keys between two files.")
-    parser.add_argument("source", type=Path, default="../locales/en/translations.json", nargs='?', help="Source JSON file")
-    parser.add_argument("target", type=Path, default="../locales/ru/translations.json", nargs='?', help="Target JSON file")
-    parser.add_argument("--fix", action="store_true", help="Fix missing keys by copying from source")
+    parser = argparse.ArgumentParser(
+        description="Compare or synchronize JSON keys between two files."
+    )
+    parser.add_argument(
+        "source",
+        type=Path,
+        default="app/frontend/src/locales/en/translations.json",
+        nargs="?",
+        help="Source JSON file",
+    )
+    parser.add_argument(
+        "target",
+        type=Path,
+        default="app/frontend/src/locales/ru/translations.json",
+        nargs="?",
+        help="Target JSON file",
+    )
+    parser.add_argument(
+        "--fix", action="store_true", help="Fix missing keys by copying from source"
+    )
 
     args = parser.parse_args()
 

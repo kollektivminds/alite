@@ -9,67 +9,7 @@
 
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { StrategyGroup } from "../../types/sentences";
-
-export const SENTENCE_STRATEGY_GROUPS: StrategyGroup[] = [
-  {
-    groupKey: "sentencesMenu.group_cloze",
-    strategies: [
-      {
-        id: "cloze_noun_morph",
-        labelKey: "sentencesMenu.strat_cloze_noun",
-        descriptionKey: "sentencesMenu.desc_cloze_noun",
-        defaultFormat: "mcq",
-        supportedFormats: ["mcq", "fitb"],
-      },
-      {
-        id: "cloze_verb_morph",
-        labelKey: "sentencesMenu.strat_cloze_verb",
-        descriptionKey: "sentencesMenu.desc_cloze_verb",
-        defaultFormat: "mcq",
-        supportedFormats: ["mcq", "fitb"],
-      },
-      {
-        id: "cloze_lexical",
-        labelKey: "sentencesMenu.strat_cloze_lex",
-        descriptionKey: "sentencesMenu.desc_cloze_lex",
-        defaultFormat: "mcq",
-        supportedFormats: ["mcq"],
-      },
-    ],
-  },
-  {
-    groupKey: "sentencesMenu.group_word_order",
-    strategies: [
-      {
-        id: "unscramble",
-        labelKey: "sentencesMenu.strat_unscramble",
-        descriptionKey: "sentencesMenu.desc_unscramble",
-        defaultFormat: "unscramble",
-        supportedFormats: ["unscramble"],
-      },
-    ],
-  },
-  {
-    groupKey: "sentencesMenu.group_syntax",
-    strategies: [
-      {
-        id: "label_dep_rel",
-        labelKey: "sentencesMenu.strat_dep_rel",
-        descriptionKey: "sentencesMenu.desc_dep_rel",
-        defaultFormat: "mcq",
-        supportedFormats: ["mcq"],
-      },
-      {
-        id: "syntax_find_head",
-        labelKey: "sentencesMenu.strat_find_head",
-        descriptionKey: "sentencesMenu.desc_find_head",
-        defaultFormat: "mcq",
-        supportedFormats: ["mcq"],
-      },
-    ],
-  },
-];
+import { SENTENCE_STRATEGY_GROUPS } from "./SentenceStrategyDefinitions";
 
 interface Props {
   typeCounts: Record<string, number>;
@@ -86,7 +26,7 @@ export const SentenceStrategyPicker: React.FC<Props> = ({
     <div className="flex flex-col gap-6">
       {SENTENCE_STRATEGY_GROUPS.map((group) => (
         <div
-          key={group.groupKey}
+          key={t(group.groupKey)}
           className="bg-white p-5 rounded-xl border border-stone-200 shadow-xs"
         >
           <h3 className="text-base font-semibold text-stone-800 mb-3 border-b border-stone-100 pb-2">

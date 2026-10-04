@@ -106,13 +106,10 @@ export function SentencesMenu({ onBack, onExerciseGenerated }: Props) {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-3xl font-bold text-stone-900">
-            {t("sentencesMenu.title", "Тренировка предложений")}
+            {t("sentencesMenu.title")}
           </h2>
           <p className="text-sm text-stone-500 mt-1">
-            {t(
-              "sentencesMenu.subtitle",
-              "Выберите грамматические задачи и настройте формат тренировки",
-            )}
+            {t("sentencesMenu.instructions")}
           </p>
         </div>
 

@@ -247,14 +247,15 @@ class EnumWordItemType(str, enum.Enum):
 
 
 class EnumSentItemType(str, enum.Enum):
-    CLOZE_NOUN_MORPH = "cloze_noun_morph"
-    CLOZE_VERB_MORPH = "cloze_verb_morph"
-    CLOZE_LEXICAL = "cloze_lexical"
-    LABEL_DEP_REL = "label_dep_rel"
-    LABEL_NOUN_CASE = "label_noun_case"
-    LABEL_VERB_ASPECT = "label_verb_aspect"
-    SYNTAX_FIND_HEAD = "syntax_find_head"
-    SYNTAX_FIND_SUBJECT = "syntax_find_subject"
+    NOUN_MORPH = "noun_morph"
+    ADJECTIVE_MORPH = "adjective_morph"
+    VERB_MORPH = "verb_morph"
+    LEXICAL = "lexical"
+    DEP_REL = "dep_rel"
+    NOUN_CASE = "noun_case"
+    VERB_ASPECT = "verb_aspect"
+    FIND_HEAD = "find_head"
+    FIND_SUBJECT = "find_subject"
     UNSCRAMBLE = "unscramble"
 
 
@@ -857,7 +858,10 @@ class Item(Base, table=True):
 
     ex_id: int = Field(foreign_key="exercises.id", index=True, nullable=False)
     order_in_ex: int = Field(index=True, unique=False, nullable=False)
-    item_type: EnumWordItemType = Field(index=True, unique=False, nullable=False)
+    item_type: str = Field(
+        sa_column=Column(String(64), index=True, nullable=False),
+        description="Categorical identifier for the drill strategy (e.g. 'cloze_noun_morph', 'lem_to_pos')",
+    )
     item_format: EnumItemFormat = Field(index=True, unique=False, nullable=False)
     # content
     prompt: str | None = Field(index=False, unique=False, nullable=True)
