@@ -1,115 +1,189 @@
 {
-  "site_title": "ALITE",
-  "choose_fields": "Выбрать",
-  "languages": {
-    "language": "Язык",
-    "english": "English",
-    "russian": "Русский"
-  },
-  "word_list": "Списки слов",
-  "im_studying": "Я учу",
-  "im_studying_what": "Я учу {{item}}",
+  "siteTitle": "siteTitle",
+  "chooseFields": "chooseFields",
+  "language": "Lang",
+  "wordList": "wordList",
+  "imStudying": "imStudying",
+  "imStudyingShat": "imStudyingShat",
   "back": "Назад",
-  "flashcards": {
-    "next": "Следующая",
-    "previous": "Предыдующая",
-    "flashcards": "Карточки",
-    "flip": "Повернуть"
-  },
   "splashMenu": {
     "words": "слова",
     "sentences": "предложения",
     "paragraphs": "параграфы"
   },
-  "wordsMenu": {
-    "title": "Слова",
-    "wordForms": "Формы слова",
-    "verbs": "Глаголы",
-    "nouns": "Существительные",
-    "adjectives": "Прилагательные",
-    "participles": "Причастия",
-    "numerals": "Числительные"
-  },
-  "sentencesMenu": {
-    "sentence_forms": "Формы предложения",
-    "title": "Sentences",
-    "instructions": "Choose which sentence-level exercises and how many you wish to complete during this session.",
-    "strategies": {
-      "gramForms": "Grammatical Forms (Morphology)",
-      "nounMorph": "Noun Declensions",
-      "adjectiveMorph": "Adjective Declensions",
-      "verbMorph": "Verb Conjugations",
-      "lexical": "Lexical",
-      "unscramble": "Unscramble",
-      "depRel": "Dependency Relationships",
-      "findHead": "Find Head",
-      "findSubject": "Find Subject"
-    }
-  },
-  "paragraphsMenu": {
-    "paragraph_forms": "Формы абзаца"
-  },
-  "modalMenu": {
-    "dashboard": "Результаты",
-    "info": "Инфо",
-    "settings": "Настройки",
-    "feedback": "Отзыв"
-  },
-  "modalDashboard": {
-    "results": "Результаты"
-  },
-  "modalInfo": {
-    "info": "Инфо"
-  },
-  "modalFeedback": {
-    "feedback": "Отзыв",
-    "submit": "Отправить",
-    "submitting": "Идёт отправиления",
-    "category": "Категория",
-    "bug_report": "Ошибка",
-    "feature_request": "Запрос о новой фукции",
-    "general_feedback": "Общее",
-    "message": "Сообщение",
-    "email": "Имейл",
-    "tech_disclaimer": "Технические данные собираются автоматически ради устранения неполадок.",
-    "cancel": "Отмена",
-    "message_placeholder": "Что можем улучшить?",
-    "email_placeholder": "Чтобы посвязаться с вами"
-  },
-  "modalSettings": {
-    "settings": "Настройки",
-    "theme": "Тема",
-    "light": "Светлая",
-    "dark": "Тёмная",
-    "system": "Сестемная",
-    "difficulty": "Сложность",
-    "easy": "Лёгкая",
-    "medium": "Средняя",
-    "hard": "Тяжёлая",
-    "reduce_motion": "Отключить эффекты анимации"
-  },
-  "language": "Lang",
   "exercises": {
+    "startExercise_one": "Запустить упражнение ({{count}} вопрос)",
+    "startExercise_few": "Запустить упражнение ({{count}} вопроса)",
+    "startExercise_many": "Запустить упражнение ({{count}} вопросов)",
+    "generateQuestions_one": "Generate ({{count}} Question)",
+    "generateQuestions_few": "generateQuestions_few",
+    "generateQuestions_many": "generateQuestions_many",
+    "numWords_one": "({{count}} word)",
+    "numWords_few": "numWords_few",
+    "numWords_many": "numWords_many",
+    "loading": "Идет загрузка",
+    "searching": "searching",
     "settings": {
-      "exerciseSettings": "Exercise Settings",
-      "targetItemQuant": "Target Question Count",
-      "difficultyLevel": "Difficulty Level",
-      "keysItem": "Keys / Item",
-      "distractorsItem": "Distractors / Item",
-      "allowOoo": "Allow Odd-One-Out",
-      "maxKeys": "Maximum # of Keys",
-      "maxDistractors": "Maximum # of Distractors"
+      "exerciseSettings": "Настройи упражнения",
+      "targetItemQuant": "Запросить сколько вопросов",
+      "targetItemQuantTooltipName": "Target Question Count",
+      "targetItemQuantTooltipDesc": "The maximum number of questions requested (due to algorithmic processing, total number of questions produced may be fewer).",
+      "difficultyLevel": "Уровень сложности",
+      "difficultyLevelTooltipName": "Exercise Difficulty",
+      "difficultyLevelTooltipDesc": "Set of options to more or less rigorously test knowledge. Default difficulty available in user settings.",
+      "keysItem": "Прав. ответ / вопрос",
+      "keysItemTooltipName": "Multiple True Keys",
+      "keysItemTooltipDesc": "Allows generating items with multiple correct options to test comprehensive category recognition.",
+      "distractorsItem": "Дистракторы / Вопрос",
+      "distractorsTooltipName": "Distractor Quota",
+      "distractorsTooltipDesc": "The number of syntactically plausible, incorrect options generated per multiple-choice item.",
+      "allowOoo": "Допустить вариант Лишнее",
+      "allowOooTooltipName": "Odd-One-Out Generation",
+      "allowOooTooltipDesc": "Generates questions with the usual multiple-choice format flipped: identify the one incorrect answer.",
+      "questionTypes": "Виды вопросов",
+      "allocated": "Выделены",
+      "randomize": "Случайно",
+      "reset": "Отмена",
+      "stageVocab": "Включить слова, чтобы использовать эти.",
+      "ex": "н.п.",
+      "item_one": "вопрос",
+      "item_few": "вопроса",
+      "item_many": "вопросов",
+      "enabledSessionFormats": "Enabled Session Formats",
+      "noDefsRecorded": "No definitions recorded.",
+      "maxKeys": "Макс. количество прав. ответов",
+      "maxDistractors": "Макс. количество дистракторов",
+      "formats": {
+        "format": "Format",
+        "availableFormats": "Доступные форматы",
+        "questionTypes": "Question Types",
+        "cloze": "Вопросы с пробелами",
+        "clozeAbbr": "Всп",
+        "unscramble": "Восстановление предложения",
+        "wordOrder": "Порядок слов",
+        "syntax": "Синтаксис",
+        "multipleChoice": "Вопросы с вариантами ответов",
+        "multipleChoiceAbbr": "ВВО",
+        "flashcards": {
+          "flashcard": "flashcard",
+          "next": "next",
+          "previous": "previous",
+          "flashcards": "flashcards",
+          "flip": "flip"
+        }
+      }
     },
-    "formats": {
-      "availableFormats": "Available Formats",
-      "cloze": "Fill-in-the-Blank",
-      "clozeAbbr": "FITB",
-      "unscramble": "Unscramble",
-      "wordOrder": "Word Order",
-      "syntax": "Syntax",
-      "multipleChoice": "Multiple-Choice Question",
-      "multipleChoiceAbbr": "MCQ",
-      "flashcards": "Flashcards"
+    "wordsMenu": {
+      "title": "Words",
+      "instructions": "Assemble target vocabulary and configure psychometric distractor strategies.",
+      "lexicalItems": "Lexical Items",
+      "queryNoMatches": "No matches found for",
+      "modules": "modules",
+      "list_one": "list",
+      "list_few": "list_few",
+      "list_many": "list_many",
+      "targetVocabStaging": "Target Vocab Staging",
+      "vocabStagingInstructions": "Search in Cyrillic (Russian) or Latin (romanized) alphabets.",
+      "deselectAll": "Deselect all",
+      "refinePool": "Refine Final Vocabulary Pool",
+      "clickToExclude": "Click a curriculum item to exclude it, or a custom word to remove it.",
+      "activeDist": "Active Distribution",
+      "totalActive": "Total Active",
+      "removeWord": "Remove word",
+      "noLists": "No curriculum lists available to load.",
+      "selected": "selected",
+      "strategies": {
+        "lemma": "Lemma"
+      }
+    },
+    "sentencesMenu": {
+      "title": "Sentences",
+      "instructions": "Choose which sentence-level exercises and how many you wish to complete during this session.",
+      "allocated": "Allocated",
+      "strategies": {
+        "gramForms": "Grammatical Forms (Morphology)",
+        "nounMorph": "Noun Declensions",
+        "adjectiveMorph": "Adjective Declensions",
+        "verbMorph": "Verb Conjugations",
+        "lexical": "Lexical",
+        "unscramble": "Unscramble",
+        "depRel": "Dependency Relationships",
+        "findHead": "Find Head",
+        "findSubject": "Find Subject"
+      },
+      "sentence_forms": "sentence_forms"
+    },
+    "paragraphsMenu": {
+      "paragraph_forms": "paragraph_forms"
+    },
+    "flashcards": {
+      "next": "Next",
+      "previous": "Previous",
+      "flashcards": "Flashcards",
+      "flip": "Flip"
     }
+  },
+  "modal": {
+    "menu": {
+      "dashboard": "Dashboard",
+      "info": "Info",
+      "settings": "Settings",
+      "feedback": "Feedback"
+    },
+    "dashboard": {
+      "results": "Results"
+    },
+    "info": {
+      "info": "Info"
+    },
+    "feedback": {
+      "feedback": "Feedback",
+      "submit": "Submit",
+      "category": "Category",
+      "bug_report": "bug_report",
+      "feature_request": "feature_request",
+      "general_feedback": "general_feedback",
+      "message": "Message",
+      "email": "Email",
+      "tech_disclaimer": "tech_disclaimer",
+      "cancel": "Cancel",
+      "submitting": "Идёт отправиления",
+      "message_placeholder": "message_placeholder",
+      "email_placeholder": "email_placeholder"
+    },
+    "settings": {
+      "settings": "Settings",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "difficulty": "Difficulty",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "reduce_motion": "Reduce Motion"
+    }
+  },
+  "grammar": {
+    "gender": "gender",
+    "aspect": "aspect",
+    "definition": "definition",
+    "pos": {
+      "pos": "POS",
+      "partOfSpeech": "part of speech",
+      "adjective": "part of speech",
+      "adverb": "part of speech",
+      "conjunction": "part of speech",
+      "nouns": "part of speech",
+      "other": "part of speech",
+      "preposition": "part of speech",
+      "participle": "part of speech",
+      "verb": "part of speech"
+    }
+  },
+  "languages": {
+    "language": "Язык",
+    "english": "English",
+    "russian": "Русский"
   }
 }

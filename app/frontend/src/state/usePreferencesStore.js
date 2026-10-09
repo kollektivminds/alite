@@ -1,129 +1,44 @@
-import { useStore } from "zustand";
-import { persist } from "zustand/middleware";
-import { createStore } from "zustand/vanilla";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
+// import { createStore } from "zustand/vanilla";
+import i18n from "../i18n"; // Path to your initialized i18next instance
 // import { ITEM_DIFFICULTY } from "../types";
 
-export const preferencesStore = createStore(
+// src/state/usePreferencesStore.js
+
+/**
+ * State store managing client-side personalization and pedagogical preferences.
+ * Persisted in localStorage to eliminate theme/accessibility flicker on page reload.
+ */
+export const usePreferencesStore = create(
   persist(
-    (set, get) => ({
-      // ===================================
-      // PERSISTENT STATE
-      // ===================================
-      theme: "system",
-      language: "en",
-      difficulty: "medium",
-      useReducedMotion: false,
+    (set) => ({
+      // Pedagogical baseline
+      difficulty: "medium", // 'easy' | 'medium' | 'hard'
+      setDifficulty: (difficulty) => set({ difficulty }),
 
-      favorites: [],
+      // Display & Accessibility preferences
+      theme: "system", // 'light' | 'dark' | 'system'
+      setTheme: (theme) => set({ theme }),
 
-      // ===================================
-      // TRANSIENT (IN-MEMORY) STATE
-      // ===================================
-      selectedPartsOfSpeech: [],
-      openPartOfSpeechMenus: {},
-      verbOptions: [],
-      nounOptions: [],
-      pronounOptions: [],
-      adjectiveOptions: [],
-      participleOptions: [],
-      numeralOptions: [],
+      fontSize: "base", // 'sm' | 'base' | 'lg' | 'xl'
+      setFontSize: (fontSize) => set({ fontSize }),
 
-      // ===================================
-      // ACTIONS
-      // ===================================
-
-      setTheme: (newTheme) => set({ theme: newTheme }),
-      setLanguage: (newLang) => set({ language: newLang }),
-      setDifficulty: (newDifficulty) => set({ difficulty: newDifficulty }),
+      reducedMotion: false, // Renamed to avoid shadowing framer-motion's hook
+      setReducedMotion: (reducedMotion) => set({ reducedMotion }),
       toggleReducedMotion: () =>
-        set((state) => ({ useReducedMotion: !state.useReducedMotion })),
+        set((state) => ({ reducedMotion: !state.reducedMotion })),
 
-      // --- Actions for the 'Favorites' feature ---
-      saveFavorite: (name) => {
-        const {
-          selectedPartsOfSpeech,
-          verbOptions,
-          nounOptions,
-          pronounOptions,
-          adjectiveOptions,
-          participleOptions,
-          numeralOptions,
-        } = get();
-        const newFavorite = {
-          id: Date.now().toString(),
-          name: name,
-          config: {
-            selectedPartsOfSpeech,
-            verbOptions,
-            nounOptions,
-            pronounOptions,
-            adjectiveOptions,
-            participleOptions,
-            numeralOptions,
-          },
-        };
-        set((state) => ({ favorites: [...state.favorites, newFavorite] }));
+      // Interface Localization
+      language: "ru", // 'en' | 'ru'
+      setLanguage: (newLang) => {
+        i18n.changeLanguage(newLang);
+        set({ language: newLang });
       },
-
-      loadFavorite: (id) => {
-        const favorite = get().favorites.find((fav) => fav.id === id);
-        if (favorite) {
-          set({ ...favorite.config });
-        }
-      },
-
-      deleteFavorite: (id) => {
-        set((state) => ({
-          favorites: state.favorites.filter((fav) => fav.id !== id),
-        }));
-      },
-
-      // --- Actions for temporary selections ---
-      resetCurrentSelection: () => {
-        set({
-          selectedPartsOfSpeech: [],
-          verbOptions: [],
-          nounOptions: [],
-          pronounOptions: [],
-          adjectiveOptions: [],
-          participleOptions: [],
-          numeralOptions: [],
-        });
-      },
-
-      togglePartOfSpeech: (partOfSpeech) =>
-        set((state) => ({
-          openPartOfSpeechMenus: {
-            ...state.openPartOfSpeechMenus,
-            [partOfSpeech]: !state.openPartOfSpeechMenus[partOfSpeech],
-          },
-          selectedPartsOfSpeech: state.selectedPartsOfSpeech.includes(
-            partOfSpeech,
-          )
-            ? state.selectedPartsOfSpeech.filter((pos) => pos !== partOfSpeech)
-            : [...state.selectedPartsOfSpeech, partOfSpeech],
-        })),
-
-      toggleVerbOption: (option) =>
-        set((state) => ({
-          verbOptions: state.verbOptions.includes(option)
-            ? state.verbOptions.filter((o) => o !== option)
-            : [...state.verbOptions, option],
-        })),
     }),
     {
-      name: "app-preferences-storage",
-      // We tell 'partialize' which parts of the state to save.
-      partialize: (state) => ({
-        theme: state.theme,
-        language: state.language,
-        difficulty: state.difficulty,
-        favorites: state.favorites,
-        useReducedMotion: state.useReducedMotion,
-      }),
+      name: "alite-user-preferences",
+      storage: createJSONStorage(() => localStorage),
     },
   ),
 );
-
-export const usePreferencesStore = (selector) =>
-  useStore(preferencesStore, selector);

@@ -1,4 +1,5 @@
 import React, { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Lemma } from "../../types/words";
 
 interface PrunerProps {
@@ -29,6 +30,7 @@ export const LessonWordPruner: React.FC<PrunerProps> = ({
   onToggleExclude,
   onRemoveManual,
 }) => {
+  const { t } = useTranslation();
   const excludedSet = useMemo(() => new Set(excludedIds), [excludedIds]);
 
   // Combine active pools and eliminate items currently excluded
@@ -67,16 +69,16 @@ export const LessonWordPruner: React.FC<PrunerProps> = ({
           id="pruner-heading"
           className="text-lg font-semibold text-gray-900 dark:text-gray-100"
         >
-          Refine Final Vocabulary Pool
+          {t("exercises.wordsMenu.refinePool")}
         </h3>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Click a curriculum item to exclude it, or a custom word to remove it.
+          {t("exercises.wordsMenu.clickToExclude")}
         </p>
 
         {/* POS Metrics Strip */}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-            Active Distribution:
+            {t("exercises.wordsMenu.activeDist")}:
           </span>
           {Object.entries(posCounts).map(([pos, count]) => {
             if (count === 0) return null;
@@ -93,7 +95,7 @@ export const LessonWordPruner: React.FC<PrunerProps> = ({
             );
           })}
           <span className="text-xs text-gray-400">
-            ({activePool.length} total active)
+            ({activePool.length} {t("exercises.wordsMenu.totalActive")})
           </span>
         </div>
       </div>
@@ -165,7 +167,7 @@ export const LessonWordPruner: React.FC<PrunerProps> = ({
                 </span>
                 <span
                   className="text-[11px] font-bold text-blue-500"
-                  aria-label="Remove word"
+                  aria-label={t("exercises.wordsMenu.removeWord")}
                 >
                   ✕
                 </span>

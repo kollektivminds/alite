@@ -1,10 +1,9 @@
 # create class for generating word-level questions
 
 import logging
-from functools import wraps
-from typing import List, Optional, Sequence
-from uuid import UUID
+from typing import List
 
+from alite_backend.api import deps
 from alite_backend.db.crud.crud_base import CRUDBase
 from alite_backend.db.models import Exercise, Item, ItemOption, ItemResponse
 from alite_backend.db.schemas import (
@@ -17,20 +16,13 @@ from alite_backend.db.schemas import (
     ItemResponseUpdate,
     ItemUpdate,
 )
-from fastapi import HTTPException, status
-from sqlalchemy import delete, select, update
-from sqlalchemy.exc import (
-    DBAPIError,
-    IntegrityError,
-    NoResultFound,
-    ProgrammingError,
-    SQLAlchemyError,
-    StatementError,
-)
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
+router = APIRouter()
 
 #
 # EXERCISES
@@ -38,7 +30,18 @@ logger = logging.getLogger(__name__)
 
 
 class CRUDExercises(CRUDBase[Exercise, ExerciseCreate, ExerciseUpdate]):
-    pass
+
+    def get_exercise_record(
+        self,
+        db: Session,
+        user=Depends(deps.get_current_user),
+        limit: int = 50,
+    ):
+        # current_user_id = user.id
+        # stmt = (
+        #     select(self.model).where(Exercise.user_id == current_user_id).limit(limit)
+        # )
+        return user  # list(db.scalars(stmt).all())
 
 
 crud_exercise = CRUDExercises(Exercise)
@@ -49,7 +52,15 @@ crud_exercise = CRUDExercises(Exercise)
 
 
 class CRUDItems(CRUDBase[Item, ItemCreate, ItemUpdate]):
-    pass
+
+    def get_completed_items(
+        self,
+        db: Session,
+        user_id: int = Depends(deps.get_current_user),
+        limit: int = 50,
+    ):
+
+        return all_results
 
 
 crud_item = CRUDItems(Item)

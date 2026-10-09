@@ -1,8 +1,12 @@
+import logging
+
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
 from alite_backend.db.crud.user_crud import crud_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 

@@ -1,5 +1,6 @@
 // src/features/words/ExerciseConfigPanel.tsx
 import React, { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Tooltip } from "../../components/modals/Tooltip";
 import {
   EnumItemDifficulty,
@@ -44,7 +45,8 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
   onChange,
   onSubmit,
 }) => {
-  // 1. Independent Accordion State: Tracks which category groups are currently open
+  const { t } = useTranslation();
+  // independent accordion state: tracks which category groups are currently open
   const [expandedGroups, setExpandedGroups] = useState<Set<EnumWordItemGroup>>(
     () => new Set<EnumWordItemGroup>(["General"]),
   );
@@ -184,17 +186,17 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
       {/* SECTION 1: Assessment Constraints */}
       <section>
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
-          Assessment Parameters
+          {t("exercises.settings.exerciseSettings")}
         </h4>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <div className="flex items-center gap-1.5">
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                Target Question Count
+                {t("exercises.settings.targetItemQuant")}
               </label>
               <Tooltip
-                title="Question Quota"
-                content="The maximum number of questions requested (due to algorithmic processing, total number of questions produced may be fewer)."
+                title={t("exercises.settings.targetItemQuantTooltipName")}
+                content={t("exercises.settings.targetItemQuantTooltipDesc")}
               />
             </div>
             <input
@@ -217,11 +219,11 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
           <div>
             <div className="flex items-center gap-1.5">
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                Difficulty Tier
+                {t("exercises.settings.difficultyLevel")}
               </label>
               <Tooltip
-                title="Exercise Difficulty"
-                content="Set of options to more or less rigorously test knowledge. Default difficulty available in user settings."
+                title={t("exercises.settings.difficultyLevelTooltipName")}
+                content={t("exercises.settings.difficultyLevelTooltipDesc")}
               />
             </div>
             <select
@@ -231,20 +233,20 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               }
               className="mt-1 w-full rounded border-slate-300 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700"
             >
-              <option value="easy">Easy</option>
-              <option value="medium">Medium</option>
-              <option value="hard">Hard</option>
+              <option value="easy">{t("modal.settings.easy")}</option>
+              <option value="medium">{t("modal.settings.medium")}</option>
+              <option value="hard">{t("modal.settings.hard")}</option>
             </select>
           </div>
 
           <div>
             <div className="flex items-center gap-1.5">
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                Distractors / Item
+                {t("exercises.settings.distractorsItem")}
               </label>
               <Tooltip
-                title="Distractor Quota"
-                content="The number of syntactically plausible, incorrect options generated per multiple-choice item."
+                title={t("exercises.settings.distractorsTooltipName")}
+                content={t("exercises.settings.distractorsTooltipDesc")}
               />
             </div>
             <input
@@ -263,11 +265,11 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
           <div>
             <div className="flex items-center gap-1.5">
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                Keys / Item
+                {t("exercises.settings.keysItem")}
               </label>
               <Tooltip
-                title="Multiple True Keys"
-                content="Allows generating items with multiple correct options to test comprehensive category recognition."
+                title={t("exercises.settings.keysItemTooltipName")}
+                content={t("exercises.settings.keysItemTooltipDesc")}
               />
             </div>
             <input
@@ -290,6 +292,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                 id="odd-one-out-toggle"
                 // checked={config.allowOddOneOut}
                 defaultChecked={false}
+                disabled={true}
                 onChange={(e) => onChange({ allowOddOneOut: e.target.checked })}
                 className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
               />
@@ -297,12 +300,12 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                 htmlFor="odd-one-out-toggle"
                 className="ml-2 text-xs font-medium text-slate-700 dark:text-slate-300"
               >
-                Allow Odd-One-Out Synthesis
+                {t("exercises.settings.allowOoo")}
               </label>
             </div>
             <Tooltip
-              title="Odd-One-Out Generation"
-              content="Generates questions with the usual multiple-choice format flipped: identify the one incorrect answer."
+              title={t("exercises.settings.allowOooTooltipName")}
+              content={t("exercises.settings.allowOooTooltipDesc")}
             />
           </div>
         </div>
@@ -313,10 +316,10 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              Question Types
+              {t("exercises.settings.questionTypes")}
             </h4>
             <span className="text-[11px] text-slate-500">
-              Allocated:{" "}
+              {t("exercises.settings.allocated")}:{" "}
               <strong
                 className={
                   totalAllocatedItems > config.maxItems
@@ -326,7 +329,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               >
                 {totalAllocatedItems}
               </strong>{" "}
-              / {config.maxItems} Target
+              / {config.maxItems}
             </span>
           </div>
 
@@ -336,7 +339,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
             disabled={validStrategies.length === 0}
             className="rounded bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700 border border-blue-200 hover:bg-blue-100 disabled:opacity-50 dark:border-blue-800 dark:bg-blue-950/40 dark:text-blue-300 transition-colors"
           >
-            Randomize
+            {t("exercises.settings.randomize")}
           </button>
         </div>
 
@@ -344,7 +347,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         <div className="mt-3 space-y-2.5">
           {validStrategies.length === 0 ? (
             <p className="text-xs text-slate-500 italic py-2">
-              Stage vocabulary lemmas on the left to unlock strategies.
+              {t("exercises.settings.stageVocab")}
             </p>
           ) : (
             Array.from(groupedStrategies.entries()).map(
@@ -393,7 +396,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                               : "bg-slate-200/60 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
                           }`}
                         >
-                          {groupAllocatedCount} items
+                          {groupAllocatedCount} {t("exercises.settings.items")}
                         </span>
                         <span className="text-slate-400 text-xs font-mono">
                           {isGroupExpanded ? "▲" : "▼"}
@@ -471,7 +474,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                                     {def.stemExample && (
                                       <div className="rounded bg-slate-50 p-1.5 border border-slate-200/60 dark:bg-slate-900/40 dark:border-slate-700/60 font-mono text-[10px] text-slate-700 dark:text-slate-300">
                                         <span className="text-slate-400">
-                                          Ex:
+                                          {t("exercises.settings.ex")}:
                                         </span>{" "}
                                         {def.stemExample}
                                         {def.keyExample && (
@@ -486,7 +489,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
 
                                   <div className="mt-2.5 flex items-center gap-1 pt-1.5 border-t border-slate-100 dark:border-slate-700/40">
                                     <span className="text-[9px] uppercase tracking-wider text-slate-400">
-                                      Formats:
+                                      {t("exercises.settings.formats")}:
                                     </span>
                                     <div className="flex gap-1 flex-wrap">
                                       {forwardFormats.map((fmt) => (
@@ -532,7 +535,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                                       {def.pairStemExample && (
                                         <div className="rounded bg-slate-50 p-1.5 border border-slate-200/60 dark:bg-slate-900/40 dark:border-slate-700/60 font-mono text-[10px] text-slate-700 dark:text-slate-300">
                                           <span className="text-slate-400">
-                                            Ex:
+                                            {t("exercises.settings.ex")}:
                                           </span>{" "}
                                           {def.pairStemExample}
                                           {def.pairKeyExample && (
@@ -547,7 +550,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
 
                                     <div className="mt-2.5 flex items-center gap-1 pt-1.5 border-t border-slate-100 dark:border-slate-700/40">
                                       <span className="text-[9px] uppercase tracking-wider text-slate-400">
-                                        Formats:
+                                        {t("exercises.settings.formats")}:
                                       </span>
                                       <div className="flex gap-1 flex-wrap">
                                         {reverseFormats.map((fmt) => (
@@ -579,7 +582,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
       {/* SECTION 3: Session Output Formats */}
       <section>
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
-          Enabled Session Formats
+          {t("exercises.settings.enabledSessionFormats")}
         </h4>
         <div className="flex flex-wrap gap-2">
           {(["mcq", "fitb", "flashcard"] as EnumItemFormat[]).map((fmt) => {
@@ -627,7 +630,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         >
           {totalAllocatedItems > config.maxItems
             ? `Allocated (${totalAllocatedItems}) exceeds Target (${config.maxItems})`
-            : `Generate ${totalAllocatedItems} Questions (${activeLemmas.length} Words)`}
+            : `${t("exercises.startExercise", { count: totalAllocatedItems })} ${t("exercises.numWords", { count: activeLemmas.length })}`}
         </button>
       </div>
     </aside>

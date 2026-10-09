@@ -1309,14 +1309,48 @@ class ExerciseResponse(BaseModel):
 
 
 class AnswerSubmission(BaseModel):
-    item_id: int
-    response: str
-    response_time_ms: int
-    attempt_num: int
-    is_final_attempt: bool = False
+    item_id: int = Field(..., description="ID of the item being evaluated")
+    response: str = Field(
+        ..., description="The learner's submitted answer token or string"
+    )
+    response_time_ms: int = Field(
+        ..., description="Latency for this specific attempt in ms"
+    )
+    attempt_num: int = Field(..., description="1-based attempt index for this item")
+    is_final_attempt: bool = Field(
+        False, description="Flag indicating if the item is resolving"
+    )
+
+    client_item_start: Optional[datetime] = Field(
+        None, description="Timestamp when the client mounted this item into view"
+    )
 
 
 class AnswerResult(BaseModel):
     is_correct: bool
     correct_answer: Optional[str] = None
     explanation: Optional[str] = None
+
+
+# results display
+
+
+class UserResultsSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    exercise_id: int
+    completed_at: datetime
+    difficulty_level: str
+    total_items: int
+    correct_count: int
+    accuracy_rate: float  # Pre-computed ratio (0.0 to 1.0)
+    duration_seconds: int
+
+
+class ExerciseAttemptsSummary(BaseModel):
+    accuracy_rate: float
+
+
+class UserResultsReturn(BaseModel):
+    summary: dict
+    details: dict

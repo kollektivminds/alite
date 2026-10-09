@@ -8,8 +8,10 @@ import { ProgressBar } from "./ProgressBar";
 
 interface AttemptRecord {
   itemId: number;
-  format: string;
-  startTime: number;
+  format: string; // performance.now() epoch for millisecond-accurate delta measurement
+  mountPerfTime: number;
+  // ISO 8601 wall-clock timestamp for server timeline reconciliation
+  mountedAtIso: string;
   endTime: number | null;
   selectedDistractors: string[];
   isCorrect: boolean;
@@ -37,13 +39,16 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
 
   // helper strictly requires the complete Item object, preventing undefined properties
   const startNewItemRecord = (item: ExerciseResponse["response_data"][0]) => {
+    const perfNow = performance.now();
+    const wallNow = new Date().toISOString();
+
     setAttempts((prev) => [
       ...prev,
       {
         itemId: item.item_id,
         format: item.item_format,
-        startTime: Date.now(),
-        endTime: null,
+        mountPerfTime: perfNow,
+        mountedAtIso: wallNow,
         selectedDistractors: [],
         isCorrect: false,
       },
@@ -56,14 +61,28 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
     startNewItemRecord(exerciseData.response_data[0]);
   };
 
+  const handleNextItem = () => {
+    setIsItemResolved(false);
+
+    if (currentIndex + 1 < exerciseData.num_questions) {
+      const nextIndex = currentIndex + 1;
+      setCurrentIndex(nextIndex);
+      startNewItemRecord(exerciseData.response_data[nextIndex]);
+    } else {
+      setPhase("conclusion");
+      finalizeExerciseSession();
+    }
+  };
+
   const handleEvaluateOption = async (selectedOption: string) => {
     if (isItemResolved) return;
 
     const currentItem = exerciseData.response_data[currentIndex];
     const currentAttempt = attempts[attempts.length - 1];
-    const responseTimeMs = Date.now() - currentAttempt.startTime;
     const currentAttemptNum = currentAttempt.selectedDistractors.length + 1;
-
+    const elapsedMs = Math.round(
+      performance.now() - currentAttempt.mountPerfTime,
+    );
     const maxTries = DIFFICULTY_MAP[difficulty]?.maxTries ?? 1;
     const isFlashcard = currentItem.item_format === "flashcard";
     const isFinalAttempt = isFlashcard || currentAttemptNum >= maxTries;
@@ -72,9 +91,10 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
       const submissionPayload = {
         item_id: currentItem.item_id,
         response: selectedOption,
-        response_time_ms: responseTimeMs,
+        response_time_ms: elapsedMs,
         attempt_num: isFlashcard ? 1 : currentAttemptNum,
         is_final_attempt: isFinalAttempt,
+        client_item_start: currentAttempt.mountedAtIso,
       };
 
       const response = await fetch("/api/v1/exercises/evaluate", {
@@ -125,16 +145,20 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
     }
   };
 
-  const handleNextItem = () => {
-    setIsItemResolved(false);
-
-    if (currentIndex + 1 < exerciseData.num_questions) {
-      const nextIndex = currentIndex + 1;
-      setCurrentIndex(nextIndex);
-      // Pass the full item object
-      startNewItemRecord(exerciseData.response_data[nextIndex]);
-    } else {
-      setPhase("conclusion");
+  const finalizeExerciseSession = async () => {
+    try {
+      const response = await fetch(
+        `/api/v1/exercises/${exerciseData.exercise_id}/complete`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+      if (!response.ok) {
+        console.warn(`Failed to finalize exercise session: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("Network error finalizing exercise session:", error);
     }
   };
 

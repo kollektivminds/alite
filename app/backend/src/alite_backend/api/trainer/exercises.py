@@ -1,7 +1,8 @@
 import logging
 import re
 import unicodedata
-from typing import Iterable, Optional, Set, Tuple
+from datetime import datetime, timedelta, timezone
+from typing import Any, Iterable, Optional, Set, Tuple
 
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
@@ -13,6 +14,37 @@ from sqlalchemy.orm import Session
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+def reconcile_start_time(
+    client_start: Optional[datetime], response_time_ms: int, server_now: datetime
+) -> datetime:
+    """
+    Reconciles client-reported start time against server reality.
+    Guarantees monotonically valid timestamps without negative durations.
+    """
+    # maximum tolerable discrepancy between client clock and server estimation (network latency allowance)
+    CLOCK_SKEW_TOLERANCE_SECONDS = 10.0
+
+    # monotonically expected start time based on reported reaction latency
+    expected_start = server_now - timedelta(milliseconds=max(0, response_time_ms))
+
+    if client_start is None:
+        return expected_start
+
+    # ensure timezone-aware comparison (UTC)
+    if client_start.tzinfo is None:
+        client_start = client_start.replace(tzinfo=timezone.utc)
+
+    # check clock skew delta
+    skew = abs((client_start - expected_start).total_seconds())
+
+    # if client clock is within reasonable network/drift tolerance, respect client timestamp.
+    # otherwise, fallback to server estimation to protect database telemetry.
+    if skew <= CLOCK_SKEW_TOLERANCE_SECONDS and client_start <= server_now:
+        return client_start
+
+    return expected_start
 
 
 @router.post("/generate", response_model=schemas.ExerciseResponse)
@@ -146,16 +178,25 @@ def evaluate_student_answer(
     db: Session = Depends(deps.get_db),
     current_user: models.User = Depends(deps.get_current_user),
 ) -> schemas.AnswerResult:
+
     try:
+        item = db.get(models.Item, submission.item_id)
         # verify item existence
-        item = db.scalar(
-            select(models.Item).where(models.Item.id == submission.item_id)  # type: ignore
-        )
         if not item:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Item {submission.item_id} not found.",
             )
+
+        server_now = datetime.now(timezone.utc)
+
+        if item.start_time is None:
+            item.start_time = reconcile_start_time(
+                client_start=submission.client_item_start,
+                response_time_ms=submission.response_time_ms,
+                server_now=server_now,
+            )
+            db.add(item)
 
         canonical_answer: Optional[str] = None
         logger.debug("Item format: %s", item.item_format)
@@ -170,20 +211,24 @@ def evaluate_student_answer(
                 db=db, item_id=submission.item_id, submitted_answer=submission.response
             )
 
+        # reveal answer if item is correct or user exhausted attempts
+        should_reveal = is_correct or submission.is_final_attempt
+
+        if should_reveal and item.finish_time is None:
+            item.finish_time = server_now
+            db.add(item)
+
         # log response telemetry safely
         response_record = models.ItemResponse(
             user_id=current_user.id,  # type: ignore
             item_id=submission.item_id,
             response=submission.response.strip(),
             is_correct=is_correct,
-            response_time_ms=max(0, submission.response_time_ms),
+            response_time_ms=submission.response_time_ms,
             attempt_num=submission.attempt_num,
         )
         db.add(response_record)
         db.commit()
-
-        # reveal answer if item is correct or user exhausted attempts
-        should_reveal = is_correct or getattr(submission, "is_final_attempt", False)
 
         return schemas.AnswerResult(
             is_correct=is_correct,
@@ -195,3 +240,44 @@ def evaluate_student_answer(
         # Prevent connection leaks on unexpected errors
         db.rollback()
         raise
+
+
+@router.post("/{exercise_id}/complete", status_code=status.HTTP_200_OK)
+def complete_exercise_session(
+    exercise_id: int,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> dict[str, Any]:
+    """
+    Finalizes an active exercise session by stamping finish_time.
+    Calculates total session duration for institutional analytics.
+    """
+    exercise = db.get(models.Exercise, exercise_id)
+    if not exercise:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Exercise {exercise_id} not found.",
+        )
+
+    # Ensure students cannot alter another user's assessment session
+    if exercise.user_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Unauthorized access to exercise session.",
+        )
+
+    # Prevent overwriting finish_time if session was already completed
+    if exercise.finish_time is None:
+        exercise.finish_time = datetime.now(timezone.utc)
+        db.add(exercise)
+        db.commit()
+        db.refresh(exercise)
+
+    duration_seconds = (exercise.finish_time - exercise.start_time).total_seconds()
+
+    return {
+        "exercise_id": exercise.id,
+        "start_time": exercise.start_time.isoformat(),
+        "finish_time": exercise.finish_time.isoformat(),
+        "duration_seconds": round(duration_seconds, 3),
+    }

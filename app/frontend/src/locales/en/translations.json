@@ -1,111 +1,180 @@
 {
-  "site_title": "ALITE",
-  "choose_fields": "Choose",
+  "siteTitle": "ALITE",
+  "chooseFields": "Choose",
   "language": "Lang",
-  "word_list": "Word Lists",
-  "im_studying": "I'm studying",
-  "im_studying_what": "I'm studying {{item}}",
+  "wordList": "Word Lists",
+  "imStudying": "I'm studying",
+  "imStudyingShat": "I'm studying {{item}}",
   "back": "Back",
   "splashMenu": {
     "words": "words",
     "sentences": "sentences",
     "paragraphs": "paragraphs"
   },
-  "wordsMenu": {
-    "title": "Words",
-    "wordForms": "Word Forms",
-    "verbs": "Verbs",
-    "nouns": "Nouns",
-    "adjectives": "Adjectives",
-    "participles": "Participles",
-    "numerals": "Numerals"
-  },
-  "sentencesMenu": {
-    "title": "Sentences",
-    "instructions": "Choose which sentence-level exercises and how many you wish to complete during this session.",
-    "strategies": {
-      "gramForms": "Grammatical Forms (Morphology)",
-      "nounMorph": "Noun Declensions",
-      "adjectiveMorph": "Adjective Declensions",
-      "verbMorph": "Verb Conjugations",
-      "lexical": "Lexical",
-      "unscramble": "Unscramble",
-      "depRel": "Dependency Relationships",
-      "findHead": "Find Head",
-      "findSubject": "Find Subject"
-    },
-    "sentence_forms": "Формы предложения"
-  },
-  "paragraphsMenu": {
-    "paragraph_forms": "Paragraph forms"
-  },
   "exercises": {
+    "startExercise_one": "Start Exercise ({{count}} question)",
+    "startExercise_other": "Start Exercise ({{count}} questions)",
+    "generateQuestions_one": "Generate ({{count}} Question)",
+    "generateQuestions_other": "Generate ({{count}} Question)",
+    "numWords_one": "({{count}} word)",
+    "numWords_other": "({{count}} words)",
+    "loading": "loading",
+    "searching": "searching",
     "settings": {
       "exerciseSettings": "Exercise Settings",
       "targetItemQuant": "Target Question Count",
+      "targetItemQuantTooltipName": "Target Question Count",
+      "targetItemQuantTooltipDesc": "The maximum number of questions requested (due to algorithmic processing, total number of questions produced may be fewer).",
       "difficultyLevel": "Difficulty Level",
+      "difficultyLevelTooltipName": "Exercise Difficulty",
+      "difficultyLevelTooltipDesc": "Set of options to more or less rigorously test knowledge. Default difficulty available in user settings.",
       "keysItem": "Keys / Item",
+      "keysItemTooltipName": "Multiple True Keys",
+      "keysItemTooltipDesc": "Allows generating items with multiple correct options to test comprehensive category recognition.",
       "distractorsItem": "Distractors / Item",
+      "distractorsTooltipName": "Distractor Quota",
+      "distractorsTooltipDesc": "The number of syntactically plausible, incorrect options generated per multiple-choice item.",
       "allowOoo": "Allow Odd-One-Out",
-      "maxKeys": "Maximum # of Keys",
-      "maxDistractors": "Maximum # of Distractors"
+      "allowOooTooltipName": "Odd-One-Out Generation",
+      "allowOooTooltipDesc": "Generates questions with the usual multiple-choice format flipped: identify the one incorrect answer.",
+      "questionTypes": "Question Types",
+      "allocated": "Allocated",
+      "randomize": "Randomize",
+      "reset": "Reset",
+      "stageVocab": "Stage vocabulary lemmas on the left to unlock strategies.",
+      "ex": "Ex",
+      "item_one": "item",
+      "item_other": "items",
+      "enabledSessionFormats": "Enabled Session Formats",
+      "noDefsRecorded": "No definitions recorded.",
+      "maxKeys": "Max Number of Keys",
+      "maxDistractors": "Max Number of Distractors",
+      "formats": {
+        "format": "Format",
+        "availableFormats": "Available Formats",
+        "questionTypes": "Question Types",
+        "cloze": "Fill-in-the-Blank",
+        "clozeAbbr": "FITB",
+        "unscramble": "Unscramble",
+        "wordOrder": "Word Order",
+        "syntax": "Syntax",
+        "multipleChoice": "Multiple-Choice Question",
+        "multipleChoiceAbbr": "MCQ",
+        "flashcards": {
+          "flashcard": "Flashcard",
+          "next": "Next",
+          "previous": "Previous",
+          "flashcards": "Flashcards",
+          "flip": "Flip"
+        }
+      }
     },
-    "formats": {
-      "availableFormats": "Available Formats",
-      "cloze": "Fill-in-the-Blank",
-      "clozeAbbr": "FITB",
-      "unscramble": "Unscramble",
-      "wordOrder": "Word Order",
-      "syntax": "Syntax",
-      "multipleChoice": "Multiple-Choice Question",
-      "multipleChoiceAbbr": "MCQ",
-      "flashcards": "Flashcards"
+    "wordsMenu": {
+      "title": "Words",
+      "instructions": "Assemble target vocabulary and configure psychometric distractor strategies.",
+      "lexicalItems": "Lexical Items",
+      "queryNoMatches": "No matches found for",
+      "modules": "modules",
+      "list_one": "list",
+      "list_other": "lists",
+      "targetVocabStaging": "Target Vocab Staging",
+      "vocabStagingInstructions": "Search in Cyrillic (Russian) or Latin (romanized) alphabets.",
+      "deselectAll": "Deselect all",
+      "refinePool": "Refine Final Vocabulary Pool",
+      "clickToExclude": "Click a curriculum item to exclude it, or a custom word to remove it.",
+      "activeDist": "Active Distribution",
+      "totalActive": "Total Active",
+      "removeWord": "Remove word",
+      "noLists": "No curriculum lists available to load.",
+      "selected": "selected",
+      "strategies": {
+        "lemma": "Lemma"
+      }
+    },
+    "sentencesMenu": {
+      "title": "Sentences",
+      "instructions": "Choose which sentence-level exercises and how many you wish to complete during this session.",
+      "allocated": "Allocated",
+      "strategies": {
+        "gramForms": "Grammatical Forms (Morphology)",
+        "nounMorph": "Noun Declensions",
+        "adjectiveMorph": "Adjective Declensions",
+        "verbMorph": "Verb Conjugations",
+        "lexical": "Lexical",
+        "unscramble": "Unscramble",
+        "depRel": "Dependency Relationships",
+        "findHead": "Find Head",
+        "findSubject": "Find Subject"
+      },
+      "sentence_forms": "Формы предложения"
+    },
+    "paragraphsMenu": {
+      "paragraph_forms": "Paragraph forms"
+    },
+    "flashcards": {
+      "next": "Next",
+      "previous": "Previous",
+      "flashcards": "Flashcards",
+      "flip": "Flip"
     }
   },
-  "flashcards": {
-    "next": "Next",
-    "previous": "Previous",
-    "flashcards": "Flashcards",
-    "flip": "Flip"
+  "modal": {
+    "menu": {
+      "dashboard": "Dashboard",
+      "info": "Info",
+      "settings": "Settings",
+      "feedback": "Feedback"
+    },
+    "dashboard": {
+      "results": "Results"
+    },
+    "info": {
+      "info": "Info"
+    },
+    "feedback": {
+      "feedback": "Feedback",
+      "submit": "Submit",
+      "category": "Category",
+      "bug_report": "Bug Report",
+      "feature_request": "Feature Request",
+      "general_feedback": "General Feedback",
+      "message": "Message",
+      "email": "Email",
+      "tech_disclaimer": "We automatically include technical details to help us debug.",
+      "cancel": "Cancel",
+      "submitting": "Идёт отправиления",
+      "message_placeholder": "What can be improved?",
+      "email_placeholder": "To follow up with you"
+    },
+    "settings": {
+      "settings": "Settings",
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "difficulty": "Difficulty",
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard",
+      "reduce_motion": "Reduce Motion"
+    }
   },
-  "modalMenu": {
-    "dashboard": "Dashboard",
-    "info": "Info",
-    "settings": "Settings",
-    "feedback": "Feedback"
-  },
-  "modalDashboard": {
-    "results": "Results"
-  },
-  "modalInfo": {
-    "info": "Info"
-  },
-  "modalFeedback": {
-    "feedback": "Feedback",
-    "submit": "Submit",
-    "category": "Category",
-    "bug_report": "Bug Report",
-    "feature_request": "Feature Request",
-    "general_feedback": "General Feedback",
-    "message": "Message",
-    "email": "Email",
-    "tech_disclaimer": "We automatically include technical details to help us debug.",
-    "cancel": "Cancel",
-    "submitting": "Идёт отправиления",
-    "message_placeholder": "What can be improved?",
-    "email_placeholder": "To follow up with you"
-  },
-  "modalSettings": {
-    "settings": "Settings",
-    "theme": "Theme",
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System",
-    "difficulty": "Difficulty",
-    "easy": "Easy",
-    "medium": "Medium",
-    "hard": "Hard",
-    "reduce_motion": "Reduce Motion"
+  "grammar": {
+    "gender": "gender",
+    "aspect": "aspect",
+    "definition": "definition",
+    "pos": {
+      "pos": "POS",
+      "partOfSpeech": "part of speech",
+      "adjective": "part of speech",
+      "adverb": "part of speech",
+      "conjunction": "part of speech",
+      "nouns": "part of speech",
+      "other": "part of speech",
+      "preposition": "part of speech",
+      "participle": "part of speech",
+      "verb": "part of speech"
+    }
   },
   "languages": {
     "language": "Lang",

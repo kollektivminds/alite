@@ -1,6 +1,8 @@
 // /frontend/src/types/exercise.ts
 // controlled vocabulary for exercise maker
 // aligned with /backend/src/alite_backend/db/models.py
+import { EnumSentenceItemType } from "./sentences";
+import { EnumWordItemType } from "./words";
 
 export type EnumItemFormat = "mcq" | "fitb" | "flashcard" | "unscramble";
 export type EnumItemDifficulty = "easy" | "medium" | "hard";
@@ -61,4 +63,69 @@ export interface ExerciseResponse {
   exercise_id: number;
   num_questions: number;
   response_data: Array<FlashcardResponse | MCQResponse | FITBResponse>;
+}
+
+export interface DisplayToken {
+  tok_idx: number;
+  text: string;
+  is_masked: boolean;
+  is_punctuation: boolean;
+}
+
+export interface UnscrambleToken {
+  token_handle: string;
+  text: string;
+}
+
+// --- Item Deliverable Payloads ---
+
+export interface BaseItemResponse {
+  item_id: number;
+  prompt: string;
+  item_format: EnumItemFormat;
+}
+
+export interface FlashcardResponseItem extends BaseItemResponse {
+  item_format: "flashcard";
+  back_text: string;
+}
+
+export interface MCQResponseItem extends BaseItemResponse {
+  item_format: "mcq";
+  options: (string | number)[];
+  sentence_tokens?: DisplayToken[] | null;
+}
+
+export interface FITBResponseItem extends BaseItemResponse {
+  item_format: "fitb";
+  parts: string[];
+  sentence_tokens?: DisplayToken[] | null;
+}
+
+export interface UnscrambleResponseItem extends BaseItemResponse {
+  item_format: "unscramble";
+  shuffled_tokens: UnscrambleToken[];
+}
+
+export type ExerciseItem =
+  | FlashcardResponseItem
+  | MCQResponseItem
+  | FITBResponseItem
+  | UnscrambleResponseItem;
+
+export interface ExerciseResponse {
+  exercise_id: number;
+  num_questions: number;
+  response_data: ExerciseItem[];
+}
+
+export interface AttemptRecord {
+  itemId: number;
+  format: string;
+  startTime: number;
+  endTime: number | null;
+  selectedDistractors: string[];
+  isCorrect: boolean;
+  finalRating?: string;
+  revealedAnswer?: string;
 }

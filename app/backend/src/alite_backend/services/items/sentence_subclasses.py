@@ -126,7 +126,7 @@ class SentenceClozeStrategy(SentenceItemBaseStrategy):
             masked_prompt, display_tokens, _ = self.mask_sentence_for_cloze(
                 sentence=sentence,
                 masked_token_indices=[target_token.token_idx],
-                placeholder="[___]",
+                placeholder=" [___] ",
             )
 
             # append hint if enabled (e.g. for beginner curriculum tracks)

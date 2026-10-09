@@ -1,5 +1,6 @@
 // src/features/words/WordsSubLandingPage.tsx
 import React, { useMemo, useReducer } from "react";
+import { useTranslation } from "react-i18next";
 import { ExerciseContext, Lemma, LessonList } from "../../types";
 import { ExerciseConfigPanel } from "./ExerciseConfigPanel";
 import { LessonListPicker } from "./LessonListPicker";
@@ -21,6 +22,7 @@ export const WordsSubLandingPage: React.FC<WordsSubLandingPageProps> = ({
   searchLemmasApi,
   onSubmitGeneration,
 }) => {
+  const { t } = useTranslation();
   const [state, dispatch] = useReducer(wordSelectionReducer, initialState);
 
   // extract active lemmas from toggled curriculum lists
@@ -60,11 +62,10 @@ export const WordsSubLandingPage: React.FC<WordsSubLandingPageProps> = ({
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div className="mb-8 border-b border-gray-200 pb-5 dark:border-gray-700">
         <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-          Target Lemma Assessment Configuration
+          {t("exercises.wordsMenu.title")}
         </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Assemble target vocabulary and configure psychometric distractor
-          strategies.
+          {t("exercises.wordsMenu.instructions")}
         </p>
       </div>
 

@@ -1,3 +1,4 @@
+from alite_backend.api.dashboard.student import exercise_results
 from alite_backend.api.trainer import (
     documents,
     exercises,
@@ -17,3 +18,4 @@ api_router.include_router(users.router, prefix="/users", tags=["users"])
 api_router.include_router(exercises.router, prefix="/exercises", tags=["exercises"])
 api_router.include_router(sentences.router, prefix="/sentences", tags=["sentences"])
 api_router.include_router(documents.router, prefix="/documents", tags=["documents"])
+api_router.include_router(exercise_results.router, prefix="/results", tags=["results"])

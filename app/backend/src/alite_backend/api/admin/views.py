@@ -1,7 +1,20 @@
 from ast import Mod
+from datetime import datetime
 from pydoc import Doc
+from tracemalloc import start
 from typing import Any
 
+from alite_backend.api.admin.formatters import (
+    format_document_link,
+    format_document_title,
+    format_lemma_label,
+    format_lemma_link,
+    format_lexeme_label,
+    format_lexeme_link,
+    format_sentence_tokens,
+    format_word_form_label,
+    format_word_form_link,
+)
 from alite_backend.db.models import (
     Definition,
     DefinitionExample,
@@ -32,8 +45,27 @@ from alite_backend.services import exercise_router
 from hypothesis import example
 from markupsafe import Markup
 from sqladmin import ModelView
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from starlette.requests import Request
-from tomlkit import item
+from tomlkit import date, item
+
+
+def calc_duration(view: Any, context: Any, model: Any, name: Any):
+
+    start_time = getattr(model, "start_time", None)
+    finish_time = getattr(model, "finish_time", None)
+
+    if not start_time or not finish_time:
+        return "-"
+
+    if isinstance(start_time, datetime) and isinstance(finish_time, datetime):
+        return finish_time - start_time
+
+    if isinstance(start_time, str) and isinstance(finish_time, str):
+        start_time = datetime.fromisoformat(start_time)
+        finish_time = datetime.fromisoformat(finish_time)
+        return finish_time - start_time
 
 
 class LemmaAdminView(ModelView, model=Lemma):
@@ -133,7 +165,7 @@ class GramPropAdminView(ModelView, model=GramProp):
     ]
     # Default sorting alphabetical by lemma string
     column_default_sort = [(GramProp.id, False), (GramProp.irregular, True)]
-
+    # column_formatters = {GramProp.gram_word_form: format_gram_prop}
     page_size = 50
 
 
@@ -149,6 +181,7 @@ class WordFormAdminView(ModelView, model=WordForm):
 
     column_list = [
         WordForm.lem_id,
+        WordForm.word_form_lemma,
         WordForm.lex_id,
         WordForm.word_form_lexicon,
         "lex_text",
@@ -171,11 +204,14 @@ class WordFormAdminView(ModelView, model=WordForm):
     # ]
 
     # Safely extract related attributes without triggering ad-hoc queries.
-    column_formatters = {
-        "lex_text": lambda model, attr: (
-            model.word_form_lexicon.lex_text if model.word_form_lexicon else "—"
-        )
-    }
+    # column_formatters = {
+    #     "lex_text": lambda model, attr: (
+    #         model.word_form_lexicon.lex_text if model.word_form_lexicon else "—"
+    #     ),
+    #     WordForm.lem_id: format_lemma_link,
+    #     WordForm.lex_id: format_lexeme_link,
+    #     # WordForm.gram_id: format_gram_prop_link,
+    # }
 
 
 class DefinitionAdminView(ModelView, model=Definition):
@@ -189,6 +225,8 @@ class DefinitionAdminView(ModelView, model=Definition):
     column_sortable_list = [Definition.id, Definition.def_text, Definition.def_tags]  # type: ignore
     column_searchable_list = [Definition.def_text]
     column_default_sort = [(Definition.id, False)]
+
+    # column_formatters = {Definition.lemmas: format_lemma_link}
 
     page_size = 50
 
@@ -245,9 +283,11 @@ class LemmaPronunciationAdminView(ModelView, model=LemmaPronunciation):
     category = "Lemmas - Auxiliary"
 
     column_list = [LemmaPronunciation.lem_id, LemmaPronunciation.lemma, LemmaPronunciation.pron_id, LemmaPronunciation.pronunciation]  # type: ignore
-    column_searchable_list = [LemmaPronunciation.pronunciation]
+    column_searchable_list = [LemmaPronunciation.pronunciation]  # type: ignore
     column_sortable_list = [LemmaPronunciation.lem_id, LemmaPronunciation.pron_id]  # type: ignore
     column_default_sort = [(LemmaPronunciation.lem_id, False)]
+
+    # column_formatters = {LemmaPronunciation.lemma: format_lemma_link}
 
     page_size = 50
 
@@ -337,17 +377,29 @@ class SentenceAdminView(ModelView, model=Sentence):
     icon = "fa-solid fa-align-left"
     category = "Sentences"
 
-    column_list = [Sentence.id, Sentence.doc_id, Sentence.raw_text, Sentence.sent_idx]  # type: ignore
+    column_list = [Sentence.id, Sentence.doc_id, Sentence.raw_text, Sentence.sent_idx, Sentence.tokens]  # type: ignore
     column_searchable_list = [Sentence.raw_text]
     column_default_sort = [(Sentence.id, False)]
+
+    column_formatters = {
+        Sentence.doc_id: format_document_link,
+    }
+    column_formatters_detail = column_formatters
+
+    def list_query(self, request: Request):
+        return (
+            select(Sentence)
+            .options(
+                selectinload(Sentence.document),
+                selectinload(Sentence.tokens),
+            )
+            .order_by(Sentence.id.desc())
+        )
+
     page_size = 25
 
 
 class SentenceTokenAdminView(ModelView, model=SentenceToken):
-    """
-    Administrative UI mapping for Corpus Sentence Tokens.
-    """
-
     name = "Sentence Token"
     name_plural = "Sentence Tokens"
     icon = "fa-solid fa-align-left"
@@ -355,8 +407,10 @@ class SentenceTokenAdminView(ModelView, model=SentenceToken):
 
     column_list = [
         SentenceToken.id,
+        SentenceToken.sentence,
         SentenceToken.lex_raw,
         SentenceToken.lem_raw,
+        SentenceToken.word_form,
         SentenceToken.features,
         SentenceToken.head_idx,
         SentenceToken.dep_rel,
@@ -365,10 +419,9 @@ class SentenceTokenAdminView(ModelView, model=SentenceToken):
         SentenceToken.punctuation_before,
         SentenceToken.punctuation_after,
         SentenceToken.status,
-        SentenceToken.lem_id,
-        SentenceToken.lex_id,
-        SentenceToken.wf_id,
-    ]  # type: ignore
+        SentenceToken.lemma,
+        SentenceToken.lexeme,
+    ]
 
     column_select_related_list = [
         SentenceToken.lemma,
@@ -376,75 +429,32 @@ class SentenceTokenAdminView(ModelView, model=SentenceToken):
         SentenceToken.word_form,
     ]
 
-    column_searchable_list = [Sentence.raw_text]
-    page_size = 50
-
-    # Formatting Engine: Converts raw integer IDs into structured anchor tags
-    # --------------------------------------------------------------------------
-    @staticmethod
-    def _format_lemma_link(model: SentenceToken, attribute: str) -> Markup:
-        """
-        Formats lem_id as a clickable hyperlink directing to the Lemma admin view.
-        """
-        if not model.lem_id:
-            return Markup('<span class="text-muted">—</span>')
-
-        # Resolves route: /admin/lemma/details/{lem_id} (or edit view)
-        target_url = f"/admin/lemma/details/{model.lem_id}"
-
-        # Optionally display the related lemma string alongside the ID if pre-fetched
-        label = f"#{model.lem_id}"
-        if getattr(model, "lemma_rel", None) and hasattr(model.lemma, "lemma_text"):
-            label = f"{model.lemma.lem_text} (#{model.lem_id})"  # type: ignore
-
-        return Markup(
-            f'<a href="{target_url}" class="badge bg-primary-subtle text-primary text-decoration-none">'
-            f'<i class="fa-solid fa-arrow-up-right-from-square me-1"></i>{label}'
-            f"</a>"
-        )
-
-    @staticmethod
-    def _format_lexeme_link(model: SentenceToken, attribute: str) -> Markup:
-        """
-        Formats lex_id as a clickable hyperlink directing to the Lexeme admin view.
-        """
-        if not model.lex_id:
-            return Markup('<span class="text-muted">—</span>')
-
-        target_url = f"/admin/lexeme/details/{model.lex_id}"
-        label = f"#{model.lex_id}"
-        if getattr(model, "lexeme_rel", None) and hasattr(model.lexeme, "lex_text"):
-            label = f"{model.lexeme.lex_text} (#{model.lex_id})"  # type: ignore
-
-        return Markup(
-            f'<a href="{target_url}" class="badge bg-info-subtle text-info text-decoration-none">'
-            f'<i class="fa-solid fa-link me-1"></i>{label}'
-            f"</a>"
-        )
-
-    @staticmethod
-    def _format_word_form_link(model: SentenceToken, attribute: str) -> Markup:
-        """
-        Formats wf_id as a clickable hyperlink directing to the WordForm admin view.
-        """
-        if not model.wf_id:
-            return Markup('<span class="text-muted">—</span>')
-
-        target_url = f"/admin/word-form/details/{model.wf_id}"
-        label = f"#{model.wf_id}"
-
-        return Markup(
-            f'<a href="{target_url}" class="badge bg-secondary-subtle text-secondary text-decoration-none">'
-            f'<i class="fa-solid fa-cube me-1"></i>{label}'
-            f"</a>"
-        )
-
-    # Register the formatting callbacks against their model column definitions
     column_formatters = {
-        SentenceToken.lem_id: _format_lemma_link,
-        SentenceToken.lex_id: _format_lexeme_link,
-        SentenceToken.wf_id: _format_word_form_link,
-    }  # type: ignore
+        SentenceToken.wf_id: format_word_form_label,
+        SentenceToken.word_form: format_word_form_label,
+        SentenceToken.lem_id: format_lemma_label,
+        SentenceToken.lemma: format_lemma_label,
+        SentenceToken.lex_id: format_lexeme_label,
+        SentenceToken.lexeme: format_lexeme_label,
+    }
+    column_formatters_detail = column_formatters
+
+    def list_query(self, request: Request):
+        return (
+            select(SentenceToken)
+            .options(
+                selectinload(SentenceToken.lemma),
+                selectinload(SentenceToken.lexeme),
+                selectinload(SentenceToken.sentence),
+                selectinload(SentenceToken.word_form).selectinload(
+                    WordForm.word_form_lexicon
+                ),
+                selectinload(SentenceToken.word_form).selectinload(
+                    WordForm.word_form_lemma
+                ),
+            )
+            .order_by(SentenceToken.id.desc())
+        )
 
 
 class UserAdminView(ModelView, model=User):
@@ -476,13 +486,16 @@ class ExerciseAdminView(ModelView, model=Exercise):
     icon = "fa-solid fa-puzzle-piece"
     category = "Assessment"
 
-    column_list = [Exercise.id, Exercise.user_id, Exercise.has_item, Exercise.start_time, Exercise.finish_time]  # type: ignore
+    column_list = [Exercise.id, Exercise.user_id, "duration", Exercise.start_time, Exercise.finish_time, Exercise.has_item]  # type: ignore
+    column_details_list = [Exercise.id, Exercise.user_id, "duration", Exercise.start_time, Exercise.finish_time, Exercise.has_item]  # type: ignore
     column_sortable_list = [
         Exercise.id,
         Exercise.user_id,
+        "duration",
         Exercise.start_time,
         Exercise.finish_time,
-    ]
+    ]  # type: ignore
+
     column_searchable_list = []
     page_size = 50
 
@@ -502,6 +515,21 @@ class ItemAdminView(ModelView, model=Item):
         Item.ex_id,
         Item.item_type,
         Item.item_format,
+        "duration",
+        Item.prompt,
+        Item.options,
+        Item.responses,
+        Item.settings,
+        Item.start_time,
+        Item.finish_time,
+        Item.ref_lems,
+    ]  # type: ignore
+    column_details_list = [
+        Item.id,
+        Item.ex_id,
+        Item.item_type,
+        Item.item_format,
+        "duration",
         Item.prompt,
         Item.options,
         Item.responses,
@@ -514,10 +542,11 @@ class ItemAdminView(ModelView, model=Item):
         Item.id,
         Item.item_type,
         Item.item_format,
+        "duration",
         Item.start_time,
         Item.finish_time,
-    ]
-    column_searchable_list = [Item.item_type, Item.item_format, Item.prompt]
+    ]  # type: ignore
+    column_searchable_list = [Item.item_type, Item.item_format, Item.prompt]  # type: ignore
     page_size = 50
 
 
@@ -539,7 +568,7 @@ class ItemOptionAdminView(ModelView, model=ItemOption):
         ItemOption.explanation,
     ]  # type: ignore
     column_sortable_list = [ItemOption.item_id, ItemOption.is_correct]  # type: ignore
-    column_searchable_list = [ItemOption.option_text, ItemOption.explanation]
+    column_searchable_list = [ItemOption.option_text, ItemOption.explanation]  # type: ignore
     page_size = 50
 
 

@@ -322,7 +322,7 @@ class SentenceItemBaseStrategy(ABC):
         self,
         sentence: Sentence,
         masked_token_indices: list[int],
-        placeholder: str = "[___]",
+        placeholder: str = " [___] ",
     ) -> tuple[str, list[schemas.DisplayToken], list[str]]:
         """
         Produces client-safe cloze structures:

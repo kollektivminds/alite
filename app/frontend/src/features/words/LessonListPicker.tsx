@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { LessonList } from "../../types";
 
 interface LessonListPickerProps {
@@ -14,10 +15,11 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
   onToggleList,
   onClearAll,
 }) => {
+  const { t } = useTranslation();
   if (lessonLists.length === 0) {
     return (
       <div className="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center text-gray-500">
-        No curriculum lists available to load.
+        {t("exercises.wordsMenu.noLists")}
       </div>
     );
   }
@@ -32,13 +34,14 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
           id="lesson-picker-heading"
           className="text-lg font-medium text-gray-900 dark:text-gray-100"
         >
-          1. Base Curriculum Modules
+          {t("exercises.wordsMenu.modules")}
         </h2>
 
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">
-            {selectedIds.length} list{selectedIds.length !== 1 ? "s" : ""}{" "}
-            selected
+            {selectedIds.length}{" "}
+            {t("exercises.wordsMenu.list", { count: selectedIds.length })}{" "}
+            {t("exercises.wordsMenu.selected")}
           </span>
 
           {/* Render reset button only when active lists exist */}
@@ -49,7 +52,7 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
               className="text-xs font-semibold text-red-600 hover:text-red-700 hover:underline focus:outline-none focus:ring-1 focus:ring-red-500 rounded px-1.5 py-0.5 dark:text-red-400 dark:hover:text-red-300"
               aria-label="Deselect all curriculum modules"
             >
-              Deselect All
+              {t("exercises.wordsMenu.deselectAll")}
             </button>
           )}
         </div>
@@ -113,7 +116,8 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
                 </div>
 
                 <span className="mt-2 block text-xs text-gray-400 dark:text-gray-500">
-                  {list.has_lemma?.length || 0} lexical items
+                  {list.has_lemma?.length || 0}{" "}
+                  {t("exercises.wordsMenu.lexicalItems")}
                 </span>
               </button>
             );

@@ -1,5 +1,6 @@
 // src/features/words/SingleWordAdder.tsx
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Lemma } from "../../types/words";
 
 interface SingleWordAdderProps {
@@ -11,6 +12,7 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
   onSearch,
   onSelectLemma,
 }) => {
+  const { t } = useTranslation();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Lemma[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -65,16 +67,16 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
           id="manual-add-heading"
           className="text-lg font-semibold text-slate-900 dark:text-slate-100"
         >
-          Target Vocabulary Staging
+          {t("exercises.wordsMenu.targetVocabStaging")}
         </h3>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Search lexical dictionary forms in Cyrillic or Latin script.
+          {t("exercises.wordsMenu.vocabStagingInstructions")}
         </p>
       </div>
 
       <div className="relative w-full max-w-md">
         <label htmlFor="lemma-search" className="sr-only">
-          Search dictionary form
+          {t("exercises.wordsMenu.searchDictForm")}
         </label>
         <input
           id="lemma-search"
@@ -92,7 +94,7 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
 
         {isSearching && (
           <div className="absolute right-3 top-2.5 text-xs text-slate-400 animate-pulse">
-            Searching...
+            {t("exercises.searching")}...
           </div>
         )}
 
@@ -179,7 +181,7 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
               </ul>
             ) : (
               <div className="px-4 py-3 text-xs text-slate-500 text-center">
-                No matches found for "{query}".
+                {t("exercises.wordsMenu.queryNoMatches")} "{query}".
               </div>
             )}
           </div>
@@ -225,12 +227,12 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
 
               {hoveredLemma.noun_gender && (
                 <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                  Gender: {hoveredLemma.noun_gender}
+                  {t("exercises.grammar.gender")}: {hoveredLemma.noun_gender}
                 </span>
               )}
               {hoveredLemma.verb_aspect && (
                 <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                  Aspect: {hoveredLemma.verb_aspect}
+                  {t("exercises.grammar.aspect")}: {hoveredLemma.verb_aspect}
                 </span>
               )}
             </div>
@@ -238,7 +240,8 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
             {/* Full Definitions List */}
             <div className="mt-3 space-y-1.5 border-t border-slate-100 pt-2.5 dark:border-slate-700">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                Definitions ({hoveredLemma.definitions?.length || 0})
+                {t("exercises.grammar.definition")} (
+                {hoveredLemma.definitions?.length || 0})
               </span>
               {hoveredLemma.definitions &&
               hoveredLemma.definitions.length > 0 ? (
@@ -253,7 +256,7 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
                 </ol>
               ) : (
                 <p className="text-xs text-slate-400 italic">
-                  No definitions recorded.
+                  {t("exercises.settings.noDefsRecorded")}
                 </p>
               )}
             </div>

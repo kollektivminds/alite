@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import Header from "./components/navigation/Header";
 import Sidebar from "./components/navigation/SidebarMenu";
 import SplashMenu from "./components/navigation/SplashMenu";
-import { preferencesStore } from "./state/usePreferencesStore";
+import { usePreferencesStore } from "./state/usePreferencesStore";
 
-console.log("At app level:", preferencesStore.getState());
+console.log("At app level:", usePreferencesStore.getState());
 
 function App() {
   console.log("App is rendering");
@@ -13,7 +13,7 @@ function App() {
   const { t, i18n } = useTranslation();
 
   useEffect(() => {
-    document.title = t("site_title");
+    document.title = t("siteTitle");
   }, [i18n.language, t]);
 
   return (

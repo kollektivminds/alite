@@ -163,8 +163,9 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
       {/* Conditionally hide the back button if they are in an active exercise */}
       {!activeExercise && (
         <button
+          type="button"
           onClick={onBack}
-          className="absolute -top-12 left-0 mb-4 text-sm font-semibold text-blue-600 hover:underline"
+          className="text-sm font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-lg transition-colors"
         >
           ← {t("back")}
         </button>

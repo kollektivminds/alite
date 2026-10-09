@@ -22,14 +22,14 @@ function SplashMenu() {
       <div className="relative flex flex-col items-center">
         {/* Banner always visible */}
         <div
-          className={`bg-blue-500 text-white text-xl font-semibold rounded-2xl px-6 py-3 shadow-lg mb-6 ${
+          className={`bg-gray-500 text-white text-xl font-semibold rounded-2xl px-6 py-3 shadow-lg mb-6 ${
             activeMenu ? "absolute -top-12" : ""
           } transition-all duration-300`}
           style={activeMenu ? { width: "fit-content" } : {}}
         >
           {activeMenu
-            ? t("im_studying_what", { item: t(`splashMenu.${activeMenu}`) })
-            : t("im_studying")}
+            ? t("imStudyingWhat", { item: t(`splashMenu.${activeMenu}`) })
+            : t("imStudying")}
         </div>
 
         {/* Menu buttons or submenu */}
@@ -44,16 +44,16 @@ function SplashMenu() {
               </button>
               <button
                 onClick={() => handleSelect("sentences")}
-                className="text-lg font-bold p-4 rounded bg-green-500 text-white hover:bg-green-600"
+                className="text-lg font-bold p-4 rounded bg-orange-500 text-white hover:bg-green-600"
               >
                 {t("splashMenu.sentences")}
               </button>
-              <button
+              {/* <button
                 onClick={() => handleSelect("paragraphs")}
                 className="text-lg font-bold p-4 rounded bg-purple-500 text-white hover:bg-purple-600"
               >
                 {t("splashMenu.paragraphs")}
-              </button>
+              </button> */}
             </div>
           )}
           {activeMenu === "words" && <WordsMenu onBack={handleBack} />}
@@ -66,5 +66,4 @@ function SplashMenu() {
     </div>
   );
 }
-// console.log("Is this logging?");
 export default SplashMenu;

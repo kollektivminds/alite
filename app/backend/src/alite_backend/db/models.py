@@ -10,6 +10,7 @@ from sqlalchemy import Enum as SAEnum
 from sqlalchemy import Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm.exc import DetachedInstanceError
 from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -384,6 +385,11 @@ class Lemma(Base, table=True):
     # Unique pair of "lem_text" and "pos" to prevent duplicates
     __table_args__ = (UniqueConstraint("id", "entry_key", name="unique_lemma"),)
 
+    def __str__(self) -> str:
+        """Canonical dictionary headword representation."""
+        pos_tag = f" [{self.pos.value}]" if hasattr(self, "pos") and self.pos else ""
+        return f"{self.lem_text}{pos_tag}"
+
 
 # Morphological Tables
 
@@ -399,6 +405,10 @@ class Lexeme(Base, table=True):
     lexeme_word_form: List["WordForm"] = Relationship(
         back_populates="word_form_lexicon"
     )
+
+    def __str__(self) -> str:
+        """Orthographic surface string."""
+        return self.lex_text
 
 
 class GramProp(Base, table=True):
@@ -465,6 +475,21 @@ class WordForm(Base, table=True):
     word_form_lexicon: Lexeme = Relationship(back_populates="lexeme_word_form")
     word_form_gram: GramProp = Relationship(back_populates="gram_word_form")
 
+    def __str__(self) -> str:
+        try:
+            surface = (
+                self.word_form_lexicon.lex_text if self.word_form_lexicon else None
+            )
+            headword = self.word_form_lemma.lem_text if self.word_form_lemma else None
+
+            if surface and headword:
+                return f"{surface} ({headword})"
+            if surface:
+                return surface
+            return f"#wf-{self.id}"
+        except DetachedInstanceError:
+            return f"#wf-{self.id}"
+
 
 # Auxiliary Linguistic Tables
 
@@ -482,6 +507,9 @@ class Definition(Base, table=True):
     example: List["DefinitionExample"] = Relationship(
         back_populates="definition_example"
     )
+
+    # def __str__(self) -> str:
+    #     return Definition.def_text
 
 
 class Example(Base, table=True):
@@ -702,6 +730,11 @@ class Sentence(Base, table=True):
         },
     )
 
+    def __str__(self) -> str:
+        """Truncated sentence preview for administrative grids."""
+        text = self.raw_text or ""
+        return (text[:37] + "...") if len(text) > 40 else text
+
 
 class SentenceToken(Base, table=True):
     """Junction table mapping a WordForm to a specific position in a Sentence."""
@@ -758,6 +791,10 @@ class SentenceToken(Base, table=True):
         Index("ix_sentence_token_features_gin", "features", postgresql_using="gin"),
     )
 
+    def __str__(self) -> str:
+        """Token surface representation within sentence flow."""
+        return self.lex_raw or f"#tok-{self.id}"
+
 
 # --- Sentence Organization Tables ---
 
@@ -775,6 +812,9 @@ class Document(Base, table=True):
         # order_by="Sentence.sent_idx",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
+
+    def __str__(self) -> str:
+        return self.title
 
 
 # --- Users ---
@@ -838,19 +878,43 @@ class Exercise(Base, table=True):
     __tablename__: str = "exercises"  # type: ignore
 
     user_id: int = Field(foreign_key="users.id", index=True)
-    start_time: datetime | None = Field(
+    start_time: Optional[datetime] = Field(
         default_factory=get_utc_now,
         sa_column=Column(DateTime(timezone=True), nullable=False),
+        description="Timestamp when the exercise session was initialized",
     )
-    finish_time: datetime | None = Field(
-        default_factory=get_utc_now,
-        sa_column=Column(DateTime(timezone=True), nullable=False),
+    finish_time: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+        description="Timestamp when the session was finalized; NULL if abandoned or in-progress",
     )
     has_item: List["Item"] = Relationship(
         back_populates="in_ex",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
     user: "User" = Relationship(back_populates="exercises")
+
+    @property
+    def duration(self) -> Optional[str]:
+        """
+        Calculates execution duration between start_time and finish_time.
+        Returns a formatted string or None if timestamps are incomplete.
+        """
+        if not self.start_time or not self.finish_time:
+            return None
+
+        delta = self.finish_time - self.start_time
+        # Extract total seconds to format cleanly: HH:MM:SS or MM:SS
+        total_seconds = int(delta.total_seconds())
+        if total_seconds < 0:
+            return "Invalid (Finish < Start)"
+
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        if hours > 0:
+            return f"{hours}h {minutes:02d}m {seconds:02d}s"
+        return f"{minutes:02d}m {seconds:02d}s"
 
 
 class Item(Base, table=True):
@@ -873,13 +937,43 @@ class Item(Base, table=True):
     options: Optional["ItemOption"] = Relationship(back_populates="in_item")
     responses: Optional[List["ItemResponse"]] = Relationship(back_populates="item")
     # meta
-    start_time: Optional[datetime] = Field(index=False, unique=False, nullable=True)
-    finish_time: datetime | None = Field(index=False, unique=False, nullable=True)
+    start_time: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+        description="Timestamp when the learner first viewed this item",
+    )
+    finish_time: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True), nullable=True),
+        description="Timestamp when the item was resolved or finalized",
+    )
 
     ref_lems: List[Lemma] = Relationship(
         back_populates="in_item", sa_relationship_kwargs={"secondary": "lems_in_items"}
     )
     in_ex: "Exercise" = Relationship(back_populates="has_item")
+
+    @property
+    def duration(self) -> Optional[str]:
+        """
+        Calculates execution duration between start_time and finish_time.
+        Returns a formatted string or None if timestamps are incomplete.
+        """
+        if not self.start_time or not self.finish_time:
+            return None
+
+        delta = self.finish_time - self.start_time
+        # Extract total seconds to format cleanly: HH:MM:SS or MM:SS
+        total_seconds = int(delta.total_seconds())
+        if total_seconds < 0:
+            return "Invalid (Finish < Start)"
+
+        hours, remainder = divmod(total_seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+
+        if hours > 0:
+            return f"{hours}h {minutes:02d}m {seconds:02d}s"
+        return f"{minutes:02d}m {seconds:02d}s"
 
 
 class LemmaInItem(SQLModel, table=True):
