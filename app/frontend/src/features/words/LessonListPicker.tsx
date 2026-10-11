@@ -34,14 +34,14 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
           id="lesson-picker-heading"
           className="text-lg font-medium text-gray-900 dark:text-gray-100"
         >
-          {t("exercises.wordsMenu.modules")}
+          {t("exercises.wordsMenu.lessonLists")}
         </h2>
 
         <div className="flex items-center gap-3">
           <span className="text-sm text-gray-500">
             {selectedIds.length}{" "}
             {t("exercises.wordsMenu.list", { count: selectedIds.length })}{" "}
-            {t("exercises.wordsMenu.selected")}
+            {t("exercises.wordsMenu.selected", { count: selectedIds.length })}
           </span>
 
           {/* Render reset button only when active lists exist */}
@@ -116,8 +116,7 @@ export const LessonListPicker: React.FC<LessonListPickerProps> = ({
                 </div>
 
                 <span className="mt-2 block text-xs text-gray-400 dark:text-gray-500">
-                  {list.has_lemma?.length || 0}{" "}
-                  {t("exercises.wordsMenu.lexicalItems")}
+                  {t("exercises.numWords", { count: list.has_lemma?.length })}
                 </span>
               </button>
             );

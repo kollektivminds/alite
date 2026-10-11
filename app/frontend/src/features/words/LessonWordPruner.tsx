@@ -87,7 +87,7 @@ export const LessonWordPruner: React.FC<PrunerProps> = ({
                 key={pos}
                 className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-700 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300"
               >
-                <span>{pos}:</span>
+                <span>{t(`exercises.wordsMenu.strategies.${pos}`)}:</span>
                 <span className="font-bold text-blue-600 dark:text-blue-400">
                   {count}
                 </span>
@@ -95,7 +95,9 @@ export const LessonWordPruner: React.FC<PrunerProps> = ({
             );
           })}
           <span className="text-xs text-gray-400">
-            ({activePool.length} {t("exercises.wordsMenu.totalActive")})
+            ({activePool.length}{" "}
+            {t("exercises.wordsMenu.totalActive", { count: activePool.length })}
+            )
           </span>
         </div>
       </div>

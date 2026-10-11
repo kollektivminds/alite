@@ -1,3 +1,4 @@
+# alite_backend/api/trainer/lesslists.py
 import logging
 from typing import List
 
@@ -23,8 +24,6 @@ def read_lesson_lists(
     lesson_lists = orgi_crud.crud_less_list.get_multi(db=db)
 
     if not lesson_lists:
-        # Returning an empty array is usually preferred for list endpoints,
-        # but throwing a 404 can be useful if lists are strictly required.
         return []
 
     return lesson_lists
@@ -46,5 +45,4 @@ def get_lemmas_for_lesslist(lesslist_id: int, db: Session = Depends(deps.get_db)
     if not lesslist:
         raise HTTPException(status_code=404, detail="lesslist lemmas not found")
 
-    # lemmas = db.query(models.Lemma).filter(models.Lemma.in_less_list == lesslist_id).all()
     return lesslist.has_lemma

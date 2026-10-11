@@ -3,6 +3,7 @@ from functools import wraps
 from typing import List, Optional, Sequence
 from uuid import UUID
 
+from alite_backend.api.trainer.translit import is_latin_text, latin_to_cyrillic
 from alite_backend.db.crud.crud_base import CRUDBase
 from alite_backend.db.models import (
     Definition,
@@ -165,120 +166,56 @@ class CRUDLemmas(CRUDBase[Lemma, LemmaCreate, LemmaUpdate]):
 
         return query.all()
 
-    def search_lemmas_fuzzy(
-        self, db: Session, query_str: str, limit: int = 15
-    ) -> List[Lemma]:
-        """
-        Executes dual-script matching across Russian Cyrillic and Latin romanization.
-
-        Architecture:
-        1. Eagerly loads Lemma.pronunciations -> LemmaPronunciation.pronunciation to
-           prevent N+1 queries during Pydantic serialization.
-        2. Joins Pronunciation (ROMANIZATION only) via LemmaPronunciation foreign keys.
-        3. Evaluates trigram similarity and ILIKE patterns across both scripts simultaneously.
-        4. Groups by Lemma.id to eliminate duplicate rows caused by multiple pronunciations.
-        5. Provides an isolated ILIKE fallback if pg_trgm operators encounter runtime errors.
-        """
+    def search_lemmas_fuzzy(self, db: Session, query_str: str, limit: int = 15):
         clean_query = query_str.strip()
         if not clean_query:
             return []
 
-        # Resolve Cyrillic column dynamically across model conventions
-        col = getattr(Lemma, "lem_canon", None) or getattr(Lemma, "lem_text", None)
-        if col is None:
-            raise AttributeError("Lemma model must expose 'lem_canon' or 'lem_text'.")
+        col = getattr(Lemma, "lemText", None) or getattr(Lemma, "lem_text", None)
 
-        search_pattern = f"%{clean_query}%"
+        # 1. Bypass Broken DB Links: Transliterate Latin -> Cyrillic automatically
+        search_terms = {clean_query}
+        if is_latin_text(clean_query):
+            search_terms.add(latin_to_cyrillic(clean_query))
 
-        # Identify the relationship link on LemmaPronunciation to child Pronunciation
-        pron_rel = getattr(LemmaPronunciation, "pronunciation", None) or getattr(
-            LemmaPronunciation, "pron_id", None
-        )
+        # 2. Build direct predicates against the Lemma table
+        predicates = []
+        for term in search_terms:
+            predicates.append(col.ilike(f"%{term}%"))  # type: ignore
+            try:
+                # Append trigram similarity if PostgreSQL extension is active
+                predicates.append(func.similarity(col, term) > 0.25)
+            except Exception:
+                pass
 
-        def_rel = getattr(LemmaDefinition, "definition", None) or getattr(
-            LemmaDefinition, "def_id", None
-        )
-
-        eager_options = []
-
-        # Eager load pronunciations
-        if pron_rel is not None:
-            eager_options.append(
-                selectinload(Lemma.pronunciations).selectinload(pron_rel)
-            )
-        else:
-            eager_options.append(selectinload(Lemma.pronunciations))
-
-        # Eager load definitions (checking whether Lemma relates via 'definitions' or 'lem_defs')
+        # 3. Dynamic Eager Loading (Prevents N+1 queries for definitions and phonetics)
+        eager_opts = []
+        if hasattr(Lemma, "pronunciations"):
+            eager_opts.append(selectinload(Lemma.pronunciations))  # type: ignore
         if hasattr(Lemma, "definitions"):
-            if def_rel is not None:
-                eager_options.append(
-                    selectinload(Lemma.definitions).selectinload(def_rel)
-                )
-            else:
-                eager_options.append(selectinload(Lemma.definitions))
+            eager_opts.append(selectinload(Lemma.definitions))  # type: ignore
         elif hasattr(Lemma, "lem_defs"):
-            if def_rel is not None:
-                eager_options.append(selectinload(Lemma.lem_defs).selectinload(def_rel))
-            else:
-                eager_options.append(selectinload(Lemma.lem_defs))
+            eager_opts.append(selectinload(Lemma.lem_defs))  # type: ignore
 
         try:
-            lemma_sim = func.similarity(col, clean_query)
-            pron_sim = func.similarity(Pronunciation.pron_text, clean_query)
-            combined_score = func.greatest(lemma_sim, func.coalesce(pron_sim, 0.0))
-
-            is_romanization = (
-                func.upper(cast(Pronunciation.pron_type, String)) == "ROMANIZATION"
-            )
-
-            match_condition = or_(
-                col.ilike(search_pattern),
-                lemma_sim > 0.25,
-                and_(
-                    is_romanization,
-                    or_(
-                        Pronunciation.pron_text.ilike(search_pattern),
-                        pron_sim > 0.25,
-                    ),
-                ),
-            )
-
             return (
                 db.query(Lemma)
-                .options(*eager_options)
-                .outerjoin(LemmaPronunciation, Lemma.id == LemmaPronunciation.lem_id)
-                .outerjoin(
-                    Pronunciation, Pronunciation.id == LemmaPronunciation.pron_id
-                )
-                .filter(match_condition)
-                .group_by(Lemma.id)
-                .order_by(func.max(combined_score).desc())
+                .options(*eager_opts)
+                .filter(or_(*predicates))
                 .limit(limit)
                 .all()
             )
-
         except Exception as exc:
-            logger.warning("Fuzzy trigram query failed (%s); running fallback.", exc)
+            logger.warning(
+                "Trigram query failed, executing safe ILIKE fallback: %s", exc
+            )
             db.rollback()
 
-            is_romanization = (
-                func.upper(cast(Pronunciation.pron_type, String)) == "ROMANIZATION"
-            )
-            fallback_condition = or_(
-                col.ilike(search_pattern),
-                and_(is_romanization, Pronunciation.pron_text.ilike(search_pattern)),
-            )
-
+            fallback_preds = [col.ilike(f"%{term}%") for term in search_terms]  # type: ignore
             return (
                 db.query(Lemma)
-                .options(*eager_options)
-                .outerjoin(LemmaPronunciation, Lemma.id == LemmaPronunciation.lem_id)
-                .outerjoin(
-                    Pronunciation, Pronunciation.id == LemmaPronunciation.pron_id
-                )
-                .filter(fallback_condition)
-                .group_by(Lemma.id)
+                .options(*eager_opts)
+                .filter(or_(*fallback_preds))
                 .limit(limit)
                 .all()
             )

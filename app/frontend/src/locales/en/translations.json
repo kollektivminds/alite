@@ -4,7 +4,7 @@
   "language": "Lang",
   "wordList": "Word Lists",
   "imStudying": "I'm studying",
-  "imStudyingShat": "I'm studying {{item}}",
+  "imStudyingWhat": "I'm studying {{item}}",
   "back": "Back",
   "splashMenu": {
     "words": "words",
@@ -54,47 +54,59 @@
         "availableFormats": "Available Formats",
         "questionTypes": "Question Types",
         "cloze": "Fill-in-the-Blank",
-        "clozeAbbr": "FITB",
+        "fitb": "Fill-in-the-Blank",
         "unscramble": "Unscramble",
         "wordOrder": "Word Order",
         "syntax": "Syntax",
         "multipleChoice": "Multiple-Choice Question",
-        "multipleChoiceAbbr": "MCQ",
+        "mcq": "Multiple-Choice Question",
+        "flashcard": "flashcards",
         "flashcards": {
-          "flashcard": "Flashcard",
+          "flashcard_one": "flashcard",
+          "flashcard_other": "flashcards",
           "next": "Next",
           "previous": "Previous",
-          "flashcards": "Flashcards",
           "flip": "Flip"
         }
       }
     },
     "wordsMenu": {
       "title": "Words",
-      "instructions": "Assemble target vocabulary and configure psychometric distractor strategies.",
+      "instructions": "Assemble target vocabulary and configure strategies.",
       "lexicalItems": "Lexical Items",
+      "word_one": "Lexical Items",
       "queryNoMatches": "No matches found for",
-      "modules": "modules",
+      "loadCurriculum": "Loading curriculum modules",
+      "lessonLists": "Lessons / Lists",
       "list_one": "list",
       "list_other": "lists",
       "targetVocabStaging": "Target Vocab Staging",
-      "vocabStagingInstructions": "Search in Cyrillic (Russian) or Latin (romanized) alphabets.",
+      "vocabStagingInstructions": "Search in Cyrillic or Latin alphabets.",
       "deselectAll": "Deselect all",
       "refinePool": "Refine Final Vocabulary Pool",
-      "clickToExclude": "Click a curriculum item to exclude it, or a custom word to remove it.",
+      "clickToExclude": "Click a module to exclude it or a custom word to remove it.",
       "activeDist": "Active Distribution",
-      "totalActive": "Total Active",
+      "totalActive_one": "Total Active",
+      "totalActive_other": "Total Active",
       "removeWord": "Remove word",
       "noLists": "No curriculum lists available to load.",
-      "selected": "selected",
+      "selected_one": "selected",
+      "selected_other": "selected",
+      "eg": "e.g.",
       "strategies": {
-        "lemma": "Lemma"
+        "General": "General",
+        "Nouns": "Nouns",
+        "Verbs": "Verbs",
+        "Adjectives": "Adjectives",
+        "Participles": "Participles",
+        "Other": "Other"
       }
     },
     "sentencesMenu": {
       "title": "Sentences",
       "instructions": "Choose which sentence-level exercises and how many you wish to complete during this session.",
-      "allocated": "Allocated",
+      "allocated_one": "Allocated",
+      "allocated_other": "Allocated",
       "strategies": {
         "gramForms": "Grammatical Forms (Morphology)",
         "nounMorph": "Noun Declensions",
@@ -110,12 +122,6 @@
     },
     "paragraphsMenu": {
       "paragraph_forms": "Paragraph forms"
-    },
-    "flashcards": {
-      "next": "Next",
-      "previous": "Previous",
-      "flashcards": "Flashcards",
-      "flip": "Flip"
     }
   },
   "modal": {
@@ -135,16 +141,16 @@
       "feedback": "Feedback",
       "submit": "Submit",
       "category": "Category",
-      "bug_report": "Bug Report",
-      "feature_request": "Feature Request",
-      "general_feedback": "General Feedback",
+      "bugReport": "Bug Report",
+      "featureRequest": "Feature Request",
+      "generalFeedback": "General Feedback",
       "message": "Message",
       "email": "Email",
-      "tech_disclaimer": "We automatically include technical details to help us debug.",
+      "techDisclaimer": "We automatically include technical details to help us debug.",
       "cancel": "Cancel",
       "submitting": "Идёт отправиления",
-      "message_placeholder": "What can be improved?",
-      "email_placeholder": "To follow up with you"
+      "messagePlaceholder": "What can be improved?",
+      "emailPlaceholder": "To follow up with you"
     },
     "settings": {
       "settings": "Settings",
@@ -156,7 +162,7 @@
       "easy": "Easy",
       "medium": "Medium",
       "hard": "Hard",
-      "reduce_motion": "Reduce Motion"
+      "reduceMotion": "Reduce Motion"
     }
   },
   "grammar": {
@@ -166,14 +172,14 @@
     "pos": {
       "pos": "POS",
       "partOfSpeech": "part of speech",
-      "adjective": "part of speech",
-      "adverb": "part of speech",
-      "conjunction": "part of speech",
-      "nouns": "part of speech",
-      "other": "part of speech",
-      "preposition": "part of speech",
-      "participle": "part of speech",
-      "verb": "part of speech"
+      "adjective": "adjective",
+      "adverb": "adverb",
+      "conjunction": "conjunction",
+      "noun": "noun",
+      "other": "other",
+      "preposition": "preposition",
+      "participle": "participle",
+      "verb": "verb"
     }
   },
   "languages": {

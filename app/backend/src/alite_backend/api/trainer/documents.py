@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+# alite_backend/api/trainer/documents.py
 import logging
 from typing import List
-from sqlalchemy.orm import Session
+
+from alite_backend.api import deps
 from alite_backend.db import schemas
 from alite_backend.db.crud import sent_crud
-from alite_backend.api import deps
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 

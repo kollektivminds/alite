@@ -1,18 +1,31 @@
 import enum
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from uuid import UUID
 
 from pydantic import EmailStr
 from sqlalchemy import JSON, Boolean, Column, DateTime
 from sqlalchemy import Enum
-from sqlalchemy import Enum as SAEnum
-from sqlalchemy import Float, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import Enum as SQLEnum
+from sqlalchemy import (
+    Float,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+    null,
+)
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.orm.exc import DetachedInstanceError
 from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
+
+if TYPE_CHECKING:
+    from alite_backend.db.models import User
 
 
 class EnumTargetLanguage(str, enum.Enum):
@@ -153,11 +166,30 @@ class EnumUserRole(str, enum.Enum):
 
 
 class EnumLookupStatus(str, enum.Enum):
+    # for all
+    NOT_IN_DICT = "not_in_dict"
+    FAILED = "failed"
+    # for lem_rels
     UNLINKED = "unlinked"
     LINKED = "linked"
-    FAILED = "failed"
     IGNORED = "ignored"
-    NOT_IN_DICT = "not_in_dict"
+    # for lemma lookup
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+
+    @classmethod
+    def _missing_(cls, value: Any) -> Optional["EnumLookupStatus"]:
+        """
+        Defense-in-depth: Coerces uppercase or mixed-case string inputs
+        (e.g., 'LINKED', 'Pending') to the matching canonical member.
+        """
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            for member in cls:
+                if member.value == normalized or member.name.lower() == normalized:
+                    return member
+        return None
 
 
 class EnumItemFormat(str, enum.Enum):
@@ -555,17 +587,49 @@ class LemmaRelation(Base, table=True):
     )
 
 
-class LookupQueue(Base, table=True):
+class LookupQueue(
+    Base, table=True
+):  # Base provides surrogate primary key and created_at[cite: 8]
+    """
+    Persistent queue tracking external scraping and dictionary extraction jobs.
+    Uses SQLModel declarative mapping over SQLAlchemy 2.0.
+    """
 
-    __tablename__: str = "lookup_queue"  # type: ignore
+    __tablename__: str = "lookup_queue"  # pyright: ignore
 
-    target_lem: str = Field(index=False, unique=False, nullable=False)
-    target_id: int | None = Field(foreign_key="lemmas.id", index=True)
-    source_id: int | None = Field(foreign_key="lemmas.id", index=True)
-    rel_type: EnumRelLemType = Field(index=True, unique=False, nullable=False)
+    target_lem: str = Field(
+        index=False, unique=False, nullable=False
+    )  # Target headword[cite: 8]
+    target_id: Optional[int] = Field(
+        default=None, foreign_key="lemmas.id", index=True
+    )  # Linked lemma surrogate[cite: 8]
+    source_id: Optional[int] = Field(
+        default=None, foreign_key="lemmas.id", index=True
+    )  # Source relationship anchor[cite: 8]
+    rel_type: Optional[str] = Field(
+        default=None, index=True, nullable=True
+    )  # Morphological relation tag[cite: 8]
+
     status: EnumLookupStatus = Field(
-        default=EnumLookupStatus.UNLINKED, index=True, nullable=False
+        default=EnumLookupStatus.PENDING,
+        sa_type=SQLEnum(
+            EnumLookupStatus,
+            name="enumlookupstatus",
+            values_callable=lambda obj: [e.value for e in obj],
+            native_enum=True,
+        ),
+        index=True,
+        nullable=False,
     )
+
+    requested_by: Optional[int] = Field(
+        default=None,
+        foreign_key="users.id",
+        index=True,
+        nullable=True,
+    )
+
+    requester: Optional["User"] = Relationship(back_populates="requested_words")
 
 
 class LemmaDefinition(SQLModel, table=True):
@@ -769,7 +833,16 @@ class SentenceToken(Base, table=True):
 
     # associated form(s)
     status: EnumLookupStatus = Field(
-        default=EnumLookupStatus.UNLINKED, index=True, unique=False, nullable=False
+        default=EnumLookupStatus.UNLINKED,
+        sa_type=SQLEnum(
+            EnumLookupStatus,
+            name="enumlookupstatus",
+            values_callable=lambda obj: [e.value for e in obj],
+            native_enum=True,
+        ),
+        index=True,
+        unique=False,
+        nullable=False,
     )
     lem_id: int | None = Field(
         foreign_key="lemmas.id", index=True, unique=False, nullable=True
@@ -841,7 +914,7 @@ class User(Base, table=True):
     email: EmailStr = Field(index=False, unique=False, nullable=False)
     in_group: "UserInGroup" = Relationship(back_populates="group_user")
     exercises: List["Exercise"] = Relationship(back_populates="user")
-
+    requested_words: "LookupQueue" = Relationship(back_populates="requester")
     __table_args__ = (
         Index("ix_user_settings_gin", "settings", postgresql_using="gin"),
     )

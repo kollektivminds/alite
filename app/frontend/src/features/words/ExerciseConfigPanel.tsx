@@ -379,7 +379,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          {groupName}
+                          {t(`exercises.wordsMenu.strategies.${groupName}`)}
                         </span>
                         {/* <span className="text-[10px] text-slate-400">
                           ({strategies.length} pair
@@ -396,7 +396,10 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                               : "bg-slate-200/60 text-slate-500 dark:bg-slate-700 dark:text-slate-400"
                           }`}
                         >
-                          {groupAllocatedCount} {t("exercises.settings.items")}
+                          {groupAllocatedCount}{" "}
+                          {t("exercises.settings.item", {
+                            count: groupAllocatedCount,
+                          })}
                         </span>
                         <span className="text-slate-400 text-xs font-mono">
                           {isGroupExpanded ? "▲" : "▼"}
@@ -603,7 +606,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                       : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-700 dark:text-slate-200"
                 }`}
               >
-                {fmt} {isSelected && "✓"}
+                {t(`exercises.settings.formats.${fmt}`)} {isSelected && "✓"}
               </button>
             );
           })}

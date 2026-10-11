@@ -20,9 +20,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
-# ============================================================================
-# CLDR Plural Suffix Rules by Language Code
-# ============================================================================
+# cldr plural suffix rules by language code
 LOCALE_PLURAL_RULES: dict[str, list[str]] = {
     "en": ["one", "other"],
     "ru": ["one", "few", "many"],
@@ -83,7 +81,7 @@ def normalize_source_dict(
     for key, val in source_dict.items():
         current_path = f"{prefix}.{key}" if prefix else key
 
-        # 1. Recurse into nested dictionary trees
+        # recurse into nested dictionary trees
         if isinstance(val, dict):
             sub_norm, sub_issues = normalize_source_dict(
                 val, lang=lang, prefix=current_path
@@ -92,19 +90,19 @@ def normalize_source_dict(
             issues.extend(sub_issues)
             continue
 
-        # 2. Check for pluralization
+        # check for pluralization
         is_plural, base, suffix = parse_plural_key(key)
 
         if not is_plural:
             normalized[key] = val
             continue
 
-        # If base was already handled, skip subsequent encounters
+        # if base was already handled, skip subsequent encounters
         if base in processed_bases:
             continue
         processed_bases.add(base)
 
-        # 3. Ensure both '_one' and '_other' are present in source
+        # ensure both '_one' and '_other' are present in source
         for req_suffix in required_suffixes:
             req_key = f"{base}_{req_suffix}"
             req_path = f"{prefix}.{req_key}" if prefix else req_key
@@ -118,7 +116,7 @@ def normalize_source_dict(
                     f"English source missing required plural key: '{req_path}' (synthesized as '{req_key}')"
                 )
 
-        # 4. Detect any rogue suffixes in English (e.g., '_few' mistakenly in en)
+        # detect any rogue suffixes in English (e.g., '_few' mistakenly in en)
         for cand_key in source_dict:
             c_plural, c_base, c_suffix = parse_plural_key(cand_key)
             if c_plural and c_base == base and c_suffix not in required_suffixes:
@@ -156,7 +154,7 @@ def project_to_target(
     for key, source_val in source_dict.items():
         current_path = f"{prefix}.{key}" if prefix else key
 
-        # 1. Nested branch: recurse
+        # nested branch: recurse
         if isinstance(source_val, dict):
             raw_target_sub = target_dict.get(key)
             target_sub = raw_target_sub if isinstance(raw_target_sub, dict) else {}
@@ -171,7 +169,7 @@ def project_to_target(
             missing_added.extend(sub_missing)
             continue
 
-        # 2. Check for plural category
+        # check for plural category
         is_plural, base, _ = parse_plural_key(key)
 
         if not is_plural:
@@ -183,12 +181,12 @@ def project_to_target(
                 missing_added.append(current_path)
             continue
 
-        # 3. Handle plural group expansion
+        # handle plural group expansion
         if base in processed_bases:
             continue
         processed_bases.add(base)
 
-        # Generate target keys for this plural base
+        # generate target keys for this plural base
         for tgt_suffix in target_suffixes:
             tgt_key = f"{base}_{tgt_suffix}"
             tgt_path = f"{prefix}.{tgt_key}" if prefix else tgt_key
@@ -201,7 +199,7 @@ def project_to_target(
                 projected[tgt_key] = tgt_key
                 missing_added.append(tgt_path)
 
-    # 4. Identify obsolete keys in target (present in target but not in projected schema)
+    # identify obsolete keys in target (present in target but not in projected schema)
     obsolete_pruned = collect_obsolete_paths(target_dict, projected, prefix)
 
     return projected, missing_added, obsolete_pruned
@@ -269,10 +267,10 @@ def main() -> None:
 
     # 1. File existence validation
     if not args.source.exists():
-        print(f"❌ Error: Source file not found: {args.source}")
+        print(f"Error: Source file not found: {args.source}")
         sys.exit(1)
     if not args.target.exists():
-        print(f"❌ Error: Target file not found: {args.target}")
+        print(f"Error: Target file not found: {args.target}")
         sys.exit(1)
 
     source_lang = args.source_lang or detect_locale(args.source, "en")
@@ -282,7 +280,7 @@ def main() -> None:
         raw_source_data = load_json(args.source)
         raw_target_data = load_json(args.target)
     except Exception as err:
-        print(f"❌ Failed to parse JSON files: {err}")
+        print(f"Failed to parse JSON files: {err}")
         sys.exit(1)
 
     # 2. Step 1: Normalize source (English) plural pairs
@@ -310,47 +308,47 @@ def main() -> None:
         )
 
         if source_issues:
-            print(f"\n  📝 English Source Plural Issues ({len(source_issues)}):")
+            print(f"\nEnglish Source Plural Issues ({len(source_issues)}):")
             for issue in source_issues:
                 print(f"     • {issue}")
 
         if missing_added:
             print(
-                f"\n  ➕ Missing in {args.target} ({len(missing_added)} keys - mapped as value=key):"
+                f"\nMissing in {args.target} ({len(missing_added)} keys - mapped as value=key):"
             )
             for key in sorted(missing_added):
                 print(f"     + {key}")
 
         if obsolete_pruned:
             print(
-                f"\n  🗑️ Obsolete in {args.target} ({len(obsolete_pruned)} keys - will be pruned):"
+                f"\nObsolete in {args.target} ({len(obsolete_pruned)} keys - will be pruned):"
             )
             for key in sorted(obsolete_pruned):
                 print(f"     - {key}")
 
         if args.fix:
-            print(f"\n🔧 Applying authoritative sync...")
+            print(f"\nApplying authoritative sync...")
 
-            # If English source needed plural pair repairs, persist it
+            # if English source needed plural pair repairs, persist it
             if raw_source_data != normalized_source:
                 save_json(normalized_source, args.source)
-                print(f"  ✅ Repaired and saved source file: {args.source}")
+                print(f"Repaired and saved source file: {args.source}")
 
-            # Persist projected Russian target
+            # persist projected Russian target
             save_json(synced_target, args.target)
-            print(f"  ✅ Synchronized and saved target file: {args.target}")
+            print(f"Synchronized and saved target file: {args.target}")
         else:
             print(
-                "\n❌ Divergence found. Run with '--fix' to apply structural synchronization."
+                "\nDivergence found. Run with '--fix' to apply structural synchronization."
             )
             sys.exit(1)
     else:
-        # Check if formatting or key ordering differed despite path parity
+        # check if formatting or key ordering differed despite path parity
         if args.fix:
             save_json(normalized_source, args.source)
             save_json(synced_target, args.target)
         print(
-            "✅ Locale files are fully synchronized with authoritative source and CLDR plural specifications."
+            "Locale files are fully synchronized with authoritative source and CLDR plural specifications."
         )
 
 

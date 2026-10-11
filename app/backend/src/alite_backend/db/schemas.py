@@ -1,5 +1,6 @@
 # schemas.py
 # pydantic models for API data validation and response shaping
+import re
 from datetime import datetime
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
@@ -1343,7 +1344,7 @@ class UserResultsSummary(BaseModel):
     difficulty_level: str
     total_items: int
     correct_count: int
-    accuracy_rate: float  # Pre-computed ratio (0.0 to 1.0)
+    accuracy_rate: float
     duration_seconds: int
 
 
@@ -1354,3 +1355,72 @@ class ExerciseAttemptsSummary(BaseModel):
 class UserResultsReturn(BaseModel):
     summary: dict
     details: dict
+
+
+class PipelineLookupRequest(BaseModel):
+    """
+    Ingests single or batch tokens for external dictionary synthesis.
+    Validates Cyrillic and Latin characters while rejecting malformed inputs.
+    """
+
+    token: Optional[str] = Field(None, max_length=100)
+    tokens: Optional[List[str]] = Field(default_factory=list)
+
+    @model_validator(mode="after")
+    def unify_and_sanitize_tokens(self) -> "PipelineLookupRequest":
+        raw_items: List[str] = []
+
+        # Ingest single token if present
+        if self.token and self.token.strip():
+            raw_items.append(self.token.strip())
+
+        # Ingest array items if present
+        if self.tokens:
+            for item in self.tokens:
+                if item and item.strip():
+                    # Handle comma- or newline-separated pasted strings within array elements
+                    split_tokens = re.split(r"[,;\s\n]+", item.strip())
+                    raw_items.extend([t for t in split_tokens if t])
+
+        # De-duplicate while preserving order
+        seen = set()
+        sanitized: List[str] = []
+        for t in raw_items:
+            cleaned = t.strip().lower()
+            if cleaned and cleaned not in seen:
+                # Require alphabetic characters with optional internal hyphens or apostrophes
+                if re.fullmatch(r"^[а-яёa-z]+([-'`][а-яёa-z]+)?$", cleaned):
+                    seen.add(cleaned)
+                    sanitized.append(cleaned)
+
+        if not sanitized:
+            raise ValueError("At least one valid lexical word token must be provided.")
+
+        self.tokens = sanitized
+        self.token = sanitized[0]  # Backward compatibility
+        return self
+
+
+class PipelineItemOutcome(BaseModel):
+    token: str
+    status: str  # "queued", "already_exists", "in_progress", "rate_limited"
+    queue_id: Optional[int] = None
+    existing_lemma_id: Optional[int] = None
+    message: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PipelineLookupResponse(BaseModel):
+    results: List[PipelineItemOutcome]
+    total_requested: int
+    total_queued: int
+    remaining_attempts: int
+    reset_seconds: int
+
+    # Backward compatibility attributes for single-item responses
+    token: Optional[str] = None
+    status: Optional[str] = None
+    message: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)

@@ -1,6 +1,6 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-// import { EnumItemDifficulty, ExerciseResponse } from "../../types/exercise";
 import {
   EnumItemDifficulty,
   ExerciseResponse,
@@ -78,18 +78,26 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
     }
   };
 
-  // 2. Submit Generation Payload
+  //
+  const handleRequestPipelineApi = async (token: string) => {
+    const response = await axios.post("/api/v1/lemmas/pipeline-lookup", {
+      token,
+    });
+    return response.data;
+  };
+
+  // submit Generation Payload
   const handleSubmitGeneration = async (payload: {
     lemmaIds: string[];
     qualities: any;
   }) => {
     try {
-      // A. Transform string IDs from the UI into integers for PostgreSQL/SQLAlchemy
+      // transform string IDs from the UI into integers for PostgreSQL/SQLAlchemy
       const numericLemIds = payload.lemmaIds
         .map((id) => parseInt(id, 10))
         .filter((id) => !isNaN(id));
 
-      // B. Filter out strategies with 0 counts to prevent backend iteration over empty requests
+      // filter out strategies with 0 counts to prevent backend iteration over empty requests
       const activeTypeCounts = Object.entries(
         payload.qualities.typeCounts || {},
       )
@@ -103,7 +111,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
           {} as Record<string, number>,
         );
 
-      // C. Construct the exact schema expected by schemas.ExerciseRequest
+      // construct the exact schema expected by schemas.ExerciseRequest
       const requestPayload = {
         exercise_context: {
           lem_ids: numericLemIds,
@@ -126,7 +134,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
       });
 
       if (!response.ok) {
-        // Log the exact validation error returned by FastAPI if it fails again
+        // log the exact validation error returned by FastAPI if it fails again
         const errDetail = await response.text();
         throw new Error(
           `Pipeline submission failed: ${response.status} - ${errDetail}`,
@@ -138,7 +146,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
       setActiveDifficulty(payload.qualities.difficulty);
       setActiveExercise(result);
 
-      // Future implementation: Dispatch an action here to navigate the user
+      // future implementation: Dispatch an action here to navigate the user
       // to a "Review Items" interface, passing the 'result' data.
     } catch (error) {
       console.error("Generation pipeline error:", error);
@@ -153,7 +161,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
   if (isLoading)
     return (
       <div className="p-8 text-center text-gray-500">
-        Loading curriculum modules...
+        {t("exercises.wordsMenu.loadCurriculum")}...
       </div>
     );
   if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
@@ -182,6 +190,7 @@ export const WordsMenu: React.FC<WordsMenuProps> = ({ onBack }) => {
         <WordsSubLandingPage
           availableLessonLists={availableLessonLists}
           searchLemmasApi={handleSearchLemmasApi}
+          requestPipelineApi={handleRequestPipelineApi}
           onSubmitGeneration={handleSubmitGeneration}
         />
       )}

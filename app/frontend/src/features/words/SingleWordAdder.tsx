@@ -1,16 +1,35 @@
 // src/features/words/SingleWordAdder.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Lemma } from "../../types/words";
+import { EditAddWordsModal } from "./EditAddWordsModal";
+import { isLatin, latinToCyrillic } from "./Translit";
+
+export interface PipelineItemOutcome {
+  token: string;
+  status: "queued" | "already_exists" | "in_progress" | "rate_limited";
+  message: string;
+}
+
+export interface PipelineResponse {
+  results: PipelineItemOutcome[];
+  total_requested: number;
+  total_queued: number;
+  remaining_attempts: number;
+  reset_seconds: number;
+  message?: string;
+}
 
 interface SingleWordAdderProps {
   onSearch: (query: string) => Promise<Lemma[]>;
   onSelectLemma: (lemma: Lemma) => void;
+  onRequestPipeline?: (tokens: string[]) => Promise<PipelineResponse>;
 }
 
 export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
   onSearch,
   onSelectLemma,
+  onRequestPipeline,
 }) => {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -18,12 +37,36 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
   const [isSearching, setIsSearching] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Tracks the currently hovered lemma to populate the inspector flyout
   const [hoveredLemma, setHoveredLemma] = useState<Lemma | null>(null);
 
+  // Pipeline execution & modal state
+  const [isPipelineRequesting, setIsPipelineRequesting] =
+    useState<boolean>(false);
+  const [pipelineFeedback, setPipelineFeedback] = useState<{
+    msg: string;
+    isError: boolean;
+  } | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Stabilize onSearch across renders to prevent timer invalidation
+  const onSearchRef = useRef(onSearch);
   useEffect(() => {
-    if (query.trim().length < 2) {
+    onSearchRef.current = onSearch;
+  }, [onSearch]);
+
+  // Compute live Cyrillic equivalent for immediate rendering
+  const cyrillicConversion = useMemo(() => {
+    const trimmed = query.trim();
+    if (!trimmed) return "";
+    return isLatin(trimmed) ? latinToCyrillic(trimmed) : trimmed;
+  }, [query]);
+
+  // Debounced search on input change
+  useEffect(() => {
+    setPipelineFeedback(null);
+    const trimmed = query.trim();
+
+    if (trimmed.length < 2) {
       setResults([]);
       setHasSearched(false);
       setError(null);
@@ -37,12 +80,12 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
 
     const debounceTimer = setTimeout(async () => {
       try {
-        const data = await onSearch(query);
+        const data = await onSearchRef.current(trimmed);
         setResults(data);
-      } catch (err) {
-        console.error("Dictionary lookup failed:", err);
+      } catch (err: unknown) {
+        console.error("Dictionary lookup error:", err);
         setResults([]);
-        setError("Failed to query the database. Please check connection.");
+        setError("Failed to query the database. Check server connection.");
       } finally {
         setIsSearching(false);
         setHasSearched(true);
@@ -50,7 +93,24 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
     }, 250);
 
     return () => clearTimeout(debounceTimer);
-  }, [query, onSearch]);
+  }, [query]);
+
+  // Check if an exact match exists locally in Cyrillic or Latin
+  const exactMatchExists = useMemo(() => {
+    const cleanLower = query.trim().toLowerCase();
+    const cyrillicLower = cyrillicConversion.toLowerCase();
+
+    return results.some((item) => {
+      const textMatch = item.lem_text.toLowerCase();
+      const canonMatch = item.lem_canon ? item.lem_canon.toLowerCase() : "";
+      return (
+        textMatch === cleanLower ||
+        textMatch === cyrillicLower ||
+        canonMatch === cleanLower ||
+        canonMatch === cyrillicLower
+      );
+    });
+  }, [query, cyrillicConversion, results]);
 
   const handleSelection = (lemma: Lemma) => {
     onSelectLemma(lemma);
@@ -58,6 +118,38 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
     setResults([]);
     setHasSearched(false);
     setHoveredLemma(null);
+  };
+
+  // Dispatch single or batch requests to the parent pipeline handler
+  const executePipelineDispatch = async (tokensToFetch: string[]) => {
+    if (!onRequestPipeline || tokensToFetch.length === 0) return;
+
+    setIsPipelineRequesting(true);
+    setPipelineFeedback(null);
+
+    try {
+      const response = await onRequestPipeline(tokensToFetch);
+      const isSuccess = response.total_queued > 0;
+
+      setPipelineFeedback({
+        msg: response.message || `Queued ${response.total_queued} item(s).`,
+        isError: !isSuccess,
+      });
+
+      // Clear input and modal on success
+      setIsModalOpen(false);
+      setQuery("");
+      setResults([]);
+      setHasSearched(false);
+    } catch (err: any) {
+      const detail =
+        err.response?.data?.detail ||
+        err.message ||
+        "Failed to dispatch pipeline lookup.";
+      setPipelineFeedback({ msg: detail, isError: true });
+    } finally {
+      setIsPipelineRequesting(false);
+    }
   };
 
   return (
@@ -78,15 +170,16 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
         <label htmlFor="lemma-search" className="sr-only">
           {t("exercises.wordsMenu.searchDictForm")}
         </label>
+
         <input
           id="lemma-search"
           type="text"
           role="combobox"
-          aria-expanded={results.length > 0}
+          aria-expanded={results.length > 0 || (hasSearched && !isSearching)}
           aria-controls="search-results-listbox"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g., солдат, soldat, выучить, vyuchit'..."
+          placeholder={`${t("exercises.wordsMenu.eg")} солдат, soldat, выучить, vyuchit'`}
           className="w-full rounded-md border border-slate-300 px-4 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           autoComplete="off"
           spellCheck="false"
@@ -104,165 +197,171 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
           </div>
         )}
 
-        {/* Dropdown Container */}
+        {/* Dropdown Menu */}
         {!error && (results.length > 0 || (hasSearched && !isSearching)) && (
           <div
-            className="absolute z-10 mt-1 max-h-72 w-full overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
+            className="absolute z-20 mt-1 max-h-72 w-full overflow-y-auto rounded-md border border-slate-200 bg-white shadow-lg dark:border-slate-700 dark:bg-slate-800"
             onMouseLeave={() => setHoveredLemma(null)}
           >
-            {results.length > 0 ? (
-              <ul
-                id="search-results-listbox"
-                role="listbox"
-                className="divide-y divide-slate-100 dark:divide-slate-700/60"
-              >
-                {results.map((lemma) => {
-                  const displayText = lemma.lem_canon ?? lemma.lem_text ?? "—";
+            <ul
+              id="search-results-listbox"
+              role="listbox"
+              className="divide-y divide-slate-100 dark:divide-slate-700/60"
+            >
+              {/* Existing Lemma Rows */}
+              {results.map((lemma) => {
+                const displayText = lemma.lem_canon ?? lemma.lem_text ?? "—";
+                const romanization = lemma.pronunciations?.find(
+                  (p) => p.pron_type?.toUpperCase() === "ROMANIZATION",
+                )?.pron_text;
+                const ipa = lemma.pronunciations?.find(
+                  (p) => p.pron_type?.toUpperCase() === "IPA",
+                )?.pron_text;
+                const phoneticGuide = romanization || ipa;
 
-                  // Extract existing ROMANIZATION record from the eager-loaded database array
-                  const romanization = lemma.pronunciations?.find(
-                    (p) => p.pron_type?.toUpperCase() === "ROMANIZATION",
-                  )?.pron_text;
+                const definitionsSummary = (lemma.definitions || [])
+                  .map((d) => d.def_text.trim())
+                  .filter(Boolean)
+                  .join("; ");
 
-                  // Fallback to IPA if romanization record is absent
-                  const ipa = lemma.pronunciations?.find(
-                    (p) => p.pron_type?.toUpperCase() === "IPA",
-                  )?.pron_text;
-
-                  const phoneticGuide = romanization || ipa;
-
-                  // Concatenate definitions into a single line
-                  const definitionsSummary = (lemma.definitions || [])
-                    .map((d) => d.def_text.trim())
-                    .filter(Boolean)
-                    .join("; ");
-
-                  return (
-                    <li
-                      key={lemma.id}
-                      role="option"
-                      aria-selected="false"
-                      onMouseEnter={() => setHoveredLemma(lemma)}
+                return (
+                  <li
+                    key={lemma.id}
+                    role="option"
+                    aria-selected="false"
+                    onMouseEnter={() => setHoveredLemma(lemma)}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleSelection(lemma)}
+                      className="group flex w-full flex-col px-4 py-2 text-left hover:bg-slate-50 focus:bg-slate-50 focus:outline-none dark:hover:bg-slate-700/50 dark:focus:bg-slate-700/50 transition-colors"
                     >
+                      <div className="flex w-full items-center justify-between">
+                        <div className="flex items-baseline gap-2 overflow-hidden">
+                          <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
+                            {displayText}
+                          </span>
+                          {phoneticGuide && (
+                            <span className="font-mono text-xs text-slate-400 dark:text-slate-500">
+                              [{phoneticGuide}]
+                            </span>
+                          )}
+                        </div>
+                        <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-700 dark:text-slate-300">
+                          {lemma.pos}
+                        </span>
+                      </div>
+
+                      {definitionsSummary && (
+                        <div className="relative mt-0.5 w-full overflow-hidden whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
+                          <span>{definitionsSummary}</span>
+                          <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white group-hover:from-slate-50 dark:from-slate-800 dark:group-hover:from-slate-700/50 to-transparent transition-colors" />
+                        </div>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+
+              {/* Bottom Pipeline Dispatch Row */}
+              {!exactMatchExists &&
+                hasSearched &&
+                !isSearching &&
+                onRequestPipeline && (
+                  <li role="option" aria-selected="false">
+                    <div className="flex items-center justify-between border-t border-dashed border-blue-200 dark:border-blue-800/80 bg-blue-50/40 dark:bg-blue-950/20 px-3 py-2.5">
+                      {/* Left: Instant single-click submission */}
                       <button
                         type="button"
-                        onClick={() => handleSelection(lemma)}
-                        className="group flex w-full flex-col px-4 py-2 text-left hover:bg-slate-50 focus:bg-slate-50 focus:outline-none dark:hover:bg-slate-700/50 dark:focus:bg-slate-700/50 transition-colors"
+                        disabled={isPipelineRequesting}
+                        onClick={() =>
+                          executePipelineDispatch([cyrillicConversion])
+                        }
+                        className="flex flex-1 items-center gap-2 text-left hover:opacity-80 transition-opacity disabled:opacity-50"
                       >
-                        {/* Primary Identity Row */}
-                        <div className="flex w-full items-center justify-between">
-                          <div className="flex items-baseline gap-2 overflow-hidden">
-                            <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">
-                              {displayText}
-                            </span>
-                            {phoneticGuide && (
-                              <span className="font-mono text-xs text-slate-400 dark:text-slate-500">
-                                [{phoneticGuide}]
-                              </span>
-                            )}
-                          </div>
-                          <span className="shrink-0 rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:bg-slate-700 dark:text-slate-300">
-                            {lemma.pos}
+                        <span className="text-blue-600 dark:text-blue-400 text-sm">
+                          {isPipelineRequesting ? "⏳" : "🔍"}
+                        </span>
+                        <div className="flex flex-col">
+                          <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+                            Search online dictionary for "{cyrillicConversion}"
                           </span>
+                          {isLatin(query.trim()) && (
+                            <span className="text-[10px] text-slate-400 font-mono">
+                              auto-converted from "{query.trim()}"
+                            </span>
+                          )}
                         </div>
-
-                        {/* Secondary Semantic Row with Gradient Fade Mask */}
-                        {definitionsSummary && (
-                          <div className="relative mt-0.5 w-full overflow-hidden whitespace-nowrap text-xs text-slate-500 dark:text-slate-400">
-                            <span>{definitionsSummary}</span>
-                            {/* Gradient Fade: Matches container background on hover */}
-                            <div className="pointer-events-none absolute right-0 top-0 h-full w-12 bg-gradient-to-l from-white group-hover:from-slate-50 dark:from-slate-800 dark:group-hover:from-slate-700/50 to-transparent transition-colors" />
-                          </div>
-                        )}
                       </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <div className="px-4 py-3 text-xs text-slate-500 text-center">
-                {t("exercises.wordsMenu.queryNoMatches")} "{query}".
-              </div>
-            )}
+
+                      {/* Right: Open Edit / Batch modal */}
+                      <button
+                        type="button"
+                        onClick={() => setIsModalOpen(true)}
+                        className="ml-2 shrink-0 rounded border border-blue-300 bg-white px-2 py-1 text-[11px] font-semibold text-blue-700 shadow-sm hover:bg-blue-50 dark:border-blue-700 dark:bg-slate-800 dark:text-blue-300 dark:hover:bg-slate-700 transition-colors"
+                        title="Edit spelling or add multiple words"
+                      >
+                        Edit / Add Multiple
+                      </button>
+                    </div>
+
+                    {pipelineFeedback && (
+                      <div
+                        className={`px-3 py-1.5 text-[11px] font-medium ${
+                          pipelineFeedback.isError
+                            ? "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400"
+                            : "bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400"
+                        }`}
+                      >
+                        {pipelineFeedback.msg}
+                      </div>
+                    )}
+                  </li>
+                )}
+            </ul>
           </div>
         )}
 
-        {/* Coordinated Hover Inspector Window */}
+        {/* Hover Inspector Flyout */}
         {hoveredLemma && (
-          <aside
-            aria-label="Lemma Inspector"
-            className="hidden lg:block absolute left-[calc(100%+0.75rem)] top-1 z-20 w-80 rounded-xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-800 animate-in fade-in zoom-in-95 duration-150 pointer-events-none"
-          >
-            {/* Header: Canonical Form & Part of Speech */}
+          <aside className="hidden lg:block absolute left-[calc(100%+0.75rem)] top-1 z-30 w-80 rounded-xl border border-slate-200 bg-white p-4 shadow-xl dark:border-slate-700 dark:bg-slate-800 animate-in fade-in zoom-in-95 duration-150 pointer-events-none">
             <div className="flex items-start justify-between border-b border-slate-100 pb-2.5 dark:border-slate-700">
               <div>
                 <h4 className="text-xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
                   {hoveredLemma.lem_canon || hoveredLemma.lem_text}
                 </h4>
-                {hoveredLemma.lem_canon &&
-                  hoveredLemma.lem_text !== hoveredLemma.lem_canon && (
-                    <span className="text-xs text-slate-400 dark:text-slate-500 font-mono">
-                      Plain: {hoveredLemma.lem_text}
-                    </span>
-                  )}
               </div>
               <span className="rounded bg-blue-50 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
                 {hoveredLemma.pos}
               </span>
             </div>
 
-            {/* Metadata Badges (Pronunciations, Gender, Aspect) */}
-            <div className="mt-2.5 flex flex-wrap gap-1.5 text-xs">
-              {hoveredLemma.pronunciations?.map((p) => (
-                <span
-                  key={p.id}
-                  className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-0.5 text-[11px] font-mono text-slate-700 dark:bg-slate-700 dark:text-slate-300"
-                >
-                  <span className="text-[9px] uppercase font-bold text-slate-400">
-                    {p.pron_type}:
-                  </span>
-                  {p.pron_text}
-                </span>
-              ))}
-
-              {hoveredLemma.noun_gender && (
-                <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                  {t("exercises.grammar.gender")}: {hoveredLemma.noun_gender}
-                </span>
-              )}
-              {hoveredLemma.verb_aspect && (
-                <span className="rounded bg-slate-100 px-2 py-0.5 text-[11px] text-slate-600 dark:bg-slate-700 dark:text-slate-300">
-                  {t("exercises.grammar.aspect")}: {hoveredLemma.verb_aspect}
-                </span>
-              )}
-            </div>
-
-            {/* Full Definitions List */}
             <div className="mt-3 space-y-1.5 border-t border-slate-100 pt-2.5 dark:border-slate-700">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                {t("exercises.grammar.definition")} (
-                {hoveredLemma.definitions?.length || 0})
+                Definitions
               </span>
-              {hoveredLemma.definitions &&
-              hoveredLemma.definitions.length > 0 ? (
-                <ol className="list-decimal list-inside space-y-1 text-xs text-slate-700 dark:text-slate-200 leading-snug">
-                  {hoveredLemma.definitions.map((d, index) => (
-                    <li key={d.id || index} className="pl-1">
-                      <span className="text-slate-800 dark:text-slate-100">
-                        {d.def_text}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="text-xs text-slate-400 italic">
-                  {t("exercises.settings.noDefsRecorded")}
-                </p>
-              )}
+              <ol className="list-decimal list-inside space-y-1 text-xs text-slate-700 dark:text-slate-200">
+                {(hoveredLemma.definitions || []).map((d, i) => (
+                  <li key={d.id || i}>
+                    <span className="text-slate-800 dark:text-slate-100">
+                      {d.def_text}
+                    </span>
+                  </li>
+                ))}
+              </ol>
             </div>
           </aside>
         )}
       </div>
+
+      {/* Multi-Word Batch & Edit Modal */}
+      <EditAddWordsModal
+        isOpen={isModalOpen}
+        initialQuery={query.trim()}
+        isSubmitting={isPipelineRequesting}
+        onConfirm={executePipelineDispatch}
+        onCancel={() => setIsModalOpen(false)}
+      />
     </section>
   );
 };

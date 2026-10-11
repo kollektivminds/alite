@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+# alite_backend/api/trainer/sentences.py
 import logging
-from typing import List, Any
-from sqlalchemy.orm import Session
+from typing import Any, List
+
+from alite_backend.api import deps
 from alite_backend.db import schemas
 from alite_backend.db.crud import sent_crud
-from alite_backend.api import deps
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -27,5 +29,4 @@ def get_sentence_tokens(sentence_id: int, db: Session = Depends(deps.get_db)):
     if not sentence:
         raise HTTPException(status_code=404, detail="Sentence tokens not found")
 
-    # lemmas = db.query(models.Lemma).filter(models.Lemma.in_less_list == lesson_id).all()
     return sentence.tokens
