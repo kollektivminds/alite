@@ -80,20 +80,20 @@ export const WordStrategyTooltips: WordStrategyDefinition[] = [
     pairSupportedFormats: ["mcq"],
   },
   //   {
-  //     id: "ADJV_FORM_TO_TYPE",
-  //     name: "Adjectival Form → Comparative Type",
+  //     id: "ADJV_FORM_TO_TYPE", // TODO: CHANGE THIS NAME TO ADJV_TO_COMP_DGRE
+  //     name: "Adjective → Comparative Degree",
   //     group: "Adjectives",
   //     description:
-  //       "Identify the type (comparative | superlative) given an adjective's form.",
-  //     stemExample: "",
-  //     keyExample: "",
+  //       "Identify the comparative degree of an adjective given its base form.",
+  //     stemExample: "What is the comparative form of жаркий?",
+  //     keyExample: "жарче",
   //     supportedFormats: ["flashcard", "mcq", "fitb"],
-  //     pairId: "ADJV_TYPE_TO_LEM",
-  //     pairName: "Part of Speech → Lemma",
+  //     pairId: "ADJV_TYPE_TO_LEM", // TODO: CHANGE THIS TO COMP_DGRE_TO_ADJV
+  //     pairName: "Comparative Adjective → Base Form",
   //     pairDescription: "Identify the base adjective given a comparative form.",
-  //     pairStemExample: "",
-  //     pairKeyExample: "",
-  //     pairSupportedFormats: ["fitb", "flashcard", "mcq"]
+  //     pairStemExample: "What is the base form of 'су́ше'?",
+  //     pairKeyExample: "сухо́й",
+  //     pairSupportedFormats: ["fitb", "flashcard"]
   //   },
   {
     id: "ADJV_FORM_TO_GRAM",
@@ -211,7 +211,7 @@ export const WordStrategyTooltips: WordStrategyDefinition[] = [
     pairDescription: "Identify the aspectual pair of a given verb.",
     pairStemExample: "",
     pairKeyExample: "",
-    pairSupportedFormats: ["flashcard", "mcq"],
+    pairSupportedFormats: ["flashcard", "mcq", "fitb"],
   },
   {
     id: "VERB_TO_TYPE",

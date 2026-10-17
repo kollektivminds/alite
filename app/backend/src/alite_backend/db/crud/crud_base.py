@@ -1,3 +1,4 @@
+# alite_backend/db/crud/crud_base.py
 import logging
 from typing import Any, Dict, Generic, List, Optional, Sequence, Type, TypeVar, Union
 
@@ -32,19 +33,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         """
         Extracts a plain dictionary from a Pydantic schema or mapping, filtering
         out keys that do not correspond to mapped SQLAlchemy model columns.
-
-        This prevents 'TypeError: unexpected keyword argument' when Pydantic schemas
-        contain validation artifacts or pedagogical metadata not stored in the table.
         """
         if isinstance(obj_in, BaseModel):
-            # In Pydantic v2, model_dump handles serialization cleanly
             raw_data = obj_in.model_dump(exclude_unset=exclude_unset)
         elif isinstance(obj_in, dict):
             raw_data = obj_in.copy()
         else:
             raise ValueError(f"Expected BaseModel or dict, received {type(obj_in)}")
 
-        # Intersect with mapped model attributes to maintain schema-model integrity
         valid_columns = set(self.model.__mapper__.column_attrs.keys())
         return {k: v for k, v in raw_data.items() if k in valid_columns}
 
@@ -72,6 +68,71 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             return db.scalars(stmt).first()
         return db.scalars(stmt).all()
 
+    def get_or_create(
+        self,
+        db: Session,
+        *,
+        obj_in: Union[CreateSchemaType, Dict[str, Any]],
+        filter_kwargs: Optional[Dict[str, Any]] = None,
+    ) -> ModelType:
+        """
+        Fetches an existing entity matching filter_kwargs or creates a new one idempotently.
+
+        Engineering Safeguards:
+        1. Whitelists search criteria against self.model column attributes to prevent
+           AttributeError when schemas contain transient metadata (e.g. temp_form_id).
+        2. Supports explicit filter dictionaries or falls back to extracted obj_in data.
+        3. Isolates creation inside a transaction SAVEPOINT (db.begin_nested()). If a
+           unique constraint collision occurs during flush, only the sub-transaction
+           rolls back, preventing PostgreSQL from aborting the entire ETL session.
+        """
+        # 1. Resolve search criteria
+        if filter_kwargs is not None:
+            raw_filters = filter_kwargs
+        elif isinstance(obj_in, BaseModel):
+            raw_filters = obj_in.model_dump(exclude_unset=True)
+        elif isinstance(obj_in, dict):
+            raw_filters = obj_in
+        else:
+            raise ValueError(
+                f"Expected BaseModel or dict for obj_in, received {type(obj_in)}"
+            )
+
+        # Intersect filter keys with mapped columns to discard transient payload fields
+        valid_columns = set(self.model.__mapper__.column_attrs.keys())
+        search_filters = {k: v for k, v in raw_filters.items() if k in valid_columns}
+
+        # 2. Check if the entity already exists
+        stmt = select(self.model)
+        for key, value in search_filters.items():
+            column = getattr(self.model, key)
+            stmt = stmt.where(column == value)
+
+        existing_obj = db.scalars(stmt).first()
+        if existing_obj is not None:
+            return existing_obj
+
+        # 3. Create the entity within an isolated SAVEPOINT
+        try:
+            with db.begin_nested():
+                create_data = self._extract_model_data(obj_in, exclude_unset=False)
+                db_obj = self.model(**create_data)
+                db.add(db_obj)
+                db.flush()
+                db.refresh(db_obj)
+                return db_obj
+        except IntegrityError:
+            # Re-query the conflicting row that caused the unique violation
+            existing_obj = db.scalars(stmt).first()
+            if existing_obj is not None:
+                return existing_obj
+            raise
+        except SQLAlchemyError as e:
+            logger.exception(
+                f"Database error during get_or_create for {self.model.__name__}: {str(e)}"
+            )
+            raise
+
     def create(
         self, db: Session, *, obj_in: Union[CreateSchemaType, Dict[str, Any]]
     ) -> ModelType:
@@ -80,7 +141,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         on SQL transaction boundaries with clean error translation.
         """
         try:
-            # exclude_unset=False on create to ensure declared schema defaults pass through
             create_data = self._extract_model_data(obj_in, exclude_unset=False)
             db_obj = self.model(**create_data)
             db.add(db_obj)
@@ -152,7 +212,6 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         Pydantic methods on SQLAlchemy instances.
         """
         try:
-            # exclude_unset=True ensures we don't overwrite existing DB fields with None defaults
             update_data = self._extract_model_data(obj_in, exclude_unset=True)
 
             for field, value in update_data.items():

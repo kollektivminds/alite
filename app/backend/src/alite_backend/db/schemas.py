@@ -3,7 +3,7 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, FrozenSet, List, Optional, Set, Union
 from uuid import UUID, uuid4
 
 from alite_backend.db.models import (
@@ -37,7 +37,6 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from pyparsing import Opt
 
 #
 # --- Data Processing Schemas ---
@@ -1138,11 +1137,87 @@ class StrategyConfigs(BaseModel):
 AnyItemType = Union[EnumWordItemType, EnumSentItemType]
 
 
+# class ExerciseRequest(BaseModel):
+#     # Side-A + Side-B items = request
+#     exercise_context: ExerciseContext
+#     grammar_focus: Optional[StrategyConfigs] = None
+#     type_counts: dict[AnyItemType, int]
+
+
 class ExerciseRequest(BaseModel):
-    # Side-A + Side-B items = request
+    """
+    Inbound payload initiating exercise session item generation.
+    Validates cross-field compatibility between requested strategies and formats.
+    """
+
     exercise_context: ExerciseContext
     grammar_focus: Optional[StrategyConfigs] = None
-    type_counts: dict[AnyItemType, int]
+    type_counts: Dict[str, int] = Field(
+        default_factory=dict,
+        description="Map of Strategy Identifier -> Requested Item Count",
+    )
+
+    @model_validator(mode="after")
+    def validate_strategy_format_compatibility(self) -> "ExerciseRequest":
+        """
+        Guarantees that every strategy requested with count > 0 can be rendered
+        by at least one format enabled in exercise_context.ex_formats.
+        """
+        session_formats: Set[EnumItemFormat] = set(self.exercise_context.ex_formats)
+        if not session_formats:
+            raise ValueError(
+                "At least one session format (MCQ, Flashcard, etc.) must be enabled."
+            )
+
+        allocated_counts = {
+            strat_key: count
+            for strat_key, count in self.type_counts.items()
+            if count > 0
+        }
+
+        if not allocated_counts:
+            raise ValueError(
+                "At least one strategy must have an allocated item count > 0."
+            )
+
+        incompatible_errors: List[str] = []
+
+        for strat_key, count in allocated_counts.items():
+            # resolve strategy string to Enum member
+            target_strategy: Optional[AnyItemType] = None
+            try:
+                target_strategy = EnumWordItemType(strat_key)
+            except ValueError:
+                try:
+                    target_strategy = EnumSentItemType(strat_key)
+                except ValueError:
+                    incompatible_errors.append(
+                        f"Unknown strategy identifier: '{strat_key}'."
+                    )
+                    continue
+
+            # lookup compatible formats from single source of truth
+            compatible_formats = STRATEGY_FORMAT_COMPATIBILITY.get(target_strategy)
+            if not compatible_formats:
+                incompatible_errors.append(
+                    f"Strategy '{strat_key}' has no registered format compatibility matrix."
+                )
+                continue
+
+            # intersection check: can this strategy be satisfied by active session formats?
+            viable_session_formats = compatible_formats.intersection(session_formats)
+            if not viable_session_formats:
+                allowed_str = ", ".join(f.value for f in compatible_formats)
+                active_str = ", ".join(f.value for f in session_formats)
+                incompatible_errors.append(
+                    f"Strategy '{strat_key}' (count: {count}) requires one of [{allowed_str}], "
+                    f"but active session formats only provide [{active_str}]."
+                )
+
+        if incompatible_errors:
+            raise ValueError(" ; ".join(incompatible_errors))
+
+        return self
 
 
 # sentence token requests
@@ -1360,27 +1435,43 @@ class UserResultsReturn(BaseModel):
 class PipelineLookupRequest(BaseModel):
     """
     Ingests single or batch tokens for external dictionary synthesis.
-    Validates Cyrillic and Latin characters while rejecting malformed inputs.
+
+    Robustness Enhancements:
+    - Accepts 'token' or 'tokens' as either a string or an array of strings.
+    - Flattens comma-, space-, or newline-delimited inputs.
+    - Guarantees downstream consumers receive both `self.tokens` (List[str])
+      and `self.token` (str) without throwing 422 TypeErrors.
     """
 
-    token: Optional[str] = Field(None, max_length=100)
-    tokens: Optional[List[str]] = Field(default_factory=list)
+    # Accept Union[str, List[str]] to prevent Pydantic string_type crashes
+    token: Optional[Union[str, List[str]]] = Field(
+        default=None, description="Single lemma or legacy token payload."
+    )
+    tokens: Optional[Union[str, List[str]]] = Field(
+        default_factory=list,
+        description="Array or delimited list of target lemmas to ingest.",
+    )
 
     @model_validator(mode="after")
     def unify_and_sanitize_tokens(self) -> "PipelineLookupRequest":
         raw_items: List[str] = []
 
-        # Ingest single token if present
-        if self.token and self.token.strip():
-            raw_items.append(self.token.strip())
+        def extract_items(source: Optional[Union[str, List[str]]]) -> None:
+            if not source:
+                return
+            if isinstance(source, str):
+                # Split comma-, semicolon-, space-, or newline-separated pasted strings
+                splits = re.split(r"[,;\s\n]+", source.strip())
+                raw_items.extend([t for t in splits if t])
+            elif isinstance(source, list):
+                for element in source:
+                    if isinstance(element, str) and element.strip():
+                        splits = re.split(r"[,;\s\n]+", element.strip())
+                        raw_items.extend([t for t in splits if t])
 
-        # Ingest array items if present
-        if self.tokens:
-            for item in self.tokens:
-                if item and item.strip():
-                    # Handle comma- or newline-separated pasted strings within array elements
-                    split_tokens = re.split(r"[,;\s\n]+", item.strip())
-                    raw_items.extend([t for t in split_tokens if t])
+        # Extract from both potential fields
+        extract_items(self.token)
+        extract_items(self.tokens)
 
         # De-duplicate while preserving order
         seen = set()
@@ -1388,7 +1479,7 @@ class PipelineLookupRequest(BaseModel):
         for t in raw_items:
             cleaned = t.strip().lower()
             if cleaned and cleaned not in seen:
-                # Require alphabetic characters with optional internal hyphens or apostrophes
+                # Strictly require alphabetic Cyrillic or Latin characters with optional internal hyphen
                 if re.fullmatch(r"^[а-яёa-z]+([-'`][а-яёa-z]+)?$", cleaned):
                     seen.add(cleaned)
                     sanitized.append(cleaned)
@@ -1396,8 +1487,9 @@ class PipelineLookupRequest(BaseModel):
         if not sanitized:
             raise ValueError("At least one valid lexical word token must be provided.")
 
+        # Ensure both attributes are populated with proper types for downstream routes
         self.tokens = sanitized
-        self.token = sanitized[0]  # Backward compatibility
+        self.token = sanitized[0]
         return self
 
 
@@ -1424,3 +1516,273 @@ class PipelineLookupResponse(BaseModel):
     message: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class PipelineStatusRequest(BaseModel):
+    tokens: List[str] = Field(default_factory=list)
+
+
+class LemmaCapabilityReport(BaseModel):
+    """
+    Data transfer object detailing what drill strategies a lemma
+    is structurally equipped to support.
+    """
+
+    lemma_id: int
+    lem_text: str
+    is_exercise_ready: bool
+    missing_critical_data: List[str]
+    supported_item_types: List[str]
+
+
+class LemmaReadinessItem(BaseModel):
+    lemma_id: int
+    lem_text: str
+    is_usable: bool
+    supported_item_types: List[str]
+    advisory_warnings: List[str]
+    critical_errors: List[str]
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PoolValidationRequest(BaseModel):
+    lemma_ids: List[int]
+    min_required_words: int = Field(
+        default=1,
+        ge=1,
+        description="Minimum number of eligible lemmas required to build the exercise.",
+    )
+
+
+class PoolValidationResponse(BaseModel):
+    can_start: bool
+    total_requested: int
+    eligible_count: int
+    eligible_lemma_ids: List[int]
+    unusable_lemma_ids: List[int]
+    reports: List[LemmaReadinessItem]
+    summary_message: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+# Pedagogical Capability Matrix: Strategy -> Compatible Item Formats
+STRATEGY_FORMAT_COMPATIBILITY: Dict[AnyItemType, FrozenSet[EnumItemFormat]] = {
+    # --- Lemma-Level Strategies ---
+    EnumWordItemType.LEM_TO_POS: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.POS_TO_LEM: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.LEM_TO_DEF: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.DEF_TO_LEM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.LEM_TO_PRON: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.PRON_TO_LEM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.LEM_LEM_TO_REL: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.REL_TO_LEM_LEM: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    # --- Noun Morphological Strategies ---
+    EnumWordItemType.NOUN_TO_GEND: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.GEND_TO_NOUN: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.NOUN_TO_ANIM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ANIM_TO_NOUN: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.NOUN_FORM_TO_GRAM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.NOUN_GRAM_TO_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.NOUN_TO_DMIN_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    # --- Verb Morphological Strategies ---
+    EnumWordItemType.VERB_TO_ASPT: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ASPT_TO_VERB: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_PAIR_TO_REL: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_TO_ASPT_PAIR: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_TO_TYPE: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.TYPE_TO_VERB: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_TO_TNRF: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.TNRF_TO_VERB: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_TO_CONJ_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    # --- Adjective & Participle Strategies ---
+    EnumWordItemType.ADJV_FORM_TO_TYPE: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ADJV_TYPE_TO_LEM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ADJV_FORM_TO_GRAM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ADJV_GRAM_TO_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.PART_FORM_TO_TYPE: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.PART_TYPE_TO_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    # --- Sentence Syntax / Cloze Strategies ---
+    EnumSentItemType.NOUN_MORPH: frozenset(
+        {
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumSentItemType.VERB_MORPH: frozenset(
+        {
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumSentItemType.ADJECTIVE_MORPH: frozenset(
+        {
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumSentItemType.DEP_REL: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumSentItemType.UNSCRAMBLE: frozenset(
+        {
+            EnumItemFormat.UNSCRAMBLE,
+        }
+    ),
+}

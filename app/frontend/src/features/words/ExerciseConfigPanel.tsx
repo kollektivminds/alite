@@ -30,7 +30,6 @@ interface ExerciseConfigPanelProps {
   onSubmit: () => void;
 }
 
-// Canonical pedagogical order for linguistic categories
 const ORDERED_GROUPS: EnumWordItemGroup[] = [
   "General",
   "Nouns",
@@ -46,12 +45,22 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
   onSubmit,
 }) => {
   const { t } = useTranslation();
-  // independent accordion state: tracks which category groups are currently open
   const [expandedGroups, setExpandedGroups] = useState<Set<EnumWordItemGroup>>(
     () => new Set<EnumWordItemGroup>(["General"]),
   );
 
-  // identify available groups based on staged vocabulary POS tags
+  // 1. Defensive normalization: Guard against undefined/null nested config structures
+  const safeTypeCounts = useMemo(
+    () => config?.typeCounts ?? {},
+    [config?.typeCounts],
+  );
+  const safeItemFormats = useMemo(
+    () => config?.itemFormats ?? [],
+    [config?.itemFormats],
+  );
+  const maxItems = config?.maxItems ?? 10;
+
+  // 2. Identify available POS categories from currently active lemmas
   const availableGroups = useMemo(() => {
     const groups = new Set<EnumWordItemGroup>(["General"]);
     activeLemmas.forEach((lemma) => {
@@ -66,14 +75,14 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
     return groups;
   }, [activeLemmas]);
 
-  // filter strategy definitions matching active vocabulary POS
+  // 3. Filter strategy definitions matching active vocabulary POS
   const validStrategies = useMemo(() => {
     return WordStrategyTooltips.filter((def: WordStrategyDefinition) =>
       availableGroups.has(def.group),
     );
   }, [availableGroups]);
 
-  // partition strategies into ordered groups for hierarchical rendering
+  // 4. Partition strategies into ordered groups for rendering
   const groupedStrategies = useMemo(() => {
     const map = new Map<EnumWordItemGroup, WordStrategyDefinition[]>();
 
@@ -93,21 +102,22 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
     return map;
   }, [availableGroups, validStrategies]);
 
-  // compute total allocated items across all strategy directions
+  // 5. Compute total allocated items using safeTypeCounts
   const totalAllocatedItems = useMemo(() => {
-    return Object.values(config.typeCounts || {}).reduce(
+    return Object.values(safeTypeCounts).reduce(
       (acc, count) => acc + (count || 0),
       0,
     );
-  }, [config.typeCounts]);
+  }, [safeTypeCounts]);
 
-  // compute allowed formats based on strategies with count > 0
+  // 6. Compute allowed formats using safeTypeCounts (Fixes Line 109 TypeError)
   const allowedFormats = useMemo(() => {
     const formats = new Set<EnumItemFormat>();
 
     validStrategies.forEach((def) => {
-      const mainCount = config.typeCounts[def.id] || 0;
-      const pairCount = def.pairId ? config.typeCounts[def.pairId] || 0 : 0;
+      // Safe lookups via normalized safeTypeCounts
+      const mainCount = safeTypeCounts[def.id] || 0;
+      const pairCount = def.pairId ? safeTypeCounts[def.pairId] || 0 : 0;
 
       if (mainCount > 0 && def.supportedFormats) {
         def.supportedFormats.forEach((fmt) => formats.add(fmt));
@@ -120,9 +130,8 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
     });
 
     return formats;
-  }, [config.typeCounts, validStrategies]);
+  }, [safeTypeCounts, validStrategies]);
 
-  // 7. Action Handlers
   const toggleGroupAccordion = (group: EnumWordItemGroup) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
@@ -136,7 +145,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
     const sanitizedCount = Math.max(0, count);
     onChange({
       typeCounts: {
-        ...config.typeCounts,
+        ...safeTypeCounts,
         [strategyId]: sanitizedCount,
       },
     });
@@ -144,39 +153,132 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
 
   const toggleFormat = (format: EnumItemFormat) => {
     if (!allowedFormats.has(format)) return;
-    const current = new Set(config.itemFormats || []);
+    const current = new Set(safeItemFormats);
     if (current.has(format)) current.delete(format);
     else current.add(format);
     onChange({ itemFormats: Array.from(current) });
   };
 
-  // Uniform stochastic distributor across all available strategy tokens
-  const handleRandomizeDistribution = () => {
-    if (validStrategies.length === 0 || config.maxItems <= 0) return;
-
-    const activeTokens: string[] = [];
-    const randomized: Record<string, number> = {};
+  /**
+   * Evaluates how many lemmas in the currently active pool
+   * can satisfy each specific strategy definition.
+   */
+  const strategyCapacities = useMemo(() => {
+    const capacities: Record<string, number> = {};
 
     validStrategies.forEach((def) => {
-      randomized[def.id] = 0;
-      activeTokens.push(def.id);
+      let count = 0;
+      activeLemmas.forEach((lemma) => {
+        const pos = (lemma.pos || "").toLowerCase();
+        const hasDefs = Boolean(
+          lemma.definitions && lemma.definitions.length > 0,
+        );
+        const hasProns = Boolean(
+          lemma.pronunciations && lemma.pronunciations.length > 0,
+        );
 
+        if (def.id === "lem_to_def" || def.id === "def_to_lem") {
+          if (hasDefs) count++;
+        } else if (def.id === "lem_to_pron" || def.id === "pron_to_lem") {
+          if (hasProns) count++;
+        } else if (def.id === "lem_to_pos" || def.id === "pos_to_lem") {
+          if (lemma.pos) count++;
+        } else if (
+          def.group === "Nouns" &&
+          (pos.includes("noun") || pos === "s")
+        ) {
+          count++;
+        } else if (
+          def.group === "Verbs" &&
+          (pos.includes("verb") || pos === "v")
+        ) {
+          count++;
+        } else if (
+          def.group === "Adjectives" &&
+          (pos.includes("adj") || pos === "a")
+        ) {
+          count++;
+        }
+      });
+
+      capacities[def.id] = count;
       if (def.pairId) {
-        randomized[def.pairId] = 0;
-        activeTokens.push(def.pairId);
+        capacities[def.pairId] = count;
       }
     });
 
-    for (let i = 0; i < config.maxItems; i++) {
-      const chosenToken =
-        activeTokens[Math.floor(Math.random() * activeTokens.length)];
-      randomized[chosenToken] = (randomized[chosenToken] || 0) + 1;
+    return capacities;
+  }, [validStrategies, activeLemmas]);
+
+  // Capacity-Weighted Stochastic Distributor
+  const handleRandomizeDistribution = () => {
+    if (validStrategies.length === 0 || maxItems <= 0) return;
+
+    // Filter tokens that have at least 1 capable lemma in the pool
+    const viableTokens = Object.keys(strategyCapacities).filter(
+      (token) => strategyCapacities[token] > 0,
+    );
+
+    if (viableTokens.length === 0) return;
+
+    const randomized: Record<string, number> = {};
+    viableTokens.forEach((t) => (randomized[t] = 0));
+
+    let itemsRemaining = maxItems;
+    let attempts = 0;
+    const maxAttempts = maxItems * 10;
+
+    while (itemsRemaining > 0 && attempts < maxAttempts) {
+      attempts++;
+
+      // Filter strategies that still have capacity headroom
+      const availableTokens = viableTokens.filter(
+        (t) => randomized[t] < strategyCapacities[t],
+      );
+
+      if (availableTokens.length === 0) {
+        // Pool exhausted before reaching maxItems. Allow surplus recycling on high-capacity general strategies.
+        const generalFallbacks = viableTokens.filter(
+          (t) => t.includes("def") || t.includes("pos") || t.includes("pron"),
+        );
+        const fallback =
+          generalFallbacks.length > 0
+            ? generalFallbacks[
+                Math.floor(Math.random() * generalFallbacks.length)
+              ]
+            : viableTokens[Math.floor(Math.random() * viableTokens.length)];
+
+        randomized[fallback] = (randomized[fallback] || 0) + 1;
+        itemsRemaining--;
+        continue;
+      }
+
+      // WEIGHTED SELECTION: Pick based on remaining capacity rather than flat array length
+      const totalRemainingCapacity = availableTokens.reduce(
+        (sum, t) => sum + (strategyCapacities[t] - randomized[t]),
+        0,
+      );
+
+      let randomWeight = Math.random() * totalRemainingCapacity;
+      let chosenToken = availableTokens[0];
+
+      for (const token of availableTokens) {
+        const tokenWeight = strategyCapacities[token] - randomized[token];
+        if (randomWeight <= tokenWeight) {
+          chosenToken = token;
+          break;
+        }
+        randomWeight -= tokenWeight;
+      }
+
+      randomized[chosenToken] += 1;
+      itemsRemaining--;
     }
 
     onChange({ typeCounts: randomized });
   };
 
-  const remainingHeadroom = Math.max(0, config.maxItems - totalAllocatedItems);
+  const remainingHeadroom = Math.max(0, maxItems - totalAllocatedItems);
 
   return (
     <aside
@@ -203,7 +305,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               type="number"
               min={1}
               max={100}
-              value={config.maxItems}
+              value={maxItems}
               onChange={(e) =>
                 onChange({
                   maxItems: Math.min(
@@ -227,7 +329,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               />
             </div>
             <select
-              value={config.difficulty}
+              value={config?.difficulty ?? "medium"}
               onChange={(e) =>
                 onChange({ difficulty: e.target.value as EnumItemDifficulty })
               }
@@ -254,11 +356,8 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               min={1}
               max={3}
               disabled={true}
-              value={config.maxDistractors}
-              onChange={(e) =>
-                onChange({ maxDistractors: parseInt(e.target.value, 10) || 3 })
-              }
-              className="mt-1 w-full rounded border-slate-300 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700"
+              value={config?.maxDistractors ?? 3}
+              className="mt-1 w-full rounded border-slate-300 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 disabled:opacity-60"
             />
           </div>
 
@@ -277,11 +376,8 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               min={1}
               max={3}
               disabled={true}
-              value={config.maxKeys}
-              onChange={(e) =>
-                onChange({ maxKeys: parseInt(e.target.value, 10) || 1 })
-              }
-              className="mt-1 w-full rounded border-slate-300 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700"
+              value={config?.maxKeys ?? 1}
+              className="mt-1 w-full rounded border-slate-300 px-2 py-1 text-sm shadow-sm focus:border-blue-500 focus:outline-none dark:border-slate-600 dark:bg-slate-700 disabled:opacity-60"
             />
           </div>
 
@@ -290,11 +386,9 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               <input
                 type="checkbox"
                 id="odd-one-out-toggle"
-                // checked={config.allowOddOneOut}
-                defaultChecked={false}
                 disabled={true}
-                onChange={(e) => onChange({ allowOddOneOut: e.target.checked })}
-                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                checked={config?.allowOddOneOut ?? false}
+                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 disabled:opacity-60"
               />
               <label
                 htmlFor="odd-one-out-toggle"
@@ -322,14 +416,14 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
               {t("exercises.settings.allocated")}:{" "}
               <strong
                 className={
-                  totalAllocatedItems > config.maxItems
+                  totalAllocatedItems > maxItems
                     ? "text-red-500"
                     : "text-blue-600 dark:text-blue-400"
                 }
               >
                 {totalAllocatedItems}
               </strong>{" "}
-              / {config.maxItems}
+              / {maxItems}
             </span>
           </div>
 
@@ -343,7 +437,6 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
           </button>
         </div>
 
-        {/* Group Sub-Lists */}
         <div className="mt-3 space-y-2.5">
           {validStrategies.length === 0 ? (
             <p className="text-xs text-slate-500 italic py-2">
@@ -356,12 +449,10 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
 
                 const isGroupExpanded = expandedGroups.has(groupName);
 
-                // calculate aggregate items allocated strictly within this POS group
+                // Safe aggregate calculation across this group using safeTypeCounts
                 const groupAllocatedCount = strategies.reduce((sum, s) => {
-                  const fCount = config.typeCounts[s.id] || 0;
-                  const rCount = s.pairId
-                    ? config.typeCounts[s.pairId] || 0
-                    : 0;
+                  const fCount = safeTypeCounts[s.id] || 0;
+                  const rCount = s.pairId ? safeTypeCounts[s.pairId] || 0 : 0;
                   return sum + fCount + rCount;
                 }, 0);
 
@@ -370,25 +461,17 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                     key={groupName}
                     className="rounded-md border border-slate-200 bg-white overflow-hidden dark:border-slate-700 dark:bg-slate-800 shadow-sm"
                   >
-                    {/* Category Sub-Header Accordion Button */}
                     <button
                       type="button"
                       onClick={() => toggleGroupAccordion(groupName)}
                       className="w-full flex items-center justify-between px-3 py-2 bg-slate-100/70 hover:bg-slate-100 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-left transition-colors"
                       aria-expanded={isGroupExpanded}
                     >
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
-                          {t(`exercises.wordsMenu.strategies.${groupName}`)}
-                        </span>
-                        {/* <span className="text-[10px] text-slate-400">
-                          ({strategies.length} pair
-                          {strategies.length > 1 ? "s" : ""})
-                        </span> */}
-                      </div>
+                      <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                        {t(`exercises.wordsMenu.strategies.${groupName}`)}
+                      </span>
 
                       <div className="flex items-center gap-2">
-                        {/* Telemetry Badge: Items Allocated in this group */}
                         <span
                           className={`text-[10px] font-mono px-1.5 py-0.5 rounded-full font-bold ${
                             groupAllocatedCount > 0
@@ -407,16 +490,16 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                       </div>
                     </button>
 
-                    {/* Collapsible Content Area */}
                     {isGroupExpanded && (
                       <div className="p-2.5 space-y-3 border-t border-slate-200 dark:border-slate-700/60">
                         {strategies.map((def) => {
-                          const forwardCount = config.typeCounts[def.id] || 0;
+                          // Safe count extraction
+                          const forwardCount = safeTypeCounts[def.id] || 0;
                           const forwardMax = forwardCount + remainingHeadroom;
 
                           const hasReverse = Boolean(def.pairId);
                           const reverseCount = def.pairId
-                            ? config.typeCounts[def.pairId] || 0
+                            ? safeTypeCounts[def.pairId] || 0
                             : 0;
                           const reverseMax = reverseCount + remainingHeadroom;
                           const reverseName =
@@ -433,14 +516,12 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                               key={def.id}
                               className="rounded-lg border border-slate-100 bg-slate-50/40 p-2.5 dark:border-slate-700/60 dark:bg-slate-900/20 space-y-2.5"
                             >
-                              {/* Strategy Token Metadata Bar */}
                               <div className="flex items-center justify-between border-b border-slate-200/60 pb-1 dark:border-slate-700/40">
                                 <span className="text-[10px] font-mono text-slate-400">
                                   {def.id} {hasReverse && `⇄ ${def.pairId}`}
                                 </span>
                               </div>
 
-                              {/* Dual-Lane Grid Layout */}
                               <div
                                 className={`grid gap-2.5 ${
                                   hasReverse
@@ -448,7 +529,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                                     : "grid-cols-1"
                                 }`}
                               >
-                                {/* LANE 1: Forward Direction */}
+                                {/* Forward Direction */}
                                 <div className="flex flex-col justify-between rounded border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-800">
                                   <div className="space-y-1.5">
                                     <div className="flex items-start justify-between gap-1.5">
@@ -492,7 +573,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
 
                                   <div className="mt-2.5 flex items-center gap-1 pt-1.5 border-t border-slate-100 dark:border-slate-700/40">
                                     <span className="text-[9px] uppercase tracking-wider text-slate-400">
-                                      {t("exercises.settings.formats")}:
+                                      {t("exercises.settings.formats.format")}:
                                     </span>
                                     <div className="flex gap-1 flex-wrap">
                                       {forwardFormats.map((fmt) => (
@@ -507,7 +588,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                                   </div>
                                 </div>
 
-                                {/* LANE 2: Reverse Direction */}
+                                {/* Reverse Direction */}
                                 {hasReverse && (
                                   <div className="flex flex-col justify-between rounded border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-800">
                                     <div className="space-y-1.5">
@@ -553,7 +634,8 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
 
                                     <div className="mt-2.5 flex items-center gap-1 pt-1.5 border-t border-slate-100 dark:border-slate-700/40">
                                       <span className="text-[9px] uppercase tracking-wider text-slate-400">
-                                        {t("exercises.settings.formats")}:
+                                        {t("exercises.settings.formats.format")}
+                                        :
                                       </span>
                                       <div className="flex gap-1 flex-wrap">
                                         {reverseFormats.map((fmt) => (
@@ -582,7 +664,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         </div>
       </section>
 
-      {/* SECTION 3: Session Output Formats */}
+      {/* SECTION 3: Output Formats */}
       <section>
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
           {t("exercises.settings.enabledSessionFormats")}
@@ -590,7 +672,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         <div className="flex flex-wrap gap-2">
           {(["mcq", "fitb", "flashcard"] as EnumItemFormat[]).map((fmt) => {
             const isSupported = allowedFormats.has(fmt);
-            const isSelected = (config.itemFormats || []).includes(fmt);
+            const isSelected = safeItemFormats.includes(fmt);
 
             return (
               <button
@@ -613,7 +695,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         </div>
         {totalAllocatedItems > 0 && allowedFormats.size === 0 && (
           <p className="mt-2 text-xs text-red-500">
-            Selected strategies do not support any generator output formats.
+            {t("exercises.settings.formats.noFormat")}
           </p>
         )}
       </section>
@@ -625,14 +707,14 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
           disabled={
             activeLemmas.length === 0 ||
             totalAllocatedItems === 0 ||
-            (config.itemFormats || []).length === 0 ||
-            totalAllocatedItems > config.maxItems
+            safeItemFormats.length === 0 ||
+            totalAllocatedItems > maxItems
           }
           onClick={onSubmit}
           className="w-full rounded-md bg-blue-600 py-3 text-sm font-bold text-white shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
         >
-          {totalAllocatedItems > config.maxItems
-            ? `Allocated (${totalAllocatedItems}) exceeds Target (${config.maxItems})`
+          {totalAllocatedItems > maxItems
+            ? `Allocated (${totalAllocatedItems}) exceeds Target (${maxItems})`
             : `${t("exercises.startExercise", { count: totalAllocatedItems })} ${t("exercises.numWords", { count: activeLemmas.length })}`}
         </button>
       </div>

@@ -173,7 +173,7 @@ class Loader:
         gram_prop_groups = defaultdict(list)
         junction_map = {}
         lem_def_map = {}
-        lem_pron_map = {}
+        lem_pron_map = defaultdict(list)
         form_list = []
 
         # create lemma
@@ -313,26 +313,24 @@ class Loader:
 
         # create pronunciations
         for pron in payload.pronunciations:
-            # logger.debug("Load pronunciation: %s", pron)
             pron_in = schemas.PronunciationCreate(**pron.model_dump())
-
             filters = {"pron_text": pron_in.pron_text, "pron_type": pron_in.pron_type}
 
             new_pron = crud_pronunciation.get_or_create(
                 db=self.db, obj_in=pron_in, filter_kwargs=filters
             )
-            lem_pron_map[pron.entry_key] = new_pron.id
-            # logger.debug("New pron id: %d", new_pron.id)
+            # Append pronunciation ID to entry_key list
+            lem_pron_map[pron.entry_key].append(new_pron.id)
 
-        # create lem_prons
-        # TODO: figure out why romanization prons didn't get linked to lemmas
-        for ek, pron_id in lem_pron_map.items():
+        # create lem_prons: link all pronunciations associated with the lemma entry_key
+        for ek, pron_ids in lem_pron_map.items():
             lem_id = lemma_id_map[ek]
-            filters = {"lem_id": lem_id, "pron_id": pron_id}
-            lem_pron_in = schemas.LemPronCreate(**filters)
-            new_lem_pron = crud_lem_pron.get_or_create(
-                db=self.db, obj_in=lem_pron_in, filter_kwargs=filters
-            )
+            for pron_id in pron_ids:
+                filters = {"lem_id": lem_id, "pron_id": pron_id}
+                lem_pron_in = schemas.LemPronCreate(**filters)
+                crud_lem_pron.get_or_create(
+                    db=self.db, obj_in=lem_pron_in, filter_kwargs=filters
+                )
 
         # create related lemmas
         for relation in payload.rel_lems:

@@ -1,9 +1,11 @@
 // src/features/words/SingleWordAdder.tsx
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Tooltip } from "../../components/modals/Tooltip";
 import { Lemma } from "../../types/words";
 import { EditAddWordsModal } from "./EditAddWordsModal";
 import { isLatin, latinToCyrillic } from "./Translit";
+import { TranslitGuidePopover } from "./translitGuidePopover";
 
 export interface PipelineItemOutcome {
   token: string;
@@ -155,12 +157,21 @@ export const SingleWordAdder: React.FC<SingleWordAdderProps> = ({
   return (
     <section aria-labelledby="manual-add-heading" className="space-y-4">
       <div>
-        <h3
-          id="manual-add-heading"
-          className="text-lg font-semibold text-slate-900 dark:text-slate-100"
-        >
-          {t("exercises.wordsMenu.targetVocabStaging")}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3
+            id="manual-add-heading"
+            className="text-lg font-semibold text-slate-900 dark:text-slate-100"
+          >
+            {t("exercises.wordsMenu.targetVocabStaging")}
+          </h3>
+
+          {/* Dedicated Tooltip Anchor for Orthographic Reference */}
+          <Tooltip
+            title={t("exercises.wordsMenu.translitGuide.title")}
+            content={<TranslitGuidePopover />}
+          />
+        </div>
+
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
           {t("exercises.wordsMenu.vocabStagingInstructions")}
         </p>

@@ -11,7 +11,7 @@ import { useTranslation } from "react-i18next";
 import { Tooltip } from "../../components/modals/Tooltip";
 
 import type { EnumItemDifficulty, EnumItemFormat } from "../../types/exercise";
-import type { SentenceExerciseConfigState } from "./types";
+import type { SentenceExerciseConfigState } from "../../types/sentences";
 
 interface SentenceExerciseConfigPanelProps {
   config: SentenceExerciseConfigState;
@@ -58,7 +58,7 @@ export const SentenceExerciseConfigPanel: React.FC<
           id="sentence-config-heading"
           className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400"
         >
-          {t("exercises.settings.exerciseSettings", "Assessment Parameters")}
+          {t("exercises.settings.exerciseSettings")}
         </h4>
 
         <div className="grid grid-cols-2 gap-4 text-sm">
@@ -66,17 +66,11 @@ export const SentenceExerciseConfigPanel: React.FC<
           <div>
             <div className="flex items-center gap-1.5">
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                {t("exercises.settings.targetItemQuant", "Total Questions")}
+                {t("exercises.settings.targetItemQuant")}
               </label>
               <Tooltip
-                title={t(
-                  "exercises.settings.targetItemQuant",
-                  "Question Quota",
-                )}
-                content={t(
-                  "exercises.settings.quotaTooltip",
-                  "The total number of sentence items generated across the allocated strategy categories.",
-                )}
+                title={t("exercises.settings.targetItemQuantTooltipName")}
+                content={t("exercises.settings.targetItemQuantTooltipDesc")}
               />
             </div>
             <input
@@ -102,11 +96,8 @@ export const SentenceExerciseConfigPanel: React.FC<
                 {t("exercises.settings.difficultyLevel")}
               </label>
               <Tooltip
-                title={t("modal.settings.difficulty")}
-                content={t(
-                  "exercises.settings.difficultyTooltip",
-                  "Controls lexical assistance (e.g. showing base lemma hints for cloze items) and distractor complexity.",
-                )}
+                title={t("modal.settings.difficultyLevelTooltipName")}
+                content={t("exercises.settings.difficultyLevelTooltipDesc")}
               />
             </div>
             <select
@@ -116,11 +107,9 @@ export const SentenceExerciseConfigPanel: React.FC<
               }
               className="mt-1 w-full rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-2 py-1.5 text-xs text-slate-800 dark:text-slate-100 shadow-sm focus:border-blue-500 focus:outline-none transition-colors"
             >
-              <option value="easy">{t("modal.settings.easy", "Easy")}</option>
-              <option value="medium">
-                {t("modal.settings.medium", "Medium")}
-              </option>
-              <option value="hard">{t("modal.settings.hard", "Hard")}</option>
+              <option value="easy">{t("modal.settings.easy")}</option>
+              <option value="medium">{t("modal.settings.medium")}</option>
+              <option value="hard">{t("modal.settings.hard")}</option>
             </select>
           </div>
 
@@ -131,14 +120,8 @@ export const SentenceExerciseConfigPanel: React.FC<
                 {t("exercises.settings.distractorsItem")}
               </label>
               <Tooltip
-                title={t(
-                  "exercises.settings.distractorsTitle",
-                  "Distractor Quota",
-                )}
-                content={t(
-                  "exercises.settings.distractorsTooltip",
-                  "Number of syntactically and morphologically plausible incorrect options generated per MCQ item.",
-                )}
+                title={t("exercises.settings.distractorsTooltipName")}
+                content={t("exercises.settings.distractorsTooltipDesc")}
               />
             </div>
             <input
@@ -163,14 +146,11 @@ export const SentenceExerciseConfigPanel: React.FC<
           <div>
             <div className="flex items-center gap-1.5">
               <label className="block text-xs font-medium text-slate-700 dark:text-slate-300">
-                {t("exercises.settings.keysItem", "Keys / Item")}
+                {t("exercises.settings.keysItem")}
               </label>
               <Tooltip
-                title={t("exercises.settings.keysTitle", "Correct Keys")}
-                content={t(
-                  "exercises.settings.keysTooltip",
-                  "Number of correct solution targets expected per item (fixed at 1 for standard sentence drills).",
-                )}
+                title={t("exercises.settings.keysItemTooltipName")}
+                content={t("exercises.settings.keysItemTooltipDesc")}
               />
             </div>
             <input
@@ -198,18 +178,12 @@ export const SentenceExerciseConfigPanel: React.FC<
                 htmlFor="sentence-odd-one-out"
                 className="ml-2 text-xs font-medium text-slate-700 dark:text-slate-300 cursor-pointer select-none"
               >
-                {t(
-                  "exercises.settings.allowOoo",
-                  "Allow Odd-One-Out Synthesis",
-                )}
+                {t("exercises.settings.allowOoo")}
               </label>
             </div>
             <Tooltip
-              title={t("exercises.settings.oooTitle", "Odd-One-Out")}
-              content={t(
-                "exercises.settings.oooTooltip",
-                "Generates inverse items where learners identify the syntactically or morphologically anomalous option.",
-              )}
+              title={t("exercises.settings.oooTitle")}
+              content={t("exercises.settings.oooTooltip")}
             />
           </div>
         </div>
@@ -220,7 +194,7 @@ export const SentenceExerciseConfigPanel: React.FC<
       {/* =================================================================== */}
       <section className="pt-2 border-t border-slate-200/60 dark:border-slate-700/60">
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-          {t("exercises.formats.availableFormats", "Enabled Session Formats")}
+          {t("exercises.settings.enabledSessionFormats")}
         </h4>
         <div className="flex flex-wrap gap-2">
           {supportedFormats.map((fmt) => {
@@ -237,7 +211,7 @@ export const SentenceExerciseConfigPanel: React.FC<
                     : "border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-600"
                 }`}
               >
-                {fmt} {isSelected && "✓"}
+                {t(`exercises.settings.formats.${fmt}`)} {isSelected && "✓"}
               </button>
             );
           })}
@@ -257,7 +231,7 @@ export const SentenceExerciseConfigPanel: React.FC<
           className="w-full rounded-md bg-blue-600 hover:bg-blue-700 py-3 text-sm font-bold text-white shadow focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-colors"
         >
           {isLoading ? (
-            <span>{t("exercises.loading", "Generating...")}</span>
+            <span>{t("exercises.loading")}</span>
           ) : (
             <span>
               {t("exercises.startExercise", { count: totalQuestions })}

@@ -176,10 +176,10 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
       <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between transition-colors">
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-            {t("exercises.formats.questionTypes")}
+            {t("exercises.settings.questionTypes")}
           </h3>
           <span className="text-[11px] text-slate-500 dark:text-slate-400">
-            {t("exercises.sentencesMenu.allocated")}:{" "}
+            {t("exercises.settings.allocated")}:{" "}
             <strong
               className={
                 totalAllocatedItems > targetCount
@@ -189,7 +189,7 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
             >
               {totalAllocatedItems}
             </strong>{" "}
-            / {targetCount} {t("exercises.sentencesMenu.target")}
+            / {targetCount} {t("exercises.settings.target")}
           </span>
         </div>
 
@@ -209,7 +209,6 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
             disabled={viableStrategies.length === 0 || targetCount <= 0}
             className="rounded bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/60 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs flex items-center gap-1.5"
           >
-            <span>🎲</span>
             <span>{t("exercises.settings.randomize")}</span>
           </button>
         </div>

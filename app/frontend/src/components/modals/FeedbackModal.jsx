@@ -65,8 +65,8 @@ export default function FeedbackModal({ onClose }) {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         >
-          <option value="bug">{t("modal.feedback.bug_report")}</option>
-          <option value="feature">{t("modal.feedback.feature_request")}</option>
+          <option value="bug">{t("modal.feedback.bugReport")}</option>
+          <option value="feature">{t("modal.feedback.featureRequest")}</option>
           <option value="general">
             {t("modal.feedback.general_feedback")}
           </option>
@@ -77,7 +77,7 @@ export default function FeedbackModal({ onClose }) {
           id="message-textarea"
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={t("modal.feedback.message_placeholder")}
+          placeholder={t("modal.feedback.messagePlaceholder")}
           required
         />
 
@@ -87,11 +87,11 @@ export default function FeedbackModal({ onClose }) {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder={t("modal.feedback.email_placeholder")}
+          placeholder={t("modal.feedback.emailPlaceholder")}
         />
 
         <p className="context-disclaimer">
-          {t("modal.feedback.tech_disclaimer")}
+          {t("modal.feedback.techDisclaimer")}
         </p>
 
         <div className="flex-shrink-0 p-6 border-t flex justify-end gap-4">

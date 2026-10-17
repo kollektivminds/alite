@@ -30,18 +30,19 @@
       "targetItemQuantTooltipDesc": "(Максимальное количество вопросов от запроса (из-за алгоритмитечской обработки вопросов, настоящее количество в упражнении может не соответствовать этому).",
       "difficultyLevel": "Уровень сложности",
       "difficultyLevelTooltipName": "Сложность",
-      "difficultyLevelTooltipDesc": "Set of options to more or less rigorously test knowledge. Default difficulty available in user settings.",
+      "difficultyLevelTooltipDesc": "Набор опций для более или менее строгой проверки знаний. Уровень сложности по умолчанию можно задать в настройках пользователя.",
       "keysItem": "Прав. ответ / вопрос",
-      "keysItemTooltipName": "Multiple True Keys",
-      "keysItemTooltipDesc": "Allows generating items with multiple correct options to test comprehensive category recognition.",
+      "keysItemTooltipName": "Несколько верных ответов",
+      "keysItemTooltipDesc": "Позволяет создавать задания с несколькими правильными вариантами ответа для проверки навыка всестороннего распознавания категорий.",
       "distractorsItem": "Дистракторы / Вопрос",
-      "distractorsTooltipName": "Distractor Quota",
-      "distractorsTooltipDesc": "The number of syntactically plausible, incorrect options generated per multiple-choice item.",
-      "allowOoo": "Допустить вариант Лишнее",
-      "allowOooTooltipName": "Odd-One-Out Generation",
-      "allowOooTooltipDesc": "Generates questions with the usual multiple-choice format flipped: identify the one incorrect answer.",
+      "distractorsTooltipName": "Квота на дистракторы",
+      "distractorsTooltipDesc": "Количество синтаксически правдоподобных, но неверных вариантов, генерируемых для каждого тестового задания с выбором ответа.",
+      "allowOoo": "Допустить вариант «лишнее»",
+      "allowOooTooltipName": "Генерация «лишнего»",
+      "allowOooTooltipDesc": "Создаёт вопросы в привычном формате с несколькими вариантами ответа, но с изменённым условием: нужно указать один неверный ответ.",
       "questionTypes": "Виды вопросов",
       "allocated": "Выделены",
+      "target": "цель",
       "randomize": "Случайно",
       "reset": "Отмена",
       "stageVocab": "Включить слова, чтобы использовать эти.",
@@ -55,8 +56,9 @@
       "maxDistractors": "Макс. количество дистракторов",
       "formats": {
         "format": "Формат",
+        "noFormat": "noFormat",
         "availableFormats": "Доступные форматы",
-        "questionTypes": "Question Types",
+        "questionTypes": "Типы вопросов",
         "cloze": "Вопросы с пробелами",
         "fitb": "Вопросы с пробелами",
         "unscramble": "Восстановление предложения",
@@ -78,7 +80,9 @@
     "wordsMenu": {
       "title": "Слова",
       "instructions": "Сформируйте целевой словарный запас и настройте стратегии.",
-      "lexicalItems": "Lexical Items",
+      "word_one": "слово",
+      "word_few": "слова",
+      "word_many": "слов",
       "queryNoMatches": "Совпадений не найдено для",
       "loadCurriculum": "Идет загрузка учебных материалов",
       "lessonLists": "Уроки и списки",
@@ -107,6 +111,13 @@
         "Adjectives": "Прилагательные",
         "Participles": "Причастия",
         "Other": "Другие"
+      },
+      "translitGuide": {
+        "title": "title",
+        "subtitle": "subtitle",
+        "digraphs": "digraphs",
+        "vowels": "vowels",
+        "signs": "signs"
       }
     },
     "sentencesMenu": {
@@ -117,18 +128,19 @@
       "allocated_many": "Выделены",
       "strategies": {
         "gramForms": "Грамматические формы (морфология)",
-        "nounMorph": "Склонение существительных",
-        "adjectiveMorph": "Adjective Declensions",
-        "verbMorph": "Склонение прилагательных",
+        "nounMorph": "Склонение существительного",
+        "adjectiveMorph": "Слконения прилагательного",
+        "verbMorph": "Спряжения глагола",
         "lexical": "Лексический",
         "unscramble": "Расшифровка",
         "depRel": "Отношения зависимости",
         "findHead": "Найдите вершину",
         "findSubject": "Найдите подлежащее"
-      }
+      },
+      "sentence_forms": "Формы предложения"
     },
     "paragraphsMenu": {
-      "paragraph_forms": "paragraph_forms"
+      "paragraph_forms": "Формы параграфы"
     }
   },
   "modal": {
@@ -182,7 +194,7 @@
       "adjective": "прилагательное",
       "adverb": "наречие",
       "conjunction": "союз",
-      "nouns": "существительные",
+      "noun": "noun",
       "other": "другая",
       "preposition": "предлог",
       "participle": "причастие",

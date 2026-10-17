@@ -101,10 +101,9 @@ def load_words(
                 if raw_data:
                     # update in-memory cache (dict assignment is thread-safe in CPython)
                     fetcher.cache_data[word] = raw_data
-                    new_words_fetched += 1
-
                     # process the newly fetched data
                     _process_and_batch(raw_data)
+                    new_words_fetched += 1
                 else:
                     logger.warning(f"API returned no data for '{word}'")
 

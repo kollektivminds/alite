@@ -39,6 +39,7 @@
       "allowOooTooltipDesc": "Generates questions with the usual multiple-choice format flipped: identify the one incorrect answer.",
       "questionTypes": "Question Types",
       "allocated": "Allocated",
+      "target": "target",
       "randomize": "Randomize",
       "reset": "Reset",
       "stageVocab": "Stage vocabulary lemmas on the left to unlock strategies.",
@@ -51,6 +52,7 @@
       "maxDistractors": "Max Number of Distractors",
       "formats": {
         "format": "Format",
+        "noFormat": "Settings returned no available formats.",
         "availableFormats": "Available Formats",
         "questionTypes": "Question Types",
         "cloze": "Fill-in-the-Blank",
@@ -74,14 +76,15 @@
       "title": "Words",
       "instructions": "Assemble target vocabulary and configure strategies.",
       "lexicalItems": "Lexical Items",
-      "word_one": "Lexical Items",
+      "word_one": "Lexical Item",
+      "word_other": "Lexical Items",
       "queryNoMatches": "No matches found for",
       "loadCurriculum": "Loading curriculum modules",
       "lessonLists": "Lessons / Lists",
       "list_one": "list",
       "list_other": "lists",
       "targetVocabStaging": "Target Vocab Staging",
-      "vocabStagingInstructions": "Search in Cyrillic or Latin alphabets.",
+      "vocabStagingInstructions": "Search in Cyrillic or Latin alphabets. ",
       "deselectAll": "Deselect all",
       "refinePool": "Refine Final Vocabulary Pool",
       "clickToExclude": "Click a module to exclude it or a custom word to remove it.",
@@ -100,6 +103,13 @@
         "Adjectives": "Adjectives",
         "Participles": "Participles",
         "Other": "Other"
+      },
+      "translitGuide": {
+        "title": "Dual-Language Searching",
+        "subtitle": "Use the Russian or English keyboard to search.",
+        "digraphs": "digraphs",
+        "vowels": "vowels",
+        "signs": "signs"
       }
     },
     "sentencesMenu": {

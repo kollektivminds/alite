@@ -1,93 +1,124 @@
-// src/features/words/wordSelectionReducer.ts
+// src/features/words/WordSelectionReducer.ts
+import { Lemma } from "../../types";
+import { ExerciseConfigState } from "./ExerciseConfigPanel";
 
-// importing the core domain entities for ALITE.
-import { Lemma, UIConfigState, WordSelectionState } from "../../types";
+export interface WordSelectionState {
+  selectedLessonListIds: string[];
+  manualLemmas: Lemma[];
+  excludedLemmaIds: string[];
+  // qualities holds the full configuration state for exercise generation
+  qualities: ExerciseConfigState;
+}
 
-// action Definitions
 export type WordSelectionAction =
   | { type: "TOGGLE_LESSON_LIST"; payload: string }
   | { type: "CLEAR_LESSON_LISTS" }
-  | { type: "TOGGLE_EXCLUDE_LEMMA"; payload: string }
+  | { type: "SET_LESSON_LISTS"; payload: string[] }
   | { type: "ADD_MANUAL_LEMMA"; payload: Lemma }
   | { type: "REMOVE_MANUAL_LEMMA"; payload: string }
-  | { type: "UPDATE_QUALITIES"; payload: Partial<UIConfigState> };
+  | { type: "TOGGLE_EXCLUDE_LEMMA"; payload: string }
+  | {
+      type: "BATCH_EXCLUDE_LEMMAS";
+      payload: { ids: string[]; shouldExclude: boolean };
+    }
+  | { type: "UPDATE_QUALITIES"; payload: Partial<ExerciseConfigState> };
 
-// default configuration
-export const defaultPanelConfig: UIConfigState = {
-  itemFormats: [],
-  difficulty: "medium",
-  maxKeys: 1,
-  maxDistractors: 3,
-  maxItems: 10,
-  allowOddOneOut: true,
-  typeCounts: {},
-};
-
-// initial state
 export const initialState: WordSelectionState = {
   selectedLessonListIds: [],
-  excludedLemmaIds: [],
   manualLemmas: [],
-  qualities: defaultPanelConfig,
+  excludedLemmaIds: [],
+  // Full declarative initialization preventing 'undefined' prop errors
+  qualities: {
+    difficulty: "medium" as any,
+    maxKeys: 1,
+    maxDistractors: 3,
+    allowOddOneOut: false,
+    itemFormats: ["mcq", "flashcard"],
+    typeCounts: {}, // Prevents undefined index lookup in ExerciseConfigPanel
+    maxItems: 10, // Standard assessment session baseline
+  },
 };
 
-// the pure reducer function
 export function wordSelectionReducer(
   state: WordSelectionState,
   action: WordSelectionAction,
 ): WordSelectionState {
   switch (action.type) {
     case "TOGGLE_LESSON_LIST": {
-      const isSelected = state.selectedLessonListIds.includes(action.payload);
+      const exists = state.selectedLessonListIds.includes(action.payload);
       return {
         ...state,
-        selectedLessonListIds: isSelected
+        selectedLessonListIds: exists
           ? state.selectedLessonListIds.filter((id) => id !== action.payload)
           : [...state.selectedLessonListIds, action.payload],
       };
     }
 
-    case "CLEAR_LESSON_LISTS": {
+    case "CLEAR_LESSON_LISTS":
       return {
         ...state,
         selectedLessonListIds: [],
+        excludedLemmaIds: [],
       };
-    }
 
-    case "TOGGLE_EXCLUDE_LEMMA": {
-      const isExcluded = state.excludedLemmaIds.includes(action.payload);
+    case "SET_LESSON_LISTS":
       return {
         ...state,
-        excludedLemmaIds: isExcluded
-          ? state.excludedLemmaIds.filter((id) => id !== action.payload)
-          : [...state.excludedLemmaIds, action.payload],
+        selectedLessonListIds: action.payload,
+        excludedLemmaIds: [],
       };
-    }
 
     case "ADD_MANUAL_LEMMA": {
-      // Prevent duplicate dictionary forms from skewing the generation pipeline
-      if (state.manualLemmas.some((l) => l.id === action.payload.id)) {
-        return state;
-      }
+      const exists = state.manualLemmas.some(
+        (l) => String(l.id) === String(action.payload.id),
+      );
+      if (exists) return state;
       return {
         ...state,
         manualLemmas: [...state.manualLemmas, action.payload],
-        // Seamlessly clear previous exclusions for the same lemma
-        excludedLemmaIds: state.excludedLemmaIds.filter(
-          (id) => id !== action.payload.id,
-        ),
       };
     }
 
-    case "REMOVE_MANUAL_LEMMA": {
+    case "REMOVE_MANUAL_LEMMA":
       return {
         ...state,
-        manualLemmas: state.manualLemmas.filter((l) => l.id !== action.payload),
+        manualLemmas: state.manualLemmas.filter(
+          (l) => String(l.id) !== String(action.payload),
+        ),
+        excludedLemmaIds: state.excludedLemmaIds.filter(
+          (id) => id !== String(action.payload),
+        ),
+      };
+
+    case "TOGGLE_EXCLUDE_LEMMA": {
+      const targetId = String(action.payload);
+      const isExcluded = state.excludedLemmaIds.includes(targetId);
+      return {
+        ...state,
+        excludedLemmaIds: isExcluded
+          ? state.excludedLemmaIds.filter((id) => id !== targetId)
+          : [...state.excludedLemmaIds, targetId],
       };
     }
 
-    case "UPDATE_QUALITIES": {
-      // Merges the existing qualities state with the incoming payload changes
+    case "BATCH_EXCLUDE_LEMMAS": {
+      const { ids, shouldExclude } = action.payload;
+      const targetSet = new Set(ids.map(String));
+      const currentSet = new Set(state.excludedLemmaIds.map(String));
+
+      if (shouldExclude) {
+        targetSet.forEach((id) => currentSet.add(id));
+      } else {
+        targetSet.forEach((id) => currentSet.delete(id));
+      }
+
+      return {
+        ...state,
+        excludedLemmaIds: Array.from(currentSet),
+      };
+    }
+
+    case "UPDATE_QUALITIES":
       return {
         ...state,
         qualities: {
@@ -95,7 +126,6 @@ export function wordSelectionReducer(
           ...action.payload,
         },
       };
-    }
 
     default:
       return state;

@@ -132,6 +132,11 @@ class EnumVerbTransRefl(str, enum.Enum):
 
 
 class EnumRelLemType(str, enum.Enum):
+    """
+    Taxonomic relationship categories between lexical lemmas.
+    Values strictly correspond to PostgreSQL's lowercase enumrellemtype labels.
+    """
+
     ADJECTIVE_OF = "adjective_of"
     ABSTRACT_NOUN_OF = "abstract_noun_of"
     ADVERB_OF = "adverb_of"
@@ -141,6 +146,22 @@ class EnumRelLemType(str, enum.Enum):
     IMPERFECTIVE_PAIR_OF = "imperfective_pair_of"
     SYNONYM_OF = "synonym_of"
     ANTONYM_OF = "antonym_of"
+
+    @classmethod
+    def _missing_(cls, value: Any) -> Optional["EnumRelLemType"]:
+        """
+        Defense-in-depth: Coerces uppercase/legacy strings (e.g., 'ABSTRACT_NOUN_OF')
+        to canonical members to prevent runtime deserialization crashes.
+        """
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            # Map legacy abbreviation to canonical value if encountered
+            if normalized == "rel_adjv_of":
+                return cls.REL_ADJV_OF
+            for member in cls:
+                if member.value == normalized or member.name.lower() == normalized:
+                    return member
+        return None
 
 
 class EnumRelLemTypeGroup(str, enum.Enum):
@@ -574,7 +595,17 @@ class LemmaRelation(Base, table=True):
 
     source_id: int = Field(foreign_key="lemmas.id", index=True, nullable=False)
     target_id: int = Field(foreign_key="lemmas.id", index=True)
-    rel_type: EnumRelLemType = Field(index=False, unique=False, nullable=False)
+    rel_type: EnumRelLemType = Field(
+        sa_type=SQLEnum(
+            EnumRelLemType,
+            name="enumrellemtype",
+            values_callable=lambda obj: [e.value for e in obj],
+            native_enum=True,
+        ),  # type: ignore
+        index=False,
+        unique=False,
+        nullable=False,
+    )
 
     source_lemma: "Lemma" = Relationship(
         back_populates="related_to",
@@ -587,28 +618,27 @@ class LemmaRelation(Base, table=True):
     )
 
 
-class LookupQueue(
-    Base, table=True
-):  # Base provides surrogate primary key and created_at[cite: 8]
-    """
-    Persistent queue tracking external scraping and dictionary extraction jobs.
-    Uses SQLModel declarative mapping over SQLAlchemy 2.0.
-    """
+class LookupQueue(Base, table=True):
+    """Asynchronous background queue for external dictionary extraction."""
 
-    __tablename__: str = "lookup_queue"  # pyright: ignore
+    __tablename__: str = "lookup_queue"  # type: ignore
 
-    target_lem: str = Field(
-        index=False, unique=False, nullable=False
-    )  # Target headword[cite: 8]
-    target_id: Optional[int] = Field(
-        default=None, foreign_key="lemmas.id", index=True
-    )  # Linked lemma surrogate[cite: 8]
-    source_id: Optional[int] = Field(
-        default=None, foreign_key="lemmas.id", index=True
-    )  # Source relationship anchor[cite: 8]
-    rel_type: Optional[str] = Field(
-        default=None, index=True, nullable=True
-    )  # Morphological relation tag[cite: 8]
+    target_lem: str = Field(index=False, unique=False, nullable=False)
+    target_id: Optional[int] = Field(default=None, foreign_key="lemmas.id", index=True)
+    source_id: Optional[int] = Field(default=None, foreign_key="lemmas.id", index=True)
+
+    # Configured with explicit values_callable for enumrellemtype
+    rel_type: Optional[EnumRelLemType] = Field(
+        default=None,
+        sa_type=SQLEnum(
+            EnumRelLemType,
+            name="enumrellemtype",
+            values_callable=lambda obj: [e.value for e in obj],
+            native_enum=True,
+        ),  # type: ignore
+        index=True,
+        nullable=True,
+    )
 
     status: EnumLookupStatus = Field(
         default=EnumLookupStatus.PENDING,
@@ -617,16 +647,13 @@ class LookupQueue(
             name="enumlookupstatus",
             values_callable=lambda obj: [e.value for e in obj],
             native_enum=True,
-        ),
+        ),  # type: ignore
         index=True,
         nullable=False,
     )
 
     requested_by: Optional[int] = Field(
-        default=None,
-        foreign_key="users.id",
-        index=True,
-        nullable=True,
+        default=None, foreign_key="users.id", index=True, nullable=True
     )
 
     requester: Optional["User"] = Relationship(back_populates="requested_words")
@@ -839,7 +866,7 @@ class SentenceToken(Base, table=True):
             name="enumlookupstatus",
             values_callable=lambda obj: [e.value for e in obj],
             native_enum=True,
-        ),
+        ),  # type: ignore
         index=True,
         unique=False,
         nullable=False,

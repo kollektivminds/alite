@@ -1,7 +1,7 @@
-// src/utils/translit.ts
+// src/utils/Translit.ts
 
-// 1. Digraphs must be processed first to prevent partial character collisions.
-const DIGRAPH_MAP: readonly [string, string][] = [
+// 1. Digraphs processed first to prevent partial character collisions
+export const DIGRAPH_MAP: readonly [string, string][] = [
   ["shch", "щ"],
   ["yo", "ё"],
   ["zh", "ж"],
@@ -15,8 +15,8 @@ const DIGRAPH_MAP: readonly [string, string][] = [
   ["šč", "щ"],
 ];
 
-// 2. Single-character mapping table (Latin -> Cyrillic)
-const SINGLE_CHAR_MAP: Record<string, string> = {
+// 2. Single-character mapping table (Latin -> Cyrillic)[cite: 11]
+export const SINGLE_CHAR_MAP: Record<string, string> = {
   a: "а",
   b: "б",
   v: "в",
@@ -42,25 +42,59 @@ const SINGLE_CHAR_MAP: Record<string, string> = {
   c: "ц",
   y: "ы",
   "'": "ь",
-  "`": "ъ",
   '"': "ъ",
   č: "ч",
   š: "ш",
   ž: "ж",
 };
 
+/**
+ * Categorized rule sets for UI scaffolding and tooltip reference.
+ * Grouped to help language learners identify challenging orthographic patterns.
+ */
+export interface TranslitRuleGroup {
+  categoryKey: string;
+  pairs: { latin: string; cyrillic: string }[];
+}
+
+export const TRANSLIT_GUIDE_GROUPS: TranslitRuleGroup[] = [
+  {
+    categoryKey: "exercises.wordsMenu.translitGuide.digraphs",
+    pairs: [
+      { latin: "zh", cyrillic: "ж" },
+      { latin: "kh", cyrillic: "х" },
+      { latin: "ts", cyrillic: "ц" },
+      { latin: "ch", cyrillic: "ч" },
+      { latin: "sh", cyrillic: "ш" },
+      { latin: "shch", cyrillic: "щ" },
+    ],
+  },
+  {
+    categoryKey: "exercises.wordsMenu.translitGuide.vowels",
+    pairs: [
+      { latin: "ya", cyrillic: "я" },
+      { latin: "yu", cyrillic: "ю" },
+      { latin: "yo", cyrillic: "ё" },
+      { latin: "ye", cyrillic: "е" },
+      { latin: "y", cyrillic: "ы" },
+    ],
+  },
+  {
+    categoryKey: "exercises.wordsMenu.translitGuide.signs",
+    pairs: [
+      { latin: "'", cyrillic: "ь (soft)" },
+      { latin: '"', cyrillic: "ъ (hard)" },
+      { latin: "j", cyrillic: "й" },
+    ],
+  },
+];
+
 const LATIN_REGEXP = /[a-zA-Z\u00C0-\u024F]/;
 
-/**
- * Evaluates whether the string contains Latin characters.
- */
 export function isLatin(text: string): boolean {
   return LATIN_REGEXP.test(text);
 }
 
-/**
- * Projects a Latin string into canonical Cyrillic.
- */
 export function latinToCyrillic(text: string): string {
   if (!text) return "";
   let result = text.trim().toLowerCase();

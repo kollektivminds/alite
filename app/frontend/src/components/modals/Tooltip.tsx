@@ -25,7 +25,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const tooltipId = useId();
 
-  // 1. Calculate real-time viewport positioning on display to avoid overflow truncation
+  // calculate real-time viewport positioning on display to avoid overflow truncation
   const updateCoordinates = () => {
     if (!triggerRef.current) return;
     const rect = triggerRef.current.getBoundingClientRect();
@@ -68,7 +68,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     setIsVisible(false);
   };
 
-  // 2. Keyboard dismissal: Ensure escape key clears visual obstruction per WCAG 2.2
+  // keyboard dismissal: Ensure escape key clears visual obstruction per WCAG 2.2
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isVisible) {
@@ -79,7 +79,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isVisible]);
 
-  // Recalculate if user scrolls or resizes while tooltip is open
+  // recalculate if user scrolls or resizes while tooltip is open
   useEffect(() => {
     if (!isVisible) return;
     window.addEventListener("scroll", updateCoordinates, true);
@@ -92,7 +92,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
 
   return (
     <span className={`inline-flex items-center ${className}`}>
-      {/* Interactive Trigger Button: Focusable via Tab, hoverable via Mouse */}
+      {/* interactive trigger button: focusable via tab, hoverable via mouse */}
       <button
         ref={triggerRef}
         type="button"
@@ -123,7 +123,7 @@ export const Tooltip: React.FC<TooltipProps> = ({
         )}
       </button>
 
-      {/* 3. Render directly into document.body to bypass overflow-y-auto clipping */}
+      {/* render directly into document.body to bypass overflow-y-auto clipping */}
       {isVisible &&
         createPortal(
           <div
