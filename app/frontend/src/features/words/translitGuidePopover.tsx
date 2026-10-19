@@ -1,7 +1,7 @@
 // src/features/words/TranslitGuidePopover.tsx
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { TRANSLIT_GUIDE_GROUPS } from "./Translit";
+import { TRANSLIT_GUIDE_GROUPS } from "./translit";
 
 export const TranslitGuidePopover: React.FC = () => {
   const { t } = useTranslation();

@@ -292,7 +292,8 @@ class EnumWordItemType(str, enum.Enum):
     # word_forms[gram_id=gram_props.[gram_tense, gram_num, gram_gender, conj_person, verb_mood]].lem_id[pos=PRONOUN].lem_canon
     # + lemmas.filter(pos==verb).lem_canon
     # <-> word_forms(lem_id=lem, gram_id=gram_prop).lex_id.lex_text
-    VERB_TO_CONJ_FORM = "verb_to_conj_form"  # "What is the X form of Y?" (MCQ/Cloze)
+    VERB_FORM_TO_GRAM = "verb_form_to_gram"  # "What is the X form of Y?" (MCQ/Cloze)
+    VERB_GRAM_TO_FORM = "verb_gram_to_form"  # "What is the X form of Y?" (MCQ/Cloze)
     # Transitivity & Reflexivity
     # lemmas.filter(pos==verb).lem_canon
     # <-> lemmas.filter(pos==verb).verb_trans_refl

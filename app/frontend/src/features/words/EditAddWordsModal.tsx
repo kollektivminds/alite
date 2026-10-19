@@ -1,6 +1,6 @@
 // src/features/words/EditAddWordsModal.tsx
 import React, { useEffect, useMemo, useState } from "react";
-import { isLatin, latinToCyrillic } from "./Translit";
+import { isLatin, latinToCyrillic } from "./translit";
 
 interface ParsedWordToken {
   original: string;

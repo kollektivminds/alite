@@ -9,12 +9,12 @@ import React, {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { ExerciseContext, Lemma, LessonList } from "../../types";
-import { ExerciseConfigPanel } from "./ExerciseConfigPanel";
-import { LessonListPicker } from "./LessonListPicker";
-import { LessonWordPruner } from "./LessonWordPruner";
-import { PipelineJobDrawer, TrackedPipelineJob } from "./PipelineJobDrawer";
-import { PipelineResponse, SingleWordAdder } from "./SingleWordAdder";
-import { initialState, wordSelectionReducer } from "./WordSelectionReducer";
+import { LessonListPicker } from "./lessonListPicker";
+import { LessonWordPruner } from "./lessonWordPruner";
+import { PipelineJobDrawer, TrackedPipelineJob } from "./pipelineJobDrawer";
+import { PipelineResponse, SingleWordAdder } from "./singleWordAdder";
+import { initialState, wordSelectionReducer } from "./wordSelectionReducer";
+import { ExerciseConfigPanel } from "./wordsExerciseConfigPanel";
 
 interface LemmaReadinessItem {
   lemma_id: number;

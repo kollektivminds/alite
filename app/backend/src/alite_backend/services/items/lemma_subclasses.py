@@ -2,7 +2,7 @@
 import logging
 import random
 from collections import defaultdict
-from typing import Any, List
+from typing import Any, List, Optional
 
 from alite_backend.db import models, schemas
 from alite_backend.db.crud.item_crud import crud_exercise, crud_item
@@ -95,7 +95,6 @@ class LemmaSiblingAttributeStrategy(LemmaItemBaseStrategy):
 
 
 class LemmaMorphologicalStrategy(LemmaItemBaseStrategy):
-
     def __init__(
         self,
         db_session: Session,
@@ -103,10 +102,7 @@ class LemmaMorphologicalStrategy(LemmaItemBaseStrategy):
         target_pos: models.EnumPartOfSpeech,
         is_reverse: bool,
     ):
-
-        # pass up to Base class
         super().__init__(db_session, request_context)
-
         self.target_pos = target_pos
         self.is_reverse = is_reverse
 
@@ -115,35 +111,38 @@ class LemmaMorphologicalStrategy(LemmaItemBaseStrategy):
         num_items: int = 5,
         max_keys: int = 1,
         max_distractors: int = 3,
-        config: schemas.StrategyConfigs | None = None,
-    ) -> List[schemas.ItemBlueprint] | None:
+        config: Optional[schemas.StrategyConfigs] = None,
+    ) -> Optional[List[schemas.ItemBlueprint]]:
         allow_ooo = config.allow_odd_one_out if config else False
 
-        if self.target_pos in ["noun", "adjective"]:
-            focus = "substantives"
-        elif self.target_pos == "verb":
-            focus = "verbs"
-        elif self.target_pos == "participle":
-            focus = "participles"
+        # Strict Enum identity mapping
+        if self.target_pos in (
+            models.EnumPartOfSpeech.NOUN,
+            models.EnumPartOfSpeech.ADJECTIVE,
+        ):
+            focus_domain = "substantives"
+        elif self.target_pos == models.EnumPartOfSpeech.VERB:
+            focus_domain = "verbs"
+        elif self.target_pos == models.EnumPartOfSpeech.PARTICIPLE:
+            focus_domain = "participles"
         else:
-            raise KeyError
+            raise KeyError(f"Unsupported morphological POS category: {self.target_pos}")
 
-        if focus:
-            foci = (
-                config.strategies.get(focus, ["all"])
-                if config and config.strategies
-                else "all"
-            )
+        foci = ["all"]
+        if config and config.strategies:
+            configured_foci = config.strategies.get(focus_domain)
+            if configured_foci:
+                foci = configured_foci
 
-            return self._build_paradigm_drill(
-                pos_target=self.target_pos,
-                num_items=num_items,
-                max_keys=max_keys,
-                max_distractors=max_distractors,
-                allowed_foci=foci,  # type: ignore
-                allow_odd_one_out=allow_ooo,
-                is_reverse=self.is_reverse,
-            )
+        return self._build_paradigm_drill(
+            pos_target=self.target_pos,
+            num_items=num_items,
+            max_keys=max_keys,
+            max_distractors=max_distractors,
+            allowed_foci=foci,
+            allow_odd_one_out=allow_ooo,
+            is_reverse=self.is_reverse,
+        )
 
 
 class LemmaRelationStrategy(LemmaItemBaseStrategy):
@@ -154,15 +153,12 @@ class LemmaRelationStrategy(LemmaItemBaseStrategy):
         request_context: schemas.ExerciseContext,
         target_pos: models.EnumPartOfSpeech | None,
         target_rel: models.EnumRelLemTypeGroup | None,
-        is_reverse: bool,
+        drill_mode: str = "find_target",  # Replaces is_reverse
     ):
-        # pass up to Base class
         super().__init__(db_session, request_context)
-
-        # subclass attributes
         self.target_pos = target_pos
         self.target_rel = target_rel
-        self.is_reverse = is_reverse
+        self.drill_mode = drill_mode
 
     def generate_item_blueprints(
         self, num_items=10, max_keys=1, max_distractors=3, config=None
@@ -176,5 +172,5 @@ class LemmaRelationStrategy(LemmaItemBaseStrategy):
             max_keys=max_keys,
             max_distractors=max_distractors,
             allow_odd_one_out=allow_ooo,
-            is_reverse=self.is_reverse,
+            drill_mode=self.drill_mode,
         )

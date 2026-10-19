@@ -8,7 +8,7 @@ import {
   LessonList,
 } from "../../types";
 import { ExerciseContainer } from "../exercises/ExerciseContainer";
-import { WordsSubLandingPage } from "./WordSubLandingPage";
+import { WordsSubLandingPage } from "./wordSubLandingPage";
 
 interface WordsMenuProps {
   onBack: () => void;

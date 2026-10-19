@@ -35,7 +35,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": None,
             "target_column": "pos",
-            "is_reverse": False,
+            "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
@@ -44,7 +44,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": None,
             "target_column": "pos",
-            "is_reverse": True,
+            "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -53,7 +53,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_gender",
-            "is_reverse": False,
+            "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -62,7 +62,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_gender",
-            "is_reverse": True,
+            "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -71,7 +71,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_animacy",
-            "is_reverse": False,
+            "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -80,7 +80,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.NOUN,
             "target_column": "noun_animacy",
-            "is_reverse": True,
+            "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -89,7 +89,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_aspect",
-            "is_reverse": False,
+            "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -98,7 +98,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_aspect",
-            "is_reverse": True,
+            "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -107,7 +107,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_type",
-            "is_reverse": False,
+            "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -116,7 +116,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_type",
-            "is_reverse": True,
+            "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -125,7 +125,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_trans_refl",
-            "is_reverse": False,
+            "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -134,7 +134,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_column": "verb_trans_refl",
-            "is_reverse": True,
+            "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -220,13 +220,36 @@ EXERCISE_CONFIG = {
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
+    EnumWordItemType.VERB_GRAM_TO_FORM: {
+        "strategy_class": LemmaMorphologicalStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "is_reverse": True,
+        },
+        "formats": [
+            models.EnumItemFormat.MCQ,
+            models.EnumItemFormat.FITB,
+            models.EnumItemFormat.FLASHCARD,
+        ],
+    },
+    EnumWordItemType.VERB_FORM_TO_GRAM: {
+        "strategy_class": LemmaMorphologicalStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "is_reverse": False,
+        },
+        "formats": [
+            models.EnumItemFormat.MCQ,
+            models.EnumItemFormat.FLASHCARD,
+        ],
+    },
     # lemmas - relation types
     EnumWordItemType.VERB_PAIR_TO_REL: {
         "strategy_class": LemmaRelationStrategy,
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_rel": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
-            "is_reverse": False,
+            "drill_mode": "find_target",
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -235,7 +258,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": models.EnumPartOfSpeech.VERB,
             "target_rel": models.EnumRelLemTypeGroup.ASPECTUAL_PAIR,
-            "is_reverse": True,
+            "drill_mode": "find_source",
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -244,7 +267,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": None,
             "target_rel": None,
-            "is_reverse": False,
+            "drill_mode": "find_relation",
         },
         "formats": [models.EnumItemFormat.MCQ],
     },
@@ -253,7 +276,7 @@ EXERCISE_CONFIG = {
         "kwargs": {
             "target_pos": None,
             "target_rel": None,
-            "is_reverse": True,
+            "drill_mode": "find_pair",
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
     },
@@ -352,31 +375,19 @@ EXERCISE_CONFIG = {
 
 
 class ExerciseRouter:
-    """_summary_"""
-
-    def __init__(
-        self,
-        db: Session,
-        user_id: int,  # from endpoint
-    ):
+    def __init__(self, db: Session, user_id: int):
         self.db = db
         self.user_id = user_id
-        # create exercise record
         self.exercise_in = models.Exercise(user_id=self.user_id)
         self.db.add(self.exercise_in)
         self.db.flush()
 
     def get_exercise_generator(
         self, exercise_type: EnumWordItemType | EnumSentItemType
-    ) -> Tuple[
-        Any,
-        Dict[str, Any],
-    ]:
-
+    ):
         StrategyClass = EXERCISE_CONFIG.get(exercise_type)
         if not StrategyClass:
             raise ValueError(f"Unknown exercise type: {exercise_type}")
-
         return StrategyClass["strategy_class"], StrategyClass["kwargs"]
 
     def generate_exercise(
@@ -390,49 +401,66 @@ class ExerciseRouter:
                 detail="No target items or generation configurations provided.",
             )
 
-        for item_strategy, requested_qty in request.type_counts.items():
-            if requested_qty <= 0:
+        # initialize Deficit Tracking
+        rolling_deficit = 0
+        strategies_to_process = list(request.type_counts.items())
+
+        # extract general fallback strategies (e.g., definitions, POS) in case we
+        # reach the end of the loop and still have a deficit to fill.
+        fallback_strategies = [
+            strat
+            for strat in request.type_counts.keys()
+            if "def" in str(strat).lower() or "pos" in str(strat).lower()
+        ]
+
+        # process strategies dynamically
+        for i, (item_strategy, base_qty) in enumerate(strategies_to_process):
+            if base_qty <= 0 and rolling_deficit <= 0:
                 continue
 
-            # instantiate the class
+            # Add any accumulated deficit from previous failed strategies to this strategy's quota
+            requested_qty = base_qty + rolling_deficit
+            rolling_deficit = 0  # Reset, as we are attempting to fulfill it now
+
             strategy_class, strategy_kwargs = self.get_exercise_generator(item_strategy)
             strategy_instance = strategy_class(
                 db_session=self.db,
                 request_context=request.exercise_context,
                 **strategy_kwargs,
-            )  # type: ignore
-            # specific_config = None
-            # specific_config = (
-            #     request.grammar_focus.strategies if request.grammar_focus else None  # type: ignore
-            # )
-            # create blueprints for all items of a strategy
+            )
+
             blueprints = strategy_instance.generate_item_blueprints(
                 num_items=requested_qty,
                 max_keys=request.exercise_context.max_keys,
                 max_distractors=request.exercise_context.max_distractors,
                 config=request.grammar_focus or None,
             )
+
+            # 4. Calculate actual yield vs requested quota
+            actual_yield = len(blueprints) if blueprints else 0
+
+            if actual_yield < requested_qty:
+                # We missed the quota. Carry the deficit forward to the next strategy.
+                rolling_deficit = requested_qty - actual_yield
+                logger.info(
+                    f"Strategy {item_strategy} yielded {actual_yield}/{requested_qty}. Deficit carried: {rolling_deficit}"
+                )
+
             if not blueprints:
                 continue
 
-            # Format arbitration: intersect requested formats with strategy capabilities
-            supported_formats = schemas.STRATEGY_FORMATS.get(
+            supported_formats = schemas.STRATEGY_FORMAT_COMPATIBILITY.get(
                 item_strategy, EXERCISE_CONFIG[item_strategy]["formats"]
             )
             viable_formats = list(
-                set(supported_formats) & set(request.exercise_context.ex_formats)  # type: ignore
+                set(supported_formats) & set(request.exercise_context.ex_formats)
             )
 
             if not viable_formats:
-                logger.warning(
-                    "Skipping %s: requested formats %s incompatible with supported %s",
-                    item_strategy,
-                    request.exercise_context.ex_formats,
-                    supported_formats,
-                )
+                # Format mismatch: we lose these items. Add to deficit.
+                rolling_deficit += actual_yield
                 continue
 
-            # assign format and add to item list
             for bp in blueprints:
                 chosen_format = random.choice(viable_formats)
                 exercise_payload.append(
@@ -443,6 +471,46 @@ class ExerciseRouter:
                         "settings": request.grammar_focus,
                     }
                 )
+
+        # 5. Final Safety Net: If the loop finished but we STILL have a deficit,
+        # force a high-capacity fallback strategy to generate the remaining items.
+        if rolling_deficit > 0 and fallback_strategies:
+            logger.info(
+                f"Loop finished with deficit of {rolling_deficit}. Triggering fallback."
+            )
+            fallback_strat = random.choice(fallback_strategies)
+            strategy_class, strategy_kwargs = self.get_exercise_generator(
+                fallback_strat
+            )
+
+            fallback_instance = strategy_class(
+                db_session=self.db,
+                request_context=request.exercise_context,
+                **strategy_kwargs,
+            )
+
+            fallback_bps = fallback_instance.generate_item_blueprints(
+                num_items=rolling_deficit,
+                max_keys=request.exercise_context.max_keys,
+                max_distractors=request.exercise_context.max_distractors,
+                config=request.grammar_focus or None,
+            )
+
+            if fallback_bps:
+                viable_formats = list(
+                    set(schemas.STRATEGY_FORMAT_COMPATIBILITY.get(fallback_strat, []))
+                    & set(request.exercise_context.ex_formats)
+                )
+                if viable_formats:
+                    for bp in fallback_bps:
+                        exercise_payload.append(
+                            {
+                                "item_bp": bp,
+                                "item_type": fallback_strat,
+                                "item_format": random.choice(viable_formats),
+                                "settings": request.grammar_focus,
+                            }
+                        )
 
         response_items: list[schemas.ExerciseItems] = []
 

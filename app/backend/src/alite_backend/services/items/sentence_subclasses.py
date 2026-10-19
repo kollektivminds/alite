@@ -481,7 +481,7 @@ class SentenceUnscrambleStrategy(SentenceItemBaseStrategy):
             # distractors holds the permuted token sequence
             blueprints.append(
                 schemas.ItemBlueprint(
-                    prompt="Расставьте слова в правильном порядке, чтобы получилось предложение:",
+                    prompt="Put the words in the correct order:",
                     keys=original_words,
                     distractors=shuffled_words,
                     lem_id=None,

@@ -3,8 +3,8 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "../../components/modals/Tooltip";
 import { Lemma } from "../../types/words";
-import { EditAddWordsModal } from "./EditAddWordsModal";
-import { isLatin, latinToCyrillic } from "./Translit";
+import { EditAddWordsModal } from "./editAddWordsModal";
+import { isLatin, latinToCyrillic } from "./translit";
 import { TranslitGuidePopover } from "./translitGuidePopover";
 
 export interface PipelineItemOutcome {

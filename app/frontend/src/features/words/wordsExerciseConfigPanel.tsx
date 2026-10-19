@@ -11,7 +11,7 @@ import {
 import {
   WordStrategyDefinition,
   WordStrategyTooltips,
-} from "./StrategyDefinitions";
+} from "./wordsStrategyDefinitions";
 
 export interface ExerciseConfigState {
   difficulty: EnumItemDifficulty;
@@ -110,12 +110,11 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
     );
   }, [safeTypeCounts]);
 
-  // 6. Compute allowed formats using safeTypeCounts (Fixes Line 109 TypeError)
+  // 6. Compute allowed formats using safeTypeCounts[cite: 21]
   const allowedFormats = useMemo(() => {
     const formats = new Set<EnumItemFormat>();
 
     validStrategies.forEach((def) => {
-      // Safe lookups via normalized safeTypeCounts
       const mainCount = safeTypeCounts[def.id] || 0;
       const pairCount = def.pairId ? safeTypeCounts[def.pairId] || 0 : 0;
 
@@ -160,14 +159,16 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
   };
 
   /**
-   * Evaluates how many lemmas in the currently active pool
-   * can satisfy each specific strategy definition.
+   * Evaluates the capacity of the active lemma pool for each strategy.
+   * Uses uppercase string matching to remain aligned with StrategyDefinitions.ts.
    */
   const strategyCapacities = useMemo(() => {
     const capacities: Record<string, number> = {};
 
     validStrategies.forEach((def) => {
       let count = 0;
+      const upperId = def.id.toUpperCase();
+
       activeLemmas.forEach((lemma) => {
         const pos = (lemma.pos || "").toLowerCase();
         const hasDefs = Boolean(
@@ -177,15 +178,24 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
           lemma.pronunciations && lemma.pronunciations.length > 0,
         );
 
-        if (def.id === "lem_to_def" || def.id === "def_to_lem") {
+        // General Strategies[cite: 19]
+        if (upperId === "LEM_TO_DEF" || upperId === "DEF_TO_LEM") {
           if (hasDefs) count++;
-        } else if (def.id === "lem_to_pron" || def.id === "pron_to_lem") {
+        } else if (upperId === "LEM_TO_PRON" || upperId === "PRON_TO_LEM") {
           if (hasProns) count++;
-        } else if (def.id === "lem_to_pos" || def.id === "pos_to_lem") {
+        } else if (upperId === "LEM_TO_POS" || upperId === "POS_TO_LEM") {
           if (lemma.pos) count++;
         } else if (
+          upperId === "LEM_LEM_TO_REL" ||
+          upperId === "REL_TO_LEM_LEM"
+        ) {
+          // Requires relationship entries[cite: 14]
+          if (hasDefs) count++;
+        }
+        // Part of Speech Specific Strategies[cite: 19]
+        else if (
           def.group === "Nouns" &&
-          (pos.includes("noun") || pos === "s")
+          (pos.includes("noun") || pos === "s" || pos === "subst")
         ) {
           count++;
         } else if (
@@ -196,6 +206,11 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         } else if (
           def.group === "Adjectives" &&
           (pos.includes("adj") || pos === "a")
+        ) {
+          count++;
+        } else if (
+          def.group === "Participles" &&
+          (pos.includes("part") || pos.includes("prt"))
         ) {
           count++;
         }
@@ -210,11 +225,14 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
     return capacities;
   }, [validStrategies, activeLemmas]);
 
-  // Capacity-Weighted Stochastic Distributor
+  /**
+   * Capacity-Weighted Stochastic Distributor.
+   * Normalizes casing checks to ensure General strategies participate in allocation.
+   */
   const handleRandomizeDistribution = () => {
     if (validStrategies.length === 0 || maxItems <= 0) return;
 
-    // Filter tokens that have at least 1 capable lemma in the pool
+    // Isolate strategy tokens with available lemma candidates
     const viableTokens = Object.keys(strategyCapacities).filter(
       (token) => strategyCapacities[token] > 0,
     );
@@ -231,16 +249,22 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
     while (itemsRemaining > 0 && attempts < maxAttempts) {
       attempts++;
 
-      // Filter strategies that still have capacity headroom
+      // Filter tokens with remaining capacity headroom
       const availableTokens = viableTokens.filter(
         (t) => randomized[t] < strategyCapacities[t],
       );
 
       if (availableTokens.length === 0) {
-        // Pool exhausted before reaching maxItems. Allow surplus recycling on high-capacity general strategies.
-        const generalFallbacks = viableTokens.filter(
-          (t) => t.includes("def") || t.includes("pos") || t.includes("pron"),
-        );
+        // Pool capacity reached; allocate remaining items to general fallbacks
+        const generalFallbacks = viableTokens.filter((t) => {
+          const upper = t.toUpperCase();
+          return (
+            upper.includes("DEF") ||
+            upper.includes("POS") ||
+            upper.includes("PRON")
+          );
+        });
+
         const fallback =
           generalFallbacks.length > 0
             ? generalFallbacks[
@@ -253,7 +277,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         continue;
       }
 
-      // WEIGHTED SELECTION: Pick based on remaining capacity rather than flat array length
+      // Weight selection by remaining capacity headroom
       const totalRemainingCapacity = availableTokens.reduce(
         (sum, t) => sum + (strategyCapacities[t] - randomized[t]),
         0,
@@ -285,7 +309,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
       aria-labelledby="config-heading"
       className="space-y-6 max-h-[85vh] overflow-y-auto pr-2"
     >
-      {/* SECTION 1: Assessment Constraints */}
+      {/* SECTION 1: Assessment Constraints[cite: 21] */}
       <section>
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
           {t("exercises.settings.exerciseSettings")}
@@ -405,7 +429,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         </div>
       </section>
 
-      {/* SECTION 2: Hierarchical Strategy Distribution by POS */}
+      {/* SECTION 2: Hierarchical Strategy Distribution by POS[cite: 21] */}
       <section className="rounded-lg border border-slate-200 bg-slate-50/50 p-3.5 dark:border-slate-700 dark:bg-slate-800/30">
         <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-700">
           <div>
@@ -449,7 +473,6 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
 
                 const isGroupExpanded = expandedGroups.has(groupName);
 
-                // Safe aggregate calculation across this group using safeTypeCounts
                 const groupAllocatedCount = strategies.reduce((sum, s) => {
                   const fCount = safeTypeCounts[s.id] || 0;
                   const rCount = s.pairId ? safeTypeCounts[s.pairId] || 0 : 0;
@@ -493,7 +516,6 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                     {isGroupExpanded && (
                       <div className="p-2.5 space-y-3 border-t border-slate-200 dark:border-slate-700/60">
                         {strategies.map((def) => {
-                          // Safe count extraction
                           const forwardCount = safeTypeCounts[def.id] || 0;
                           const forwardMax = forwardCount + remainingHeadroom;
 
@@ -529,7 +551,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                                     : "grid-cols-1"
                                 }`}
                               >
-                                {/* Forward Direction */}
+                                {/* Forward Direction[cite: 21] */}
                                 <div className="flex flex-col justify-between rounded border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-800">
                                   <div className="space-y-1.5">
                                     <div className="flex items-start justify-between gap-1.5">
@@ -588,7 +610,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
                                   </div>
                                 </div>
 
-                                {/* Reverse Direction */}
+                                {/* Reverse Direction[cite: 21] */}
                                 {hasReverse && (
                                   <div className="flex flex-col justify-between rounded border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-800">
                                     <div className="space-y-1.5">
@@ -664,7 +686,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         </div>
       </section>
 
-      {/* SECTION 3: Output Formats */}
+      {/* SECTION 3: Output Formats[cite: 21] */}
       <section>
         <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
           {t("exercises.settings.enabledSessionFormats")}
@@ -700,7 +722,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
         )}
       </section>
 
-      {/* SECTION 4: Submission CTA */}
+      {/* SECTION 4: Submission CTA[cite: 21] */}
       <div className="sticky bottom-0 bg-white pt-4 pb-2 dark:bg-slate-800 border-t border-slate-100 dark:border-slate-700">
         <button
           type="button"

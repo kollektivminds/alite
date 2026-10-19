@@ -6,12 +6,12 @@ import re
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from alite_backend.db import models, schemas
 from hypothesis import target
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session, declarative_base
+from sqlalchemy.orm import Session, declarative_base, selectinload
 
 logger = logging.getLogger(__name__)
 
@@ -139,13 +139,34 @@ class LemmaItemBaseStrategy(ABC):
         return grouped_results
 
     def _get_trait_mapping(
-        self, pos_target: models.EnumPartOfSpeech, focus: schemas.EnumSubstGramExFocus
-    ) -> Tuple[str, List[str]] | None:
+        self,
+        pos_target: models.EnumPartOfSpeech,
+        focus: Union[Enum, str, None],
+    ) -> Tuple[str, List[str]]:
         """
-        UNIVERSAL MAPPING ENGINE: Translates an API focus selection into structural database column sets.
-        Returns: (target_column_name, [list_of_static_column_names])
+        Translates a pedagogical focus into column sets for SQL validation.
+
+        Enhancements:
+        1. Polymorphic Normalization: Coerces Enum members, raw strings, and None
+           into a clean lowercase string, preventing AttributeError on '.value'.
+        2. Universal Wildcard Handling: Immediately returns ('all', []) if focus
+           is 'all', bypassing column subtraction.
+        3. String Contract: Guarantees that target_attr is always a string column
+           name suitable for getattr(gram_prop, target_attr).
         """
-        # group definitions by major structural domains
+        # 1. Normalize focus to a string scalar
+        if focus is None:
+            focus_str = "all"
+        elif hasattr(focus, "value"):
+            focus_str = str(focus.value).lower()
+        else:
+            focus_str = str(focus).lower()
+
+        # 2. Early return for unconstrained paradigm tests
+        if focus_str == "all":
+            return "all", []
+
+        # 3. Column set definitions per morphological domain
         noun_cols: List[str] = ["subst_case", "gram_num"]
         adjective_cols: List[str] = noun_cols + ["gram_gender"]
         verb_cols: List[str] = [
@@ -157,17 +178,17 @@ class LemmaItemBaseStrategy(ABC):
         ]
         participle_cols: List[str] = ["gram_tense", "part_type", "part_voice"]
 
-        if pos_target == models.EnumPartOfSpeech.NOUN:
-            return focus, [c for c in noun_cols if c != focus.value]
-        elif pos_target == models.EnumPartOfSpeech.ADJECTIVE:
-            return focus, [c for c in adjective_cols if c != focus.value]
-        elif pos_target == models.EnumPartOfSpeech.VERB:
-            return focus, [c for c in verb_cols if c != focus.value]
-        elif pos_target == models.EnumPartOfSpeech.PARTICIPLE:
-            return focus, [c for c in participle_cols if c != focus.value]
+        domain_map: Dict[models.EnumPartOfSpeech, List[str]] = {
+            models.EnumPartOfSpeech.NOUN: noun_cols,
+            models.EnumPartOfSpeech.ADJECTIVE: adjective_cols,
+            models.EnumPartOfSpeech.VERB: verb_cols,
+            models.EnumPartOfSpeech.PARTICIPLE: participle_cols,
+        }
 
-        else:
-            return "all", []
+        active_cols = domain_map.get(pos_target, [])
+        static_cols = [c for c in active_cols if c != focus_str]
+
+        return focus_str, static_cols
 
     def _filter_valid_forms(
         self,
@@ -176,27 +197,65 @@ class LemmaItemBaseStrategy(ABC):
         target_attr: str,
         static_attrs: List[str],
     ) -> List[Tuple]:
-        def _is_valid(gram_prop: models.GramProp) -> bool:
-            # if we are testing a specific attribute (not "all"),
-            # the row MUST have a value for that attribute
+        """
+        Filters out incomplete or defective inflectional records while respecting
+        inherent asymmetries in Russian nominal and verbal paradigms.
+        """
 
-            # the row MUST also have valid values for all contextual attributes
-            if pos_target == "adjective":
-                if not any(
-                    getattr(gram_prop, attr) is not None for attr in static_attrs
-                ):
+        def _is_valid(gram_prop: models.GramProp) -> bool:
+            # 1. Target Attribute Invariant: The form MUST exhibit the feature being tested
+            if target_attr != "all":
+                if getattr(gram_prop, target_attr, None) is None:
                     return False
-            else:
-                if target_attr != "all" and getattr(gram_prop, target_attr) is None:
+
+            # 2. Russian Adjective Heuristic:
+            # Short-form adjectives lack case; plural adjectives lack gender.
+            # Only validate static attributes when static_attrs is non-empty.
+            if pos_target == models.EnumPartOfSpeech.ADJECTIVE:
+                if static_attrs:
+                    # Require at least one static agreement anchor (e.g., number or case)
+                    if not any(
+                        getattr(gram_prop, a, None) is not None for a in static_attrs
+                    ):
+                        return False
+
+            # 3. Russian Verb Heuristic:
+            # Past tense has gender but no person; Present/Future has person but no gender.
+            elif pos_target == models.EnumPartOfSpeech.VERB:
+                tense = getattr(gram_prop, "gram_tense", None)
+                tense_val = (
+                    tense.value if hasattr(tense, "value") else str(tense or "").lower()
+                )
+
+                # Number is an invariant across all finite Russian verb forms
+                if getattr(gram_prop, "gram_num", None) is None:
                     return False
-                if not all(
-                    getattr(gram_prop, attr) is not None for attr in static_attrs
-                ):
-                    return False
+
+                if tense_val in ("present", "future"):
+                    if getattr(gram_prop, "conj_person", None) is None:
+                        return False
+                elif tense_val == "past":
+                    # Singular past requires gender; plural past has no gender in Russian
+                    num = getattr(gram_prop, "gram_num", None)
+                    num_val = (
+                        num.value if hasattr(num, "value") else str(num or "").lower()
+                    )
+                    if (
+                        num_val in ("singular", "sg")
+                        and getattr(gram_prop, "gram_gender", None) is None
+                    ):
+                        return False
+
+            # 4. Standard Nominal (Noun) Heuristic:
+            elif pos_target == models.EnumPartOfSpeech.NOUN:
+                if static_attrs:
+                    if not all(
+                        getattr(gram_prop, a, None) is not None for a in static_attrs
+                    ):
+                        return False
 
             return True
 
-        # return a new list containing only the tuples where the 4th element (GramProp)
         return [row for row in forms if _is_valid(gram_prop=row[3])]
 
     def _extract_option_text(self, item_tuple: Tuple, is_reverse: bool) -> str:
@@ -702,33 +761,34 @@ class LemmaItemBaseStrategy(ABC):
         num_items: int,
         max_keys: int,
         max_distractors: int,
-        allowed_foci: list,
+        allowed_foci: Any,
         allow_odd_one_out: bool,
         is_reverse: bool,
     ) -> List[schemas.ItemBlueprint]:
-
         blueprints = []
-        # get list of relational word objects for potential keys and distractors
         paradigms = self._fetch_grouped_paradigms(
             pos_target=pos_target, num_lemmas=num_items * 5
         )
-        # loop list to analyze, filter, and arrange for list of blueprints
+
         for lemma_id, forms in paradigms.items():
-            if len(blueprints) == num_items:
+            if len(blueprints) >= num_items:
                 break
 
-            # skip word if forms are insufficient
             if not forms or len(forms) < (max_keys + max_distractors):
                 continue
 
-            # TODO: candidate for bkt
-            item_focus = random.choice(allowed_foci)
-            if allowed_foci == "all":
-                target_attr, static_attrs = "all", []
+            # Robust resolution of drill focus
+            if not allowed_foci or allowed_foci == "all" or allowed_foci == ["all"]:
+                item_focus = "all"
+            elif isinstance(allowed_foci, (list, tuple, set)):
+                item_focus = random.choice(list(allowed_foci))
             else:
-                target_attr, static_attrs = self._get_trait_mapping(pos_target=pos_target, focus=item_focus)  # type: ignore
+                item_focus = allowed_foci
 
-            # defective form filtering
+            target_attr, static_attrs = self._get_trait_mapping(
+                pos_target=pos_target, focus=item_focus
+            )
+
             valid_forms = self._filter_valid_forms(
                 forms, pos_target, target_attr, static_attrs
             )
@@ -737,10 +797,7 @@ class LemmaItemBaseStrategy(ABC):
                 continue
 
             baseline_form = random.choice(valid_forms)
-
-            # TODO: candidate for bkt
             item_is_ooo = random.choice([True, False]) if allow_odd_one_out else False
-
             if is_reverse is False:
                 item_is_ooo = False
 
@@ -998,11 +1055,11 @@ class LemmaItemBaseStrategy(ABC):
         max_keys: int = 1,
         max_distractors: int = 3,
         allow_odd_one_out: bool = False,
-        is_reverse: bool = False,
-    ) -> Dict[str, Any]:
+        drill_mode: str = "find_target",  # "find_target", "find_source", "find_relation", "find_pair"
+    ) -> List[schemas.ItemBlueprint]:
         """
-        Builds an item by traversing the lemma_relations junction table
-        (e.g., finding synonyms, antonyms, or aspect pairs).
+        Builds an item by traversing the lemma_relations junction table.
+        Adapts prompt and key generation based on the specified drill_mode.
         """
         blueprints = []
 
@@ -1057,7 +1114,7 @@ class LemmaItemBaseStrategy(ABC):
         if len(candidate_pairs) < num_items:
             num_items = len(candidate_pairs)
             if num_items == 0:
-                return []  # type: ignore
+                return []
 
         for source_id, specific_rel_type in candidate_pairs:
             if len(blueprints) >= num_items:
@@ -1067,7 +1124,7 @@ class LemmaItemBaseStrategy(ABC):
             if not source_lemma:
                 continue
 
-            # get targets matching this EXACT relation type
+            # Get targets matching this EXACT relation type
             target_stmt = (
                 select(models.Lemma)
                 .join_from(
@@ -1092,11 +1149,82 @@ class LemmaItemBaseStrategy(ABC):
             ]
             first_target = all_targets[0]
 
+            source_display = source_lemma.lem_canon or source_lemma.lem_text
+            target_display = target_words[0]
+
+            # mode 1: find relation (lem_lem_to_rel)
+            # prompt: word a & word b -> key: relationship type
+            if drill_mode == "find_relation":
+                rel_label = specific_rel_type.value.replace("_", " ")
+                prompt_text = f"'{target_display}' is what to '{source_display}'?"
+
+                # Get wrong relationships as distractors
+                distractors = self._get_enum_distractors(
+                    specific_rel_type, max_distractors
+                )
+                distractors = [d.replace("_", " ") for d in distractors]
+
+                blueprints.append(
+                    schemas.ItemBlueprint(
+                        prompt=prompt_text,
+                        keys=[rel_label],
+                        distractors=distractors,
+                        lem_id=source_lemma.id,
+                    )
+                )
+                continue
+
+            # mode 2: find pair (rel_to_lem_lem)
+            # prompt: relationship type -> key: word a - word b
+            if drill_mode == "find_pair":
+                rel_label = specific_rel_type.value.replace("_", " ")
+                prompt_text = f"Which of the following pairs represents a '{rel_label}' relationship?"
+                correct_pair = f"{target_display} is the ... {source_display}"
+
+                # Fetch distractors: random pairs that are NOT this relationship
+                # Easiest way: pull random relations that don't match specific_rel_type
+                distractor_pairs = []
+                dist_stmt = (
+                    select(models.LemmaRelation)
+                    .filter(models.LemmaRelation.rel_type != specific_rel_type)
+                    .order_by(func.random())
+                    .limit(max_distractors + 2)
+                    .options(
+                        selectinload(models.LemmaRelation.source_lemma),  # type: ignore
+                        selectinload(models.LemmaRelation.target_lemma),  # type: ignore
+                    )
+                )
+                for d_rel in self.db.scalars(dist_stmt).all():
+                    if d_rel.source_lemma and d_rel.target_lemma:
+                        d_source = (
+                            d_rel.source_lemma.lem_canon or d_rel.source_lemma.lem_text
+                        )
+                        d_target = (
+                            d_rel.target_lemma.lem_canon or d_rel.target_lemma.lem_text
+                        )
+                        distractor_pairs.append(f"{d_target} is the ... {d_source}")
+                        if len(distractor_pairs) == max_distractors:
+                            break
+
+                if len(distractor_pairs) < max_distractors:
+                    continue  # Graceful degradation
+
+                blueprints.append(
+                    schemas.ItemBlueprint(
+                        prompt=prompt_text,
+                        keys=[correct_pair],
+                        distractors=distractor_pairs,
+                        lem_id=source_lemma.id,
+                    )
+                )
+                continue
+
+            # modes 3 & 4: find target or find source (standard drills)
+            # fetch standard word distractors
             required_distractor_pos = (
-                source_lemma.pos if is_reverse else first_target.pos
+                source_lemma.pos if drill_mode == "find_source" else first_target.pos
             )
 
-            # fetch distractors excluding this exact relation
             invalid_ids_subquery = select(models.LemmaRelation.target_id).filter(  # type: ignore
                 models.LemmaRelation.source_id == source_id,
                 models.LemmaRelation.rel_type == specific_rel_type,
@@ -1120,57 +1248,60 @@ class LemmaItemBaseStrategy(ABC):
                 if d.lem_canon or d.lem_text
             ]
 
-            # graceful degradation check
             if not target_words or len(distractor_words) < max_distractors:
                 continue
 
-            # blueprint formulation with contextual prompt generation
             item_is_ooo = allow_odd_one_out and len(target_words) >= 3
 
+            # OOO logic applies primarily to finding targets where multiple exist (e.g. synonyms)
             if item_is_ooo:
                 prompt_text = self._generate_relation_prompt(
-                    prompt_word=source_lemma.lem_text,
+                    prompt_word=source_display,
                     rel_type=specific_rel_type,
-                    is_reverse=is_reverse,
+                    is_reverse=(drill_mode == "find_source"),
                     is_ooo=True,
                 )
-                blueprint = schemas.ItemBlueprint(
-                    prompt=prompt_text,
-                    keys=[distractor_words[0]],
-                    distractors=target_words[:3],
-                    lem_id=source_lemma.id,  # type: ignore
+                blueprints.append(
+                    schemas.ItemBlueprint(
+                        prompt=prompt_text,
+                        keys=[distractor_words[0]],
+                        distractors=target_words[:3],
+                        lem_id=source_lemma.id,
+                    )
                 )
-
-            elif not is_reverse:
+            elif drill_mode == "find_target":
                 prompt_text = self._generate_relation_prompt(
-                    prompt_word=source_lemma.lem_text,
+                    prompt_word=source_display,
                     rel_type=specific_rel_type,
                     is_reverse=False,
                 )
-                blueprint = schemas.ItemBlueprint(
-                    prompt=prompt_text,
-                    keys=random.sample(target_words, min(max_keys, len(target_words))),
-                    distractors=distractor_words,
-                    lem_id=source_lemma.id,  # type: ignore
+                blueprints.append(
+                    schemas.ItemBlueprint(
+                        prompt=prompt_text,
+                        keys=random.sample(
+                            target_words, min(max_keys, len(target_words))
+                        ),
+                        distractors=distractor_words,
+                        lem_id=source_lemma.id,
+                    )
                 )
-
-            else:  # is_reverse is True
+            elif drill_mode == "find_source":
                 target_hub = random.choice(target_words)
                 prompt_text = self._generate_relation_prompt(
                     prompt_word=target_hub,
                     rel_type=specific_rel_type,
                     is_reverse=True,
                 )
-                blueprint = schemas.ItemBlueprint(
-                    prompt=prompt_text,
-                    keys=[source_lemma.lem_text],
-                    distractors=distractor_words,
-                    lem_id=source_lemma.id,  # type: ignore
+                blueprints.append(
+                    schemas.ItemBlueprint(
+                        prompt=prompt_text,
+                        keys=[source_display],
+                        distractors=distractor_words,
+                        lem_id=source_lemma.id,
+                    )
                 )
 
-            blueprints.append(blueprint)
-
-        return blueprints  # type: ignore
+        return blueprints
 
     # --- ABSTRACT METHOD ---
 

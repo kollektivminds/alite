@@ -1,6 +1,6 @@
 // src/features/words/WordSelectionReducer.ts
 import { Lemma } from "../../types";
-import { ExerciseConfigState } from "./ExerciseConfigPanel";
+import { ExerciseConfigState } from "./wordsExerciseConfigPanel";
 
 export interface WordSelectionState {
   selectedLessonListIds: string[];

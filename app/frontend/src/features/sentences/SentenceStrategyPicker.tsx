@@ -1,105 +1,24 @@
-/**
- * src/features/sentences/SentenceStrategyPicker.tsx
- *
- * Categorized strategy selector for sentence-level drills.
- * Features:
- * - Independent collapsible category accordions mirroring Words ExerciseConfigPanel
- * - Telemetry header with aggregate allocation status
- * - Uniform stochastic distributor (Randomize) and bulk Reset
- * - WAI-ARIA compliant disclosure buttons
- */
-
-import React, { useState } from "react";
+// src/features/sentences/SentenceStrategyPicker.tsx
+import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { StrategyGroup } from "../../types";
-import type { EnumItemFormat } from "../../types/exercise";
-
-// ============================================================================
-// Canonical Strategy Definitions (Aligned with EnumSentItemType in models.py)
-// ============================================================================
-export const SENTENCE_STRATEGY_GROUPS: StrategyGroup[] = [
-  {
-    groupKey: "sentencesMenu.group_cloze",
-    strategies: [
-      {
-        id: "noun_morph",
-        labelKey: "sentencesMenu.strategies.nounMorph",
-        descriptionKey: "sentencesMenu.desc_noun_morph",
-        supportedFormats: ["mcq", "fitb"],
-      },
-      {
-        id: "adjective_morph",
-        labelKey: "sentencesMenu.strategies.adjectiveMorph",
-        descriptionKey: "sentencesMenu.desc_adj_morph",
-        supportedFormats: ["mcq", "fitb"],
-      },
-      {
-        id: "verb_morph",
-        labelKey: "sentencesMenu.strategies.verbMorph",
-        descriptionKey: "sentencesMenu.desc_verb_morph",
-        supportedFormats: ["mcq", "fitb"],
-      },
-      {
-        id: "lexical",
-        labelKey: "sentencesMenu.strategies.lexical",
-        descriptionKey: "sentencesMenu.desc_lexical",
-        supportedFormats: ["mcq"],
-      },
-    ],
-  },
-  {
-    groupKey: "sentencesMenu.group_word_order",
-    strategies: [
-      {
-        id: "unscramble",
-        labelKey: "sentencesMenu.strategies.unscramble",
-        descriptionKey: "sentencesMenu.desc_unscramble",
-        supportedFormats: ["unscramble"],
-      },
-    ],
-  },
-  {
-    groupKey: "sentencesMenu.group_syntax",
-    strategies: [
-      {
-        id: "dep_rel",
-        labelKey: "sentencesMenu.strategies.depRel",
-        descriptionKey: "sentencesMenu.desc_dep_rel",
-        supportedFormats: ["mcq"],
-      },
-      {
-        id: "find_head",
-        labelKey: "sentencesMenu.strategies.findHead",
-        descriptionKey: "sentencesMenu.desc_find_head",
-        supportedFormats: ["mcq"],
-      },
-      {
-        id: "find_subject",
-        labelKey: "sentencesMenu.strategies.findSubject",
-        descriptionKey: "sentencesMenu.desc_find_subject",
-        supportedFormats: ["mcq"],
-      },
-      {
-        id: "noun_case",
-        labelKey: "sentencesMenu.strat_noun_case",
-        descriptionKey: "sentencesMenu.desc_noun_case",
-        supportedFormats: ["mcq"],
-      },
-      {
-        id: "verb_aspect",
-        labelKey: "sentencesMenu.strat_verb_aspect",
-        descriptionKey: "sentencesMenu.desc_verb_aspect",
-        supportedFormats: ["mcq"],
-      },
-    ],
-  },
-];
+import { EnumItemFormat } from "../../types";
+import {
+  EnumSentenceItemGroup,
+  ORDERED_SENTENCE_GROUPS,
+  SentenceStrategyDefinition,
+  SentenceStrategyTooltips,
+} from "./SentenceStrategyDefinitions";
 
 interface SentenceStrategyPickerProps {
+  /** Map of Strategy Identifier -> Allocated Item Count */
   typeCounts: Record<string, number>;
+  /** Dispatches change for an individual strategy */
   onCountChange: (strategyId: string, newCount: number) => void;
+  /** Dispatches batch updates (used by Randomize and Reset) */
   onBatchCountChange: (newCounts: Record<string, number>) => void;
+  /** Overall target quota from SentenceExerciseConfigPanel */
   targetCount: number;
+  /** Currently active session delivery formats (MCQ, FITB, Unscramble) */
   enabledFormats: EnumItemFormat[];
 }
 
@@ -112,42 +31,60 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
 }) => {
   const { t } = useTranslation();
 
-  // 1. Accordion Disclosure State: Initializes with all category groups expanded
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    () => new Set<string>(SENTENCE_STRATEGY_GROUPS.map((g) => g.groupKey)),
-  );
+  // 1. Accordion disclosure state: Initialize with all canonical groups expanded
+  const [expandedGroups, setExpandedGroups] = useState<
+    Set<EnumSentenceItemGroup>
+  >(() => new Set<EnumSentenceItemGroup>(ORDERED_SENTENCE_GROUPS));
 
-  const toggleGroupAccordion = (groupKey: string) => {
+  const toggleGroupAccordion = (group: EnumSentenceItemGroup) => {
     setExpandedGroups((prev) => {
       const next = new Set(prev);
-      if (next.has(groupKey)) {
-        next.delete(groupKey);
+      if (next.has(group)) {
+        next.delete(group);
       } else {
-        next.add(groupKey);
+        next.add(group);
       }
       return next;
     });
   };
 
-  // 2. Aggregate allocation telemetry
-  const totalAllocatedItems = Object.values(typeCounts || {}).reduce(
-    (sum, count) => sum + (count || 0),
-    0,
-  );
+  // 2. Partition strategies into pedagogical groups matching ORDERED_SENTENCE_GROUPS
+  const groupedStrategies = useMemo(() => {
+    const map = new Map<EnumSentenceItemGroup, SentenceStrategyDefinition[]>();
+    ORDERED_SENTENCE_GROUPS.forEach((group) => map.set(group, []));
 
-  const allStrategies = SENTENCE_STRATEGY_GROUPS.flatMap((g) => g.strategies);
+    SentenceStrategyTooltips.forEach((def) => {
+      const groupList = map.get(def.group);
+      if (groupList) {
+        groupList.push(def);
+      }
+    });
 
-  // Strategies compatible with currently enabled delivery formats
-  const viableStrategies = allStrategies.filter((strat) =>
-    strat.supportedFormats.some((fmt) => enabledFormats.includes(fmt)),
-  );
+    return map;
+  }, []);
 
-  // 3. Stochastic distributor matching Words ExerciseConfigPanel
+  // 3. Compute aggregate allocation telemetry
+  const totalAllocatedItems = useMemo(() => {
+    return Object.values(typeCounts || {}).reduce(
+      (sum, count) => sum + (count || 0),
+      0,
+    );
+  }, [typeCounts]);
+
+  // 4. Identify strategies compatible with currently active session delivery formats
+  const viableStrategies = useMemo(() => {
+    const activeFormatSet = new Set(enabledFormats);
+    return SentenceStrategyTooltips.filter((strat) =>
+      strat.supportedFormats.some((fmt) => activeFormatSet.has(fmt)),
+    );
+  }, [enabledFormats]);
+
+  // 5. Stochastic Distributor: Distribute quota across compatible strategies
   const handleRandomizeDistribution = () => {
     if (viableStrategies.length === 0 || targetCount <= 0) return;
 
     const randomized: Record<string, number> = {};
-    allStrategies.forEach((strat) => {
+    SentenceStrategyTooltips.forEach((strat) => {
       randomized[strat.id] = 0;
     });
 
@@ -162,18 +99,20 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
 
   const handleResetDistribution = () => {
     const cleared: Record<string, number> = {};
-    allStrategies.forEach((strat) => {
+    SentenceStrategyTooltips.forEach((strat) => {
       cleared[strat.id] = 0;
     });
     onBatchCountChange(cleared);
   };
 
+  const remainingHeadroom = Math.max(0, targetCount - totalAllocatedItems);
+
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-5">
       {/* =================================================================== */}
       {/* TELEMETRY & STOCHASTIC ALLOCATION BAR                               */}
       {/* =================================================================== */}
-      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between transition-colors">
+      <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-between transition-colors">
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
             {t("exercises.settings.questionTypes")}
@@ -183,7 +122,7 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
             <strong
               className={
                 totalAllocatedItems > targetCount
-                  ? "text-red-500 font-bold"
+                  ? "text-rose-600 dark:text-rose-400 font-bold"
                   : "text-blue-600 dark:text-blue-400 font-bold"
               }
             >
@@ -200,7 +139,7 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
             disabled={totalAllocatedItems === 0}
             className="rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
-            {t("exercises.settings.reset")}
+            {t("exercises.settings.reset") || "Reset"}
           </button>
 
           <button
@@ -217,39 +156,41 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
       {/* =================================================================== */}
       {/* HIERARCHICAL STRATEGY ACCORDION LIST                                */}
       {/* =================================================================== */}
-      <div className="space-y-3">
-        {SENTENCE_STRATEGY_GROUPS.map((group) => {
-          const isExpanded = expandedGroups.has(group.groupKey);
+      <div className="space-y-4">
+        {ORDERED_SENTENCE_GROUPS.map((groupName) => {
+          const strategies = groupedStrategies.get(groupName) || [];
+          if (strategies.length === 0) return null;
+
+          const isExpanded = expandedGroups.has(groupName);
 
           // Calculate total items allocated within this specific category
-          const groupAllocatedCount = group.strategies.reduce(
+          const groupAllocatedCount = strategies.reduce(
             (sum, s) => sum + (typeCounts[s.id] || 0),
             0,
           );
 
           return (
             <div
-              key={group.groupKey}
-              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden shadow-sm transition-colors"
+              key={groupName}
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden shadow-xs transition-colors"
             >
-              {/* Accordion Trigger Header */}
+              {/* Category Accordion Header */}
               <button
                 type="button"
-                onClick={() => toggleGroupAccordion(group.groupKey)}
+                onClick={() => toggleGroupAccordion(groupName)}
                 aria-expanded={isExpanded}
-                className="w-full flex items-center justify-between px-4 py-3 bg-slate-50/70 hover:bg-slate-100/80 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-left transition-colors select-none"
+                className="w-full flex items-center justify-between px-4 py-3 bg-slate-50/80 hover:bg-slate-100/90 dark:bg-slate-800/80 dark:hover:bg-slate-800 text-left transition-colors select-none"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                    {t(group.groupKey, group.groupKey.split(".").pop())}
+                    {t(`exercises.sentencesMenu.groups.${groupName}`)}
                   </span>
-                  <span className="text-[11px] text-slate-400">
-                    ({group.strategies.length})
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    ({strategies.length})
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2.5">
-                  {/* Category Telemetry Badge */}
                   <span
                     className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold ${
                       groupAllocatedCount > 0
@@ -262,107 +203,155 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                       count: groupAllocatedCount,
                     })}
                   </span>
-
-                  {/* Collapse Chevron Indicator */}
                   <span className="text-slate-400 text-xs font-mono">
                     {isExpanded ? "▲" : "▼"}
                   </span>
                 </div>
               </button>
 
-              {/* Collapsible Content Area */}
+              {/* Accordion Content Area */}
               {isExpanded && (
-                <div className="p-4 border-t border-slate-100 dark:border-slate-700/60 bg-white dark:bg-slate-800/50 space-y-3">
-                  <div className="grid grid-cols-1 gap-2.5">
-                    {group.strategies.map((strat) => {
-                      const currentCount = typeCounts[strat.id] || 0;
-                      const isViable = strat.supportedFormats.some((fmt) =>
-                        enabledFormats.includes(fmt),
-                      );
+                <div className="p-3.5 border-t border-slate-100 dark:border-slate-700/60 space-y-3 bg-slate-50/30 dark:bg-slate-900/20">
+                  {strategies.map((def) => {
+                    const currentCount = typeCounts[def.id] || 0;
+                    const maxAllowedForThis = currentCount + remainingHeadroom;
+                    const isViable = def.supportedFormats.some((fmt) =>
+                      enabledFormats.includes(fmt),
+                    );
 
-                      return (
-                        <div
-                          key={strat.id}
-                          className={`flex items-center justify-between p-3 rounded-lg border transition-all ${
-                            !isViable
-                              ? "bg-slate-50/50 dark:bg-slate-900/20 border-slate-200/40 dark:border-slate-800/40 opacity-50"
-                              : currentCount > 0
-                                ? "bg-blue-50/40 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/60"
-                                : "bg-slate-50/80 dark:bg-slate-900/40 border-slate-200/80 dark:border-slate-700/60 hover:border-slate-300 dark:hover:border-slate-600"
-                          }`}
-                        >
-                          {/* Strategy Label, Description, and Formats */}
-                          <div className="flex flex-col pr-4">
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                                {t(strat.labelKey, strat.id)}
+                    return (
+                      <div
+                        key={def.id}
+                        className={`rounded-lg border p-3.5 transition-all ${
+                          !isViable
+                            ? "border-slate-200/40 bg-slate-100/40 dark:border-slate-800/40 dark:bg-slate-900/40 opacity-50"
+                            : currentCount > 0
+                              ? "border-blue-300 bg-blue-50/30 dark:border-blue-900/60 dark:bg-blue-950/20 shadow-2xs"
+                              : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 shadow-2xs hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          {/* Left Column: Metadata & Linguistic Spec */}
+                          <div className="space-y-1.5 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
+                                {def.label}
+                              </span>
+                              <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
+                                [{def.id}]
                               </span>
                               {!isViable && (
-                                <span className="text-[10px] text-amber-600 dark:text-amber-400 italic">
-                                  (Формат выключен)
+                                <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
+                                  Format Disabled
                                 </span>
                               )}
                             </div>
 
-                            <span className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
-                              {t(strat.descriptionKey, "")}
-                            </span>
+                            <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
+                              {def.description}
+                            </p>
+
+                            {/* Linguistic Stem & Key Example Scaffolding */}
+                            {def.stemExample && (
+                              <div className="mt-2 rounded bg-slate-50 dark:bg-slate-900/60 p-2 border border-slate-200/70 dark:border-slate-700/70 text-[11px] font-mono text-slate-700 dark:text-slate-300 flex items-center justify-between gap-2">
+                                <div className="truncate">
+                                  <span className="text-slate-400 text-[10px] font-semibold uppercase mr-1.5">
+                                    {t("exercises.settings.ex")}:
+                                  </span>
+                                  <span>{def.stemExample}</span>
+                                </div>
+                                {def.keyExample && (
+                                  <span className="shrink-0 font-bold text-emerald-600 dark:text-emerald-400">
+                                    → {def.keyExample}
+                                  </span>
+                                )}
+                              </div>
+                            )}
 
                             {/* Format Pill Tags */}
-                            <div className="flex items-center gap-1.5 mt-2">
-                              <span className="text-[9px] uppercase tracking-wider text-slate-400">
-                                Форматы:
+                            <div className="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-700/40">
+                              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">
+                                {t("exercises.settings.formats.format") ||
+                                  "Formats"}
+                                :
                               </span>
-                              {strat.supportedFormats.map((fmt) => (
-                                <span
-                                  key={fmt}
-                                  className={`rounded px-1.5 py-0.2 text-[9px] font-semibold uppercase ${
-                                    enabledFormats.includes(fmt)
-                                      ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
-                                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 line-through"
-                                  }`}
-                                >
-                                  {fmt}
-                                </span>
-                              ))}
+                              <div className="flex gap-1 flex-wrap">
+                                {def.supportedFormats.map((fmt) => {
+                                  const isFmtActive =
+                                    enabledFormats.includes(fmt);
+                                  return (
+                                    <span
+                                      key={fmt}
+                                      className={`rounded px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider ${
+                                        isFmtActive
+                                          ? "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
+                                          : "bg-slate-100/50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 line-through"
+                                      }`}
+                                    >
+                                      {fmt}
+                                    </span>
+                                  );
+                                })}
+                              </div>
                             </div>
                           </div>
 
-                          {/* Stepper Controls */}
-                          <div className="flex items-center gap-2 select-none shrink-0">
+                          {/* Right Column: Numeric Counter Controls */}
+                          <div className="flex items-center gap-1.5 select-none shrink-0 pt-0.5">
                             <button
                               type="button"
                               onClick={() =>
                                 onCountChange(
-                                  strat.id,
+                                  def.id,
                                   Math.max(0, currentCount - 1),
                                 )
                               }
                               disabled={currentCount === 0 || !isViable}
                               className="w-7 h-7 flex items-center justify-center rounded-md bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-2xs"
+                              aria-label={`Decrease count for ${def.label}`}
                             >
                               -
                             </button>
 
-                            <span className="w-6 text-center text-sm font-semibold font-mono text-slate-800 dark:text-slate-200">
-                              {currentCount}
-                            </span>
+                            <input
+                              type="number"
+                              min={0}
+                              max={maxAllowedForThis}
+                              value={currentCount}
+                              disabled={!isViable}
+                              onChange={(e) =>
+                                onCountChange(
+                                  def.id,
+                                  Math.max(
+                                    0,
+                                    Math.min(
+                                      maxAllowedForThis,
+                                      parseInt(e.target.value, 10) || 0,
+                                    ),
+                                  ),
+                                )
+                              }
+                              className="w-12 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-1 py-1 text-center text-xs font-bold font-mono text-slate-800 dark:text-slate-100 focus:border-blue-500 focus:outline-none disabled:opacity-40 shadow-2xs"
+                            />
 
                             <button
                               type="button"
                               onClick={() =>
-                                onCountChange(strat.id, currentCount + 1)
+                                onCountChange(def.id, currentCount + 1)
                               }
-                              disabled={!isViable}
+                              disabled={
+                                !isViable || totalAllocatedItems >= targetCount
+                              }
                               className="w-7 h-7 flex items-center justify-center rounded-md bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-2xs"
+                              aria-label={`Increase count for ${def.label}`}
                             >
                               +
                             </button>
                           </div>
                         </div>
-                      );
-                    })}
-                  </div>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -9,8 +9,8 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { DifficultyLevel, ExerciseResponse } from "../../types/exercise";
 import { ExerciseContainer } from "../exercises/ExerciseContainer";
-import { SentenceExerciseConfigPanel } from "./SentenceExerciseConfigPanel";
-import { SentenceStrategyPicker } from "./SentenceStrategyPicker";
+import { SentenceExerciseConfigPanel } from "./sentenceExerciseConfigPanel";
+import { SentenceStrategyPicker } from "./sentenceStrategyPicker";
 import type {
   ExerciseRequestPayload,
   SentenceExerciseConfigState,

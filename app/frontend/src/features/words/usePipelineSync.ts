@@ -1,7 +1,7 @@
 // src/features/words/hooks/usePipelineSync.ts
 import axios from "axios";
 import { useEffect, useRef } from "react";
-import { TrackedPipelineJob } from "./PipelineJobDrawer";
+import { TrackedPipelineJob } from "./pipelineJobDrawer";
 
 interface UsePipelineSyncProps {
   jobs: TrackedPipelineJob[];

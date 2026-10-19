@@ -1056,7 +1056,11 @@ STRATEGY_FORMATS: Dict[EnumWordItemType | EnumSentItemType, Set[EnumItemFormat]]
     EnumWordItemType.TNRF_TO_VERB: {
         EnumItemFormat.MCQ,
     },
-    EnumWordItemType.VERB_TO_CONJ_FORM: {
+    EnumWordItemType.VERB_FORM_TO_GRAM: {
+        EnumItemFormat.FLASHCARD,
+        EnumItemFormat.MCQ,
+    },
+    EnumWordItemType.VERB_GRAM_TO_FORM: {
         EnumItemFormat.FLASHCARD,
         EnumItemFormat.FITB,
         EnumItemFormat.MCQ,
@@ -1360,7 +1364,7 @@ class UnscrambleResponse(BaseModel):
     item_format: EnumItemFormat = EnumItemFormat.UNSCRAMBLE
     item_id: int
     prompt: str = Field(
-        "Расставьте слова в правильном порядке:", description="Instructional prompt"
+        "Put the words in the correct order:", description="Instructional prompt"
     )
     shuffled_tokens: list[UnscrambleToken] = Field(
         ..., description="Permuted tokens with opaque identifiers for UI drag-and-drop"
@@ -1708,10 +1712,16 @@ STRATEGY_FORMAT_COMPATIBILITY: Dict[AnyItemType, FrozenSet[EnumItemFormat]] = {
             EnumItemFormat.MCQ,
         }
     ),
-    EnumWordItemType.VERB_TO_CONJ_FORM: frozenset(
+    EnumWordItemType.VERB_GRAM_TO_FORM: frozenset(
         {
             EnumItemFormat.FLASHCARD,
             EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_FORM_TO_GRAM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
             EnumItemFormat.MCQ,
         }
     ),
@@ -1783,6 +1793,34 @@ STRATEGY_FORMAT_COMPATIBILITY: Dict[AnyItemType, FrozenSet[EnumItemFormat]] = {
     EnumSentItemType.UNSCRAMBLE: frozenset(
         {
             EnumItemFormat.UNSCRAMBLE,
+        }
+    ),
+    EnumSentItemType.FIND_HEAD: frozenset(
+        {
+            EnumItemFormat.MCQ,
+            EnumItemFormat.FITB,
+        }
+    ),
+    EnumSentItemType.FIND_SUBJECT: frozenset(
+        {
+            EnumItemFormat.MCQ,
+            EnumItemFormat.FITB,
+        }
+    ),
+    EnumSentItemType.NOUN_CASE: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumSentItemType.VERB_ASPECT: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumSentItemType.LEXICAL: frozenset(
+        {
+            EnumItemFormat.MCQ,
+            EnumItemFormat.FITB,
         }
     ),
 }
