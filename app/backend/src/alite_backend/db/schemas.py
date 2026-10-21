@@ -38,6 +38,8 @@ from pydantic import (
     model_validator,
 )
 
+AnyItemType = Union[EnumWordItemType, EnumSentItemType]
+
 #
 # --- Data Processing Schemas ---
 #
@@ -931,141 +933,215 @@ class EnumGramExFocus(str, Enum):
     PART_TENSE = "part_tense"
 
 
-STRATEGY_FORMATS: Dict[EnumWordItemType | EnumSentItemType, Set[EnumItemFormat]] = {
+STRATEGY_FORMATS: Dict[AnyItemType, FrozenSet[EnumItemFormat]] = {
     # words - lemmas
-    EnumWordItemType.LEM_TO_POS: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.POS_TO_LEM: {
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.LEM_TO_DEF: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.DEF_TO_LEM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.LEM_TO_PRON: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.PRON_TO_LEM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.LEM_LEM_TO_REL: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.REL_TO_LEM_LEM: {
-        EnumItemFormat.MCQ,
-    },
+    EnumWordItemType.LEM_TO_POS: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.POS_TO_LEM: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.LEM_TO_DEF: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.DEF_TO_LEM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.LEM_TO_PRON: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.PRON_TO_LEM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.LEM_LEM_TO_REL: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.REL_TO_LEM_LEM: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
     # words - adjectives
-    EnumWordItemType.ADJV_FORM_TO_TYPE: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.ADJV_TYPE_TO_LEM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.ADJV_FORM_TO_GRAM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.ADJV_GRAM_TO_FORM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
+    EnumWordItemType.ADJV_FORM_TO_TYPE: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ADJV_TYPE_TO_LEM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ADJV_FORM_TO_GRAM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ADJV_GRAM_TO_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
     # words - nouns
-    EnumWordItemType.NOUN_TO_GEND: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.GEND_TO_NOUN: {
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.NOUN_TO_ANIM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.ANIM_TO_NOUN: {
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.NOUN_FORM_TO_GRAM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.NOUN_GRAM_TO_FORM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.NOUN_TO_DMIN_FORM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
+    EnumWordItemType.NOUN_TO_GEND: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.GEND_TO_NOUN: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.NOUN_TO_ANIM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ANIM_TO_NOUN: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.NOUN_FORM_TO_GRAM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.NOUN_GRAM_TO_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.NOUN_TO_DMIN_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
     # words - participles
-    EnumWordItemType.PART_FORM_TO_TYPE: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.PART_TYPE_TO_FORM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
+    EnumWordItemType.PART_FORM_TO_TYPE: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.PART_TYPE_TO_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
     # words - verbs
-    EnumWordItemType.VERB_TO_ASPT: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.ASPT_TO_VERB: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.VERB_PAIR_TO_REL: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.VERB_TO_ASPT_PAIR: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.VERB_TO_TYPE: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.TYPE_TO_VERB: {
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.VERB_TO_TNRF: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.TNRF_TO_VERB: {
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.VERB_FORM_TO_GRAM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.MCQ,
-    },
-    EnumWordItemType.VERB_GRAM_TO_FORM: {
-        EnumItemFormat.FLASHCARD,
-        EnumItemFormat.FITB,
-        EnumItemFormat.MCQ,
-    },
+    EnumWordItemType.VERB_TO_ASPT: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.ASPT_TO_VERB: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_PAIR_TO_REL: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_TO_ASPT_PAIR: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_TO_TYPE: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.TYPE_TO_VERB: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_TO_TNRF: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.TNRF_TO_VERB: frozenset(
+        {
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_FORM_TO_GRAM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.MCQ,
+        }
+    ),
+    EnumWordItemType.VERB_GRAM_TO_FORM: frozenset(
+        {
+            EnumItemFormat.FLASHCARD,
+            EnumItemFormat.FITB,
+            EnumItemFormat.MCQ,
+        }
+    ),
     # sentences
+    EnumSentItemType.NOUN_MORPH: frozenset({EnumItemFormat.FITB, EnumItemFormat.MCQ}),
+    EnumSentItemType.VERB_MORPH: frozenset({EnumItemFormat.FITB, EnumItemFormat.MCQ}),
+    EnumSentItemType.ADJECTIVE_MORPH: frozenset(
+        {EnumItemFormat.FITB, EnumItemFormat.MCQ}
+    ),
+    EnumSentItemType.LEXICAL: frozenset({EnumItemFormat.MCQ}),
+    EnumSentItemType.DEP_REL: frozenset({EnumItemFormat.MCQ}),
+    EnumSentItemType.FIND_HEAD: frozenset({EnumItemFormat.MCQ}),
+    EnumSentItemType.FIND_SUBJECT: frozenset({EnumItemFormat.MCQ}),
+    EnumSentItemType.NOUN_CASE: frozenset({EnumItemFormat.MCQ}),
+    EnumSentItemType.VERB_ASPECT: frozenset({EnumItemFormat.MCQ}),
+    EnumSentItemType.UNSCRAMBLE: frozenset({EnumItemFormat.UNSCRAMBLE}),
 }
 
 
@@ -1138,14 +1214,52 @@ class StrategyConfigs(BaseModel):
     ]
 
 
-AnyItemType = Union[EnumWordItemType, EnumSentItemType]
-
-
 # class ExerciseRequest(BaseModel):
 #     # Side-A + Side-B items = request
 #     exercise_context: ExerciseContext
 #     grammar_focus: Optional[StrategyConfigs] = None
 #     type_counts: dict[AnyItemType, int]
+
+
+def resolve_strategy_identifier(key: Any) -> Optional[AnyItemType]:
+    """
+    Polymorphic strategy identifier resolver.
+
+    Guarantees consistent resolution whether the caller provides:
+    1. An already-materialized EnumWordItemType or EnumSentItemType instance.
+    2. An uppercase member identifier ('VERB_MORPH', 'NOUN_CASE').
+    3. A lowercase column value ('verb_morph', 'noun_case').
+
+    Returns None if the key does not map to any recognized strategy domain.
+    """
+    # 1. Identity return if already an enum member
+    if isinstance(key, (EnumWordItemType, EnumSentItemType)):
+        return key
+
+    if not isinstance(key, str):
+        return None
+
+    clean = key.strip()
+
+    # 2. Fast-path lookup by Enum member name (case-insensitive)
+    clean_upper = clean.upper()
+    if clean_upper in EnumWordItemType.__members__:
+        return EnumWordItemType[clean_upper]
+    if clean_upper in EnumSentItemType.__members__:
+        return EnumSentItemType[clean_upper]
+
+    # 3. Fallback lookup by Enum value (case-insensitive)
+    try:
+        return EnumWordItemType(clean)
+    except ValueError:
+        pass
+
+    try:
+        return EnumSentItemType(clean)
+    except ValueError:
+        pass
+
+    return None
 
 
 class ExerciseRequest(BaseModel):
@@ -1164,13 +1278,13 @@ class ExerciseRequest(BaseModel):
     @model_validator(mode="after")
     def validate_strategy_format_compatibility(self) -> "ExerciseRequest":
         """
-        Guarantees that every strategy requested with count > 0 can be rendered
-        by at least one format enabled in exercise_context.ex_formats.
+        Validates strategy compatibility against enabled session formats.
+        Uses resolve_strategy_identifier to accept both uppercase and lowercase keys.
         """
         session_formats: Set[EnumItemFormat] = set(self.exercise_context.ex_formats)
         if not session_formats:
             raise ValueError(
-                "At least one session format (MCQ, Flashcard, etc.) must be enabled."
+                "At least one session format (MCQ, FITB, etc.) must be enabled."
             )
 
         allocated_counts = {
@@ -1187,20 +1301,16 @@ class ExerciseRequest(BaseModel):
         incompatible_errors: List[str] = []
 
         for strat_key, count in allocated_counts.items():
-            # resolve strategy string to Enum member
-            target_strategy: Optional[AnyItemType] = None
-            try:
-                target_strategy = EnumWordItemType(strat_key)
-            except ValueError:
-                try:
-                    target_strategy = EnumSentItemType(strat_key)
-                except ValueError:
-                    incompatible_errors.append(
-                        f"Unknown strategy identifier: '{strat_key}'."
-                    )
-                    continue
+            # Polymorphic resolution: handles 'VERB_MORPH' and 'verb_morph' cleanly
+            target_strategy = resolve_strategy_identifier(strat_key)
 
-            # lookup compatible formats from single source of truth
+            if target_strategy is None:
+                incompatible_errors.append(
+                    f"Unknown strategy identifier: '{strat_key}'."
+                )
+                continue
+
+            # Lookup compatible formats from canonical matrix
             compatible_formats = STRATEGY_FORMAT_COMPATIBILITY.get(target_strategy)
             if not compatible_formats:
                 incompatible_errors.append(
@@ -1208,7 +1318,7 @@ class ExerciseRequest(BaseModel):
                 )
                 continue
 
-            # intersection check: can this strategy be satisfied by active session formats?
+            # Format intersection assertion
             viable_session_formats = compatible_formats.intersection(session_formats)
             if not viable_session_formats:
                 allowed_str = ", ".join(f.value for f in compatible_formats)
@@ -1254,20 +1364,20 @@ class SentenceTokenContext(BaseModel):
 
 class DisplayToken(BaseModel):
     """
-    Client-safe token model for rendering interactive sentences.
-    Allows frontend click-to-select, highlighting, and accessible blank rendering.
+    Client-safe representation of sentence tokens for interactive formatting.
+    Guarantees the target token's surface string is masked prior to serialization.
     """
 
-    tok_idx: int = Field(..., description="Position index for UI layout")
-    text: str = Field(
-        ..., description="Display text (masked with placeholder if target)"
-    )
+    tok_idx: int = Field(description="1-based index within the sentence sequence")
+    text: str = Field(description="Display text or blank placeholder")
     is_masked: bool = Field(
-        False, description="Indicates whether this token represents an input blank"
+        default=False, description="True if this token is the target blank"
     )
     is_punctuation: bool = Field(
-        False, description="Helps frontend format spacing without leading spaces"
+        default=False, description="Spacing flag for typographical attachment"
     )
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class UnscrambleToken(BaseModel):
@@ -1313,11 +1423,27 @@ class SentenceBlueprintContext(BaseModel):
 
 
 class ItemBlueprint(BaseModel):
-    prompt: str
-    keys: str | List[str]
-    distractors: Optional[List[str]] = None
-    lem_id: Optional[int] = None
-    sentence_context: Optional[SentenceBlueprintContext] = None
+    """
+    Internal intermediate representation generated by strategy subclasses.
+    Decoupled from client delivery format constraints.
+    """
+
+    prompt: str = Field(description="Normalized prompt containing [___] marker")
+    keys: Union[str, List[str]] = Field(description="Canonical accepted answer(s)")
+    distractors: Optional[List[str]] = Field(
+        default=None, description="Plausible distractors for MCQ"
+    )
+    lem_id: Optional[int] = Field(
+        default=None, description="Surrogate key of associated lemma"
+    )
+    sentence_context: Optional[SentenceBlueprintContext] = Field(
+        default=None, description="Ground truth linguistic metadata"
+    )
+    # Expose explicit hint field for FITB inflection instructions
+    hint: Optional[str] = Field(
+        default=None,
+        description="Base dictionary lemma to display in-situ for FITB items (e.g. 'человек')",
+    )
 
 
 class ItemFormatBlueprints(BaseModel):
@@ -1344,14 +1470,39 @@ class MultipleChoiceResponse(BaseModel):
 
 
 class FillInTheBlankResponse(BaseModel):
-    item_format: EnumItemFormat = EnumItemFormat.FITB
+    """
+    Client deliverable for FITB items.
+
+    Security Contract:
+    The target answer key must NEVER be passed to this model.
+    'parts' must contain strictly (N + 1) text fragments surrounding N blanks.
+    For a single blank:
+        parts[0] = Text preceding the blank
+        parts[1] = Text succeeding the blank (can be empty string if terminal)
+    """
+
+    item_format: str = "fitb"
     item_id: int
     prompt: str
-    parts: list[str] = Field(
+    parts: List[str] = Field(
         default_factory=list,
-        description="Text fragments surrounding blanks: ['Она читает ', ' в парке.']",
+        description="Text slices flanking the target blanks. Must never contain the key.",
     )
-    sentence_tokens: Optional[list[DisplayToken]] = None
+    sentence_tokens: Optional[List[DisplayToken]] = Field(
+        default=None,
+        description="Sanitized token stream with target items masked.",
+    )
+
+    model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("parts")
+    @classmethod
+    def validate_parts_structure(cls, v: List[str]) -> List[str]:
+        """Ensures parts provides valid text delimiters for input blanks."""
+        if not v or len(v) < 2:
+            # Fallback if a single prompt string was supplied without delimiters
+            return ["", ""] if not v else [v[0], ""]
+        return v
 
 
 class UnscrambleResponse(BaseModel):
@@ -1407,9 +1558,30 @@ class AnswerSubmission(BaseModel):
 
 
 class AnswerResult(BaseModel):
-    is_correct: bool
-    correct_answer: Optional[str] = None
-    explanation: Optional[str] = None
+    """
+    Outcome deliverable for student response evaluation.
+    Provides immediate pedagogical feedback while protecting answer keys on intermediate attempts.
+    """
+
+    is_correct: bool = Field(description="Evaluation verdict for this submission")
+    correct_answer: Optional[str] = Field(
+        default=None,
+        description="Revealed canonical answer when solved or attempts exhausted",
+    )
+    explanation: Optional[str] = Field(
+        default=None,
+        description="Linguistic explanation or grammatical focus descriptor",
+    )
+    feedback: Optional[str] = Field(
+        default=None,
+        description="User-facing feedback message explaining attempt outcome or retry status",
+    )
+    attempt_num: Optional[int] = Field(
+        default=None,
+        description="1-based index of the evaluated attempt",
+    )
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 # results display

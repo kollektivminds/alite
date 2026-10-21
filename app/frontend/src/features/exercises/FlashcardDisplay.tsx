@@ -1,5 +1,6 @@
 // src/features/exercises/FlashcardDisplay.tsx
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 // Matches backend polymorphic flashcard payload
 export interface FlashcardItem {
@@ -67,6 +68,7 @@ export const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({
   onEvaluate,
   isResolved,
 }) => {
+  const { t } = useTranslation();
   const [isFlipped, setIsFlipped] = useState<boolean>(false);
 
   // reset rotation state on question change
@@ -100,8 +102,8 @@ export const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({
       {/* Instructions header for reduced extraneous cognitive load */}
       <div className="mb-4 text-xs tracking-wider uppercase text-slate-400 font-semibold">
         {!isFlipped
-          ? "Click card or press Space to reveal"
-          : "Evaluate your mental retrieval"}
+          ? `${t("exercises.navigation.flashcards.clickReveal")}`
+          : `${t("exercises.navigation.flashcards.evalRetrieval")}`}
       </div>
 
       {/* 3D Perspective Container */}
@@ -120,7 +122,7 @@ export const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({
           {/* ================= CARD FRONT ================= */}
           <div className="absolute inset-0 w-full h-full rounded-2xl bg-white p-8 flex flex-col justify-between items-center [backface-visibility:hidden]">
             <span className="text-xs font-semibold tracking-wider text-slate-400 uppercase">
-              Prompt
+              {t("exercises.navigation.flashcards.prompt")}
             </span>
 
             <div className="text-center px-4">
@@ -130,14 +132,14 @@ export const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({
             </div>
 
             <div className="text-xs text-blue-600 font-medium hover:underline">
-              Reveal Answer ⟲
+              {t("exercises.navigation.flashcards.revealAnswer")} ⟲
             </div>
           </div>
 
           {/* ================= CARD BACK ================= */}
           <div className="absolute inset-0 w-full h-full rounded-2xl bg-slate-50 p-8 flex flex-col justify-between items-center border-2 border-blue-500/20 [transform:rotateY(180deg)] [backface-visibility:hidden]">
             <span className="text-xs font-semibold tracking-wider text-blue-600 uppercase">
-              Answer Key
+              {t("exercises.navigation.flashcards.answerKey")}
             </span>
 
             <div className="text-center px-4 space-y-3">
@@ -186,8 +188,8 @@ export const FlashcardDisplay: React.FC<FlashcardDisplayProps> = ({
         ) : (
           <div className="text-sm text-slate-400 italic">
             {isResolved
-              ? "Telemetry captured. Ready to continue."
-              : "Inspect card before scoring"}
+              ? `${t("exercises.navigation.flashcards.responseCaptured")}`
+              : `${t("exercises.navigation.flashcards.inspectCard")}`}
           </div>
         )}
       </div>

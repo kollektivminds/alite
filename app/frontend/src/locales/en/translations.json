@@ -20,6 +20,28 @@
     "numWords_other": "({{count}} words)",
     "loading": "loading",
     "searching": "searching",
+    "navigation": {
+      "check": "check",
+      "reset": "reset",
+      "continue": "continue",
+      "exComplete": "exercise complete",
+      "correctAnswer": "correct answer",
+      "flashcards": {
+        "clickReveal": "Click the card or press space to reveal",
+        "evalRetrieval": "Evaluate your retrieval",
+        "prompt": "prompt",
+        "revealAnswer": "Reveal Answer",
+        "answerKey": "Answer Key",
+        "reponseCaptured": "Response captured. Ready to continue.",
+        "inspectCard": "Inspect the card before scoring"
+      },
+      "unscramble": {
+        "allWordsChosen": "All words have been allocated. Press check to verify your answer."
+      },
+      "fitb": {
+        "typeWord": "Type the missing word"
+      }
+    },
     "settings": {
       "exerciseSettings": "Exercise Settings",
       "targetItemQuant": "Target Question Count",
@@ -118,6 +140,10 @@
       "allocated_one": "Allocated",
       "allocated_other": "Allocated",
       "strategies": {
+        "Morphosyntax": "Morphosyntax",
+        "Annotation": "Annotation",
+        "Syntax": "Syntax",
+        "Composition": "Composition",
         "gramForms": "Grammatical Forms (Morphology)",
         "nounMorph": "Noun Declensions",
         "adjectiveMorph": "Adjective Declensions",

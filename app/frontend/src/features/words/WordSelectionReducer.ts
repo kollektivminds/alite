@@ -13,6 +13,7 @@ export interface WordSelectionState {
 export type WordSelectionAction =
   | { type: "TOGGLE_LESSON_LIST"; payload: string }
   | { type: "CLEAR_LESSON_LISTS" }
+  | { type: "RESET_ALL" }
   | { type: "SET_LESSON_LISTS"; payload: string[] }
   | { type: "ADD_MANUAL_LEMMA"; payload: Lemma }
   | { type: "REMOVE_MANUAL_LEMMA"; payload: string }
@@ -27,15 +28,14 @@ export const initialState: WordSelectionState = {
   selectedLessonListIds: [],
   manualLemmas: [],
   excludedLemmaIds: [],
-  // Full declarative initialization preventing 'undefined' prop errors
   qualities: {
-    difficulty: "medium" as any,
+    difficulty: "medium",
     maxKeys: 1,
     maxDistractors: 3,
     allowOddOneOut: false,
-    itemFormats: ["mcq", "flashcard"],
-    typeCounts: {}, // Prevents undefined index lookup in ExerciseConfigPanel
-    maxItems: 10, // Standard assessment session baseline
+    itemFormats: [], // STANDARD: Unselected at start
+    typeCounts: {},
+    maxItems: 10,
   },
 };
 
@@ -124,6 +124,16 @@ export function wordSelectionReducer(
         qualities: {
           ...state.qualities,
           ...action.payload,
+        },
+      };
+
+    case "RESET_ALL":
+      return {
+        ...initialState,
+        qualities: {
+          ...initialState.qualities,
+          maxItems: state.qualities.maxItems, // preserve quota preference
+          difficulty: state.qualities.difficulty,
         },
       };
 

@@ -4,10 +4,10 @@
 
 import React from "react";
 import { AttemptRecord, ExerciseItem } from "../../types/exercise";
-import { FITBDisplay } from "./FITBDisplay";
-import { FlashcardDisplay } from "./FlashcardDisplay";
-import { MCQDisplay } from "./MCQDisplay";
-import { UnscrambleDisplay } from "./UnscrambleDisplay";
+import { FITBDisplay } from "./fitbDisplay";
+import { FlashcardDisplay } from "./flashcardDisplay";
+import { MCQDisplay } from "./mcqDisplay";
+import { UnscrambleDisplay } from "./unscrambleDisplay";
 
 interface ItemFormatRouterProps {
   item: ExerciseItem;

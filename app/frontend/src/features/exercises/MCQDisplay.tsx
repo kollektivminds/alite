@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AttemptRecord, MCQResponseItem } from "../../types/exercise";
 import { renderFormattedPrompt } from "../../utils/formatPrompt";
 
@@ -20,6 +21,7 @@ export const MCQDisplay: React.FC<MCQDisplayProps> = ({
   isResolved,
 }) => {
   const [localSelection, setLocalSelection] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setLocalSelection(null);
@@ -84,7 +86,8 @@ export const MCQDisplay: React.FC<MCQDisplayProps> = ({
       <div className="h-16 flex items-center justify-center">
         {isResolved && attemptsRecord.revealedAnswer && (
           <div className="text-red-600 font-medium">
-            Правильный ответ: {attemptsRecord.revealedAnswer}
+            {t("exercises.navigation.correctAnswer")}:{" "}
+            {attemptsRecord.revealedAnswer}
           </div>
         )}
         {!isResolved ? (
@@ -94,11 +97,11 @@ export const MCQDisplay: React.FC<MCQDisplayProps> = ({
             disabled={!localSelection}
             className="px-8 py-3 rounded-xl font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
-            Ответить
+            {t("exercises.navigation.check")}
           </button>
         ) : (
           <div className="text-slate-500 italic text-sm">
-            Задание завершено.
+            {t("exercises.navigation.exComplete")}.
           </div>
         )}
       </div>

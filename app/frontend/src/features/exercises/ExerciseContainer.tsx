@@ -1,10 +1,11 @@
 // src/features/exercises/ExerciseContainer.tsx
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DIFFICULTY_MAP, DifficultyLevel } from "../../types/exercise";
 import { ExerciseResponse } from "../../types/words";
-import { ExerciseSummary } from "./ExerciseSummary";
-import { ItemFormatRouter } from "./ItemFormatRouter";
-import { ProgressBar } from "./ProgressBar";
+import { ExerciseSummary } from "./exerciseSummary";
+import { ItemFormatRouter } from "./itemFormatRouter";
+import { ProgressBar } from "./progressBar";
 
 interface AttemptRecord {
   itemId: number;
@@ -30,6 +31,7 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
   difficulty,
   onExit,
 }) => {
+  const { t } = useTranslation();
   const [phase, setPhase] = useState<"intro" | "active" | "conclusion">(
     "intro",
   );
@@ -195,7 +197,7 @@ export const ExerciseContainer: React.FC<ExerciseContainerProps> = ({
                 onClick={handleNextItem}
                 className="mt-8 px-8 py-3 rounded-lg font-semibold bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
               >
-                Continue
+                {t("exercises.navigation.continue")}
               </button>
             )}
           </div>

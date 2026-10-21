@@ -300,6 +300,19 @@ class EnumWordItemType(str, enum.Enum):
     VERB_TO_TNRF = "verb_to_tnrf"  # "Is X transitive, reflexive, or neither?" (MCQ)
     TNRF_TO_VERB = "tnrf_to_verb"  # "Which lemma(s) is/are X?" (MCQ)
 
+    @classmethod
+    def _missing_(cls, value: Any) -> Optional["EnumWordItemType"]:
+        """
+        Coerces uppercase member names or mixed-case string representations
+        to the canonical enum instance.
+        """
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            for member in cls:
+                if member.value == normalized or member.name.lower() == normalized:
+                    return member
+        return None
+
 
 class EnumSentItemType(str, enum.Enum):
     NOUN_MORPH = "noun_morph"
@@ -312,6 +325,19 @@ class EnumSentItemType(str, enum.Enum):
     FIND_HEAD = "find_head"
     FIND_SUBJECT = "find_subject"
     UNSCRAMBLE = "unscramble"
+
+    @classmethod
+    def _missing_(cls, value: Any) -> Optional["EnumSentItemType"]:
+        """
+        Resolves uppercase strings ('VERB_MORPH') or lowercase values ('verb_morph')
+        to canonical enum members.
+        """
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            for member in cls:
+                if member.value == normalized or member.name.lower() == normalized:
+                    return member
+        return None
 
 
 class EnumItemDifficulty(str, enum.Enum):

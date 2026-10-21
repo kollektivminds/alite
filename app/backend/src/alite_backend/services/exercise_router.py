@@ -3,11 +3,11 @@ import logging
 import random
 import uuid
 from enum import Enum
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
-from alite_backend.db.schemas import EnumSentItemType, EnumWordItemType
+from alite_backend.db.schemas import EnumItemFormat, EnumSentItemType, EnumWordItemType
 from alite_backend.services.items.lemma_base import LemmaItemBaseStrategy
 from alite_backend.services.items.lemma_subclasses import (
     LemmaMorphologicalStrategy,
@@ -375,25 +375,39 @@ EXERCISE_CONFIG = {
 
 
 class ExerciseRouter:
+    """
+    Orchestrates pedagogical item generation, rolling deficit mitigation,
+    and relational persistence for word- and sentence-level exercise sessions.
+    """
+
     def __init__(self, db: Session, user_id: int):
         self.db = db
         self.user_id = user_id
+        # Stage the parent session header; flush is deferred until deliverables compile
         self.exercise_in = models.Exercise(user_id=self.user_id)
         self.db.add(self.exercise_in)
-        self.db.flush()
 
     def get_exercise_generator(
-        self, exercise_type: EnumWordItemType | EnumSentItemType
-    ):
-        StrategyClass = EXERCISE_CONFIG.get(exercise_type)
-        if not StrategyClass:
+        self, exercise_type: Union[EnumWordItemType, EnumSentItemType, str]
+    ) -> Tuple[Any, Dict[str, Any]]:
+        resolved_enum = schemas.resolve_strategy_identifier(exercise_type)
+        if not resolved_enum:
             raise ValueError(f"Unknown exercise type: {exercise_type}")
-        return StrategyClass["strategy_class"], StrategyClass["kwargs"]
+
+        strategy_config = EXERCISE_CONFIG.get(resolved_enum)
+        if not strategy_config:
+            raise ValueError(f"No generator registered for: {resolved_enum}")
+
+        return strategy_config["strategy_class"], strategy_config["kwargs"]
 
     def generate_exercise(
         self, request: schemas.ExerciseRequest
     ) -> schemas.ExerciseResponse:
-        exercise_payload = []
+        """
+        Executes item generation across requested strategies.
+        Accumulates deficits dynamically and triggers domain fallbacks when quotas fall short.
+        """
+        exercise_payload: List[Dict[str, Any]] = []
 
         if not request.exercise_context or not request.type_counts:
             raise HTTPException(
@@ -401,26 +415,24 @@ class ExerciseRouter:
                 detail="No target items or generation configurations provided.",
             )
 
-        # initialize Deficit Tracking
+        session_requested_formats = set(request.exercise_context.ex_formats)
         rolling_deficit = 0
         strategies_to_process = list(request.type_counts.items())
+        is_sentence_session = request.exercise_context.lem_ids is None
 
-        # extract general fallback strategies (e.g., definitions, POS) in case we
-        # reach the end of the loop and still have a deficit to fill.
-        fallback_strategies = [
-            strat
-            for strat in request.type_counts.keys()
-            if "def" in str(strat).lower() or "pos" in str(strat).lower()
-        ]
-
-        # process strategies dynamically
-        for i, (item_strategy, base_qty) in enumerate(strategies_to_process):
+        # ---------------------------------------------------------------------
+        # 1. Primary Strategy Generation Pass
+        # ---------------------------------------------------------------------
+        for item_strategy_raw, base_qty in strategies_to_process:
             if base_qty <= 0 and rolling_deficit <= 0:
                 continue
 
-            # Add any accumulated deficit from previous failed strategies to this strategy's quota
+            item_strategy = schemas.resolve_strategy_identifier(item_strategy_raw)
+            if not item_strategy:
+                continue
+
             requested_qty = base_qty + rolling_deficit
-            rolling_deficit = 0  # Reset, as we are attempting to fulfill it now
+            rolling_deficit = 0
 
             strategy_class, strategy_kwargs = self.get_exercise_generator(item_strategy)
             strategy_instance = strategy_class(
@@ -436,33 +448,36 @@ class ExerciseRouter:
                 config=request.grammar_focus or None,
             )
 
-            # 4. Calculate actual yield vs requested quota
             actual_yield = len(blueprints) if blueprints else 0
-
             if actual_yield < requested_qty:
-                # We missed the quota. Carry the deficit forward to the next strategy.
                 rolling_deficit = requested_qty - actual_yield
-                logger.info(
-                    f"Strategy {item_strategy} yielded {actual_yield}/{requested_qty}. Deficit carried: {rolling_deficit}"
-                )
 
             if not blueprints:
                 continue
 
+            # Intersect strategy capabilities with session formats
             supported_formats = schemas.STRATEGY_FORMAT_COMPATIBILITY.get(
-                item_strategy, EXERCISE_CONFIG[item_strategy]["formats"]
+                item_strategy,
+                frozenset(EXERCISE_CONFIG[item_strategy]["formats"]),
             )
-            viable_formats = list(
-                set(supported_formats) & set(request.exercise_context.ex_formats)
-            )
+            viable_formats = list(set(supported_formats) & session_requested_formats)
 
             if not viable_formats:
-                # Format mismatch: we lose these items. Add to deficit.
                 rolling_deficit += actual_yield
                 continue
 
             for bp in blueprints:
                 chosen_format = random.choice(viable_formats)
+
+                # Quality Guard: Never format as MCQ if distractor count is 0
+                distractor_count = len(bp.distractors or [])
+                if chosen_format == EnumItemFormat.MCQ and distractor_count < 1:
+                    if EnumItemFormat.FITB in viable_formats:
+                        chosen_format = EnumItemFormat.FITB
+                    else:
+                        rolling_deficit += 1
+                        continue
+
                 exercise_payload.append(
                     {
                         "item_bp": bp,
@@ -472,68 +487,111 @@ class ExerciseRouter:
                     }
                 )
 
-        # 5. Final Safety Net: If the loop finished but we STILL have a deficit,
-        # force a high-capacity fallback strategy to generate the remaining items.
-        if rolling_deficit > 0 and fallback_strategies:
-            logger.info(
-                f"Loop finished with deficit of {rolling_deficit}. Triggering fallback."
-            )
-            fallback_strat = random.choice(fallback_strategies)
-            strategy_class, strategy_kwargs = self.get_exercise_generator(
-                fallback_strat
-            )
-
-            fallback_instance = strategy_class(
-                db_session=self.db,
-                request_context=request.exercise_context,
-                **strategy_kwargs,
-            )
-
-            fallback_bps = fallback_instance.generate_item_blueprints(
-                num_items=rolling_deficit,
-                max_keys=request.exercise_context.max_keys,
-                max_distractors=request.exercise_context.max_distractors,
-                config=request.grammar_focus or None,
+        # ---------------------------------------------------------------------
+        # 2. Deficit Compensation Pass (High-Capacity Domain Fallbacks)
+        # ---------------------------------------------------------------------
+        if rolling_deficit > 0:
+            domain_fallbacks: List[schemas.AnyItemType] = (
+                [
+                    EnumSentItemType.NOUN_MORPH,
+                    EnumSentItemType.VERB_MORPH,
+                    EnumSentItemType.UNSCRAMBLE,
+                    EnumSentItemType.LEXICAL,
+                ]
+                if is_sentence_session
+                else [
+                    EnumWordItemType.LEM_TO_DEF,
+                    EnumWordItemType.LEM_TO_POS,
+                ]
             )
 
-            if fallback_bps:
-                viable_formats = list(
-                    set(schemas.STRATEGY_FORMAT_COMPATIBILITY.get(fallback_strat, []))
-                    & set(request.exercise_context.ex_formats)
+            for fallback_strategy in domain_fallbacks:
+                if rolling_deficit <= 0:
+                    break
+
+                supported_formats = schemas.STRATEGY_FORMAT_COMPATIBILITY.get(
+                    fallback_strategy, frozenset()
                 )
-                if viable_formats:
+                viable_formats = list(
+                    set(supported_formats) & session_requested_formats
+                )
+                if not viable_formats:
+                    continue
+
+                strategy_class, strategy_kwargs = self.get_exercise_generator(
+                    fallback_strategy
+                )
+                fallback_instance = strategy_class(
+                    db_session=self.db,
+                    request_context=request.exercise_context,
+                    **strategy_kwargs,
+                )
+                fallback_bps = fallback_instance.generate_item_blueprints(
+                    num_items=rolling_deficit,
+                    max_keys=request.exercise_context.max_keys,
+                    max_distractors=request.exercise_context.max_distractors,
+                    config=request.grammar_focus or None,
+                )
+
+                if fallback_bps:
                     for bp in fallback_bps:
+                        fmt = random.choice(viable_formats)
+                        if fmt == EnumItemFormat.MCQ and len(bp.distractors or []) < 1:
+                            if EnumItemFormat.FITB in viable_formats:
+                                fmt = EnumItemFormat.FITB
+                            else:
+                                continue
+
                         exercise_payload.append(
                             {
                                 "item_bp": bp,
-                                "item_type": fallback_strat,
-                                "item_format": random.choice(viable_formats),
+                                "item_type": fallback_strategy,
+                                "item_format": fmt,
                                 "settings": request.grammar_focus,
                             }
                         )
+                        rolling_deficit -= 1
 
-        response_items: list[schemas.ExerciseItems] = []
+        # ---------------------------------------------------------------------
+        # 3. Assemble and Commit Deliverables
+        # ---------------------------------------------------------------------
+        response_items = self._compile_deliverables(exercise_payload)
+
+        return schemas.ExerciseResponse(
+            exercise_id=self.exercise_in.id,
+            num_questions=len(response_items),
+            response_data=response_items,
+        )
+
+    def _compile_deliverables(
+        self,
+        exercise_payload: List[Dict[str, Any]],
+    ) -> List[schemas.ExerciseItems]:
+        """
+        Transforms internal blueprints into client deliverables while persisting
+        ground-truth keys exclusively to database records (Zero-Knowledge delivery).
+        """
+        # Hydrate self.exercise_in.id for child item foreign keys
+        self.db.flush()
+        response_items: List[schemas.ExerciseItems] = []
 
         for idx, pl in enumerate(exercise_payload):
             bp: schemas.ItemBlueprint = pl["item_bp"]
-            raw_item_format = pl["item_format"]
+            raw_item_format: models.EnumItemFormat = pl["item_format"]
             raw_item_type = pl["item_type"]
 
-            # 1. Unpack item_type to string (matches VARCHAR(64) column)
-            item_type_str: str = (
+            item_type_str = (
                 raw_item_type.value
-                if isinstance(raw_item_type, Enum)
+                if hasattr(raw_item_type, "value")
                 else str(raw_item_type)
             )
 
-            # 2. Defensive assertion: item_format must be an EnumItemFormat instance
-            if not isinstance(raw_item_format, models.EnumItemFormat):
-                raise TypeError(
-                    f"Expected EnumItemFormat instance, received {type(raw_item_format)}: {raw_item_format}"
-                )
+            canonical_keys: List[str] = (
+                bp.keys if isinstance(bp.keys, list) else [str(bp.keys)]
+            )
+            full_solution_text = " ".join(canonical_keys).strip()
 
-            # 3. Settings JSON containing syntactic metadata for evaluation
-            item_settings: dict[str, Any] = {}
+            item_settings: dict = {}
             if pl["settings"]:
                 item_settings["grammar_focus"] = pl["settings"].model_dump(mode="json")
             if bp.sentence_context:
@@ -541,65 +599,205 @@ class ExerciseRouter:
                 item_settings["target_indices"] = (
                     bp.sentence_context.target_token_indices
                 )
-
-            # 4. Instantiate parent Item record
-            # SQLAlchemy will serialize raw_item_format using its .name ('UNSCRAMBLE')
-            db_item = models.Item(
-                ex_id=self.exercise_in.id,  # type: ignore
-                order_in_ex=idx,
-                item_type=item_type_str,
-                item_format=raw_item_format,
-                prompt=bp.prompt,
-                settings=item_settings,
-                start_time=None,
-                finish_time=None,
-            )
-            self.db.add(db_item)
-            self.db.flush()  # Hydrates db_item.id for foreign keys
-
-            # 5. Guarded lemma association (null-safe for sentence unscramble drills)
-            if bp.lem_id is not None:
-                db_lem_in_item = models.LemmaInItem(
-                    item_id=db_item.id,  # type: ignore
-                    lem_id=bp.lem_id,
-                )
-                self.db.add(db_lem_in_item)
-
-            # 6. Normalize keys and distractors to string lists
-            canonical_keys: list[str] = (
-                bp.keys if isinstance(bp.keys, list) else [str(bp.keys)]
-            )
-            distractor_list: list[str] = bp.distractors or []
-
-            # -----------------------------------------------------------------
-            # 7. Deliverable Construction & Option Persistence
-            # -----------------------------------------------------------------
-            if raw_item_format == models.EnumItemFormat.UNSCRAMBLE:
-                # bp.keys holds the canonical ordered tokens: ['Она', 'читает', 'книгу']
-                token_strings = canonical_keys
-
-                # Generate opaque UUID handles for student interaction state
-                # Prevents sequential DOM / network inspection tampering
-                handle_token_pairs = [
-                    (uuid.uuid4().hex[:8], word) for word in token_strings
-                ]
-
-                # Store solution positions in ItemOption for server-side grading
-                option_records = [
-                    models.ItemOption(
-                        item_id=db_item.id,  # type: ignore
-                        option_text=word,
-                        option_uuid=uuid.uuid4(),
-                        is_correct=True,
-                        explanation=f"position:{pos}",
+                item_settings["full_sentence"] = bp.sentence_context.full_sentence
+                if bp.sentence_context.syntactic_focus:
+                    item_settings["syntactic_focus"] = (
+                        bp.sentence_context.syntactic_focus
                     )
-                    for pos, (_, word) in enumerate(handle_token_pairs)
+
+            # Persist master string in database settings for grading lookups
+            item_settings["solution"] = full_solution_text
+
+            raw_prompt = bp.prompt or ""
+            interactive_tokens: Optional[List[schemas.DisplayToken]] = None
+
+            if bp.sentence_context and bp.sentence_context.tokens:
+                interactive_tokens = [
+                    schemas.DisplayToken(
+                        tok_idx=t.tok_idx,
+                        text=t.lex_raw,
+                        is_masked=False,
+                        is_punctuation=bool(t.dep_rel == "пункт"),
+                    )
+                    for t in bp.sentence_context.tokens
                 ]
-                self.db.add_all(option_records)
+
+            # -------------------------------------------------------------
+            # FORMAT: Fill-in-the-Blank (FITB) - In-Situ Lemma Injection
+            # -------------------------------------------------------------
+            if raw_item_format == models.EnumItemFormat.FITB:
+                if "[___]" in raw_prompt and not bp.hint:
+                    # Если пропуск есть, а подсказки нет, проверяем возможность переключения в MCQ
+                    if bp.distractors and len(bp.distractors) >= 1:
+                        logger.warning(
+                            "FITB blueprint for item %s lacks lemma hint. Degrading to MCQ.",
+                            item_type_str,
+                        )
+                        raw_item_format = models.EnumItemFormat.MCQ
+
+            # -------------------------------------------------------------
+            # ФОРМАТИРОВАНИЕ FITB С ИНЛАЙН-ПОДСКАЗКОЙ
+            # -------------------------------------------------------------
+            if raw_item_format == models.EnumItemFormat.FITB:
+                # 1. Формирование частей и инлайн-подсказки [**лемма**]
+                if "[___]" in raw_prompt:
+                    split_parts = raw_prompt.split("[___]")
+                    part_0 = split_parts[0]
+                    part_1 = split_parts[1]
+
+                    if bp.hint:
+                        # Инъекция выделенной леммы сразу за пропуском
+                        lemma_tag = f" [**{bp.hint}**]"
+                        part_1 = f"{lemma_tag}{part_1}"
+
+                    clean_parts = [part_0, part_1]
+                    final_prompt = "[___]".join(clean_parts).strip()
+                else:
+                    clean_parts = [raw_prompt, ""]
+                    final_prompt = raw_prompt
+
+                # 2. Создание родительского Item с валидным prompt
+                db_item = models.Item(
+                    ex_id=self.exercise_in.id,
+                    order_in_ex=idx,
+                    item_type=item_type_str,
+                    item_format=raw_item_format,
+                    prompt=final_prompt,
+                    settings=item_settings,
+                    start_time=None,
+                    finish_time=None,
+                )
+                self.db.add(db_item)
                 self.db.flush()
 
-                # Enforce non-identity shuffling on student deliverable
-                shuffled_pairs = list(handle_token_pairs)
+                if bp.lem_id is not None:
+                    self.db.add(
+                        models.LemmaInItem(item_id=db_item.id, lem_id=bp.lem_id)
+                    )
+
+                # 3. Сохранение эталонного ключа в ItemOption
+                for key in canonical_keys:
+                    self.db.add(
+                        models.ItemOption(
+                            item_id=db_item.id,
+                            option_text=key,
+                            option_uuid=uuid.uuid4(),
+                            is_correct=True,
+                            explanation="target_key",
+                        )
+                    )
+                self.db.flush()
+
+                response_items.append(
+                    schemas.FillInTheBlankResponse(
+                        item_id=db_item.id,
+                        prompt=final_prompt,
+                        parts=clean_parts,
+                        sentence_tokens=interactive_tokens,
+                    )
+                )
+
+            # -------------------------------------------------------------
+            # FORMAT: Multiple Choice (MCQ) - Options Only, Clean Prompt
+            # -------------------------------------------------------------
+            elif raw_item_format == models.EnumItemFormat.MCQ:
+                db_item = models.Item(
+                    ex_id=self.exercise_in.id,
+                    order_in_ex=idx,
+                    item_type=item_type_str,
+                    item_format=raw_item_format,
+                    prompt=raw_prompt,
+                    settings=item_settings,
+                    start_time=None,
+                    finish_time=None,
+                )
+                self.db.add(db_item)
+                self.db.flush()
+
+                if bp.lem_id is not None:
+                    self.db.add(
+                        models.LemmaInItem(item_id=db_item.id, lem_id=bp.lem_id)
+                    )
+
+                all_options = canonical_keys + (bp.distractors or [])
+                for opt in all_options:
+                    self.db.add(
+                        models.ItemOption(
+                            item_id=db_item.id,
+                            option_text=opt,
+                            option_uuid=uuid.uuid4(),
+                            is_correct=(opt in canonical_keys),
+                            explanation=None,
+                        )
+                    )
+                self.db.flush()
+
+                shuffled_options = list(all_options)
+                random.shuffle(shuffled_options)
+
+                response_items.append(
+                    schemas.MultipleChoiceResponse(
+                        item_id=db_item.id,
+                        prompt=raw_prompt,
+                        options=shuffled_options,
+                        sentence_tokens=interactive_tokens,
+                    )
+                )
+
+            # -------------------------------------------------------------
+            # FORMAT: Unscramble - Token Shuffle & Master Solution Storage
+            # -------------------------------------------------------------
+            elif raw_item_format == models.EnumItemFormat.UNSCRAMBLE:
+                db_item = models.Item(
+                    ex_id=self.exercise_in.id,
+                    order_in_ex=idx,
+                    item_type=item_type_str,
+                    item_format=raw_item_format,
+                    prompt=raw_prompt,
+                    settings=item_settings,
+                    start_time=None,
+                    finish_time=None,
+                )
+                self.db.add(db_item)
+                self.db.flush()
+
+                # 1. Эталонное полное предложение для проверки
+                self.db.add(
+                    models.ItemOption(
+                        item_id=db_item.id,
+                        option_text=full_solution_text,
+                        option_uuid=uuid.uuid4(),
+                        is_correct=True,
+                        explanation="complete_sentence",
+                    )
+                )
+
+                # 2. Токены с сохранением единого UUID для хэндла и базы данных
+                token_strings = canonical_keys
+                handle_pairs: List[Tuple[str, str]] = []
+                token_options: List[models.ItemOption] = []
+
+                for pos, word in enumerate(token_strings):
+                    # Генерируем один UUID и используем его и в базе, и в ответе
+                    token_uuid = uuid.uuid4()
+                    token_handle = token_uuid.hex[:8]
+                    handle_pairs.append((token_handle, word))
+
+                    token_options.append(
+                        models.ItemOption(
+                            item_id=db_item.id,
+                            option_text=word,
+                            option_uuid=token_uuid,
+                            is_correct=False,
+                            explanation=f"position:{pos}",
+                        )
+                    )
+
+                self.db.add_all(token_options)
+                self.db.flush()
+
+                # Перемешивание токенов с гарантией нетождественности
+                shuffled_pairs = list(handle_pairs)
                 if len(shuffled_pairs) > 1:
                     attempts = 0
                     while [
@@ -610,8 +808,8 @@ class ExerciseRouter:
 
                 response_items.append(
                     schemas.UnscrambleResponse(
-                        item_id=db_item.id,  # type: ignore
-                        prompt=bp.prompt,
+                        item_id=db_item.id,
+                        prompt=raw_prompt,
                         shuffled_tokens=[
                             schemas.UnscrambleToken(token_handle=h, text=w)
                             for h, w in shuffled_pairs
@@ -619,69 +817,30 @@ class ExerciseRouter:
                     )
                 )
 
-            elif raw_item_format == models.EnumItemFormat.MCQ:
-                all_options = canonical_keys + distractor_list
-
-                option_records = [
-                    models.ItemOption(
-                        item_id=db_item.id,  # type: ignore
-                        option_text=opt,
-                        option_uuid=uuid.uuid4(),
-                        is_correct=(opt in canonical_keys),
-                        explanation=None,
-                    )
-                    for opt in all_options
-                ]
-                self.db.add_all(option_records)
-                self.db.flush()
-
-                shuffled_options = list(all_options)
-                random.shuffle(shuffled_options)
-
-                response_items.append(
-                    schemas.MultipleChoiceResponse(
-                        item_id=db_item.id,  # type: ignore
-                        prompt=bp.prompt,
-                        options=shuffled_options,  # type: ignore
-                    )
-                )
-
-            elif raw_item_format == models.EnumItemFormat.FITB:
-                option_records = [
-                    models.ItemOption(
-                        item_id=db_item.id,  # type: ignore
-                        option_text=key,
-                        option_uuid=uuid.uuid4(),
-                        is_correct=True,
-                        explanation=None,
-                    )
-                    for key in canonical_keys
-                ]
-                self.db.add_all(option_records)
-                self.db.flush()
-
-                response_items.append(
-                    schemas.FillInTheBlankResponse(
-                        item_id=db_item.id,  # type: ignore
-                        prompt=bp.prompt,
-                        parts=canonical_keys,
-                    )
-                )
-
+            # -------------------------------------------------------------
+            # FORMAT: Flashcard
+            # -------------------------------------------------------------
             elif raw_item_format == models.EnumItemFormat.FLASHCARD:
+                db_item = models.Item(
+                    ex_id=self.exercise_in.id,
+                    order_in_ex=idx,
+                    item_type=item_type_str,
+                    item_format=raw_item_format,
+                    prompt=raw_prompt,
+                    settings=item_settings,
+                    start_time=None,
+                    finish_time=None,
+                )
+                self.db.add(db_item)
+                self.db.flush()
+
                 response_items.append(
                     schemas.FlashcardResponse(
-                        item_id=db_item.id,  # type: ignore
-                        prompt=bp.prompt,
+                        item_id=db_item.id,
+                        prompt=raw_prompt,
                         back_text=canonical_keys[0],
                     )
                 )
 
-        # Commit all items and options atomically
         self.db.commit()
-
-        return schemas.ExerciseResponse(
-            exercise_id=self.exercise_in.id,  # type: ignore
-            num_questions=len(response_items),
-            response_data=response_items,
-        )
+        return response_items

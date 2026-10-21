@@ -46,7 +46,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
 }) => {
   const { t } = useTranslation();
   const [expandedGroups, setExpandedGroups] = useState<Set<EnumWordItemGroup>>(
-    () => new Set<EnumWordItemGroup>(["General"]),
+    () => new Set<EnumWordItemGroup>(),
   );
 
   // 1. Defensive normalization: Guard against undefined/null nested config structures

@@ -1,33 +1,78 @@
-"""
-app/backend/services/items/sentence_base.py
-
-Abstract base strategy class for sentence-level item generation in ALITE.
-Manages sentence querying, token-graph hydration, orthographic rendering,
-distractor harvesting, and client-safe payload masking.
-"""
-
+# app/backend/services/items/sentence_base.py
 from __future__ import annotations
 
 import logging
 import random
+import re
+import unicodedata
 from abc import ABC, abstractmethod
-from typing import Any, Optional, Sequence
-from uuid import uuid4
+from typing import Any, Dict, List, Optional, Sequence, Set, Tuple
 
 from alite_backend.db import models, schemas
-from alite_backend.db.models import Sentence, SentenceToken
+from alite_backend.db.models import Lexeme, Sentence, SentenceToken, WordForm
+from alite_backend.words.funcs import remove_accents
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session, selectinload
 
 logger = logging.getLogger(__name__)
 
 
+# Canonical Pedagogical Mapping for SynTagRus Syntactic Tags
+SYNTAGRUS_DEP_REL_MAP: Dict[str, str] = {
+    "предик": "Subject",
+    "1-компл": "Direct Object",
+    "2-компл": "Indirect Object",
+    "3-компл": "Oblique Object",
+    "4-компл": "Oblique Object",
+    "5-компл": "Oblique Object",
+    "обст": "Adverbial Modifier",
+    "опред": "Adjectival Modifier (Attribute)",
+    "атриб": "Non-agreeing Modifier",
+    "квазиагент": "Agentive / Genitive Complement",
+    "огранич": "Restrictive Particle / Modifier",
+    "сочин": "Coordinated Element",
+    "соч-союзн": "Coordinating Conjunction Clause",
+    "сент-соч": "Sentential Coordination",
+    "подч-союзн": "Subordinating Conjunction Clause",
+    "присвяз": "Copular Predicative",
+    "вводн": "Parenthetical",
+    "предл": "Prepositional Dependent",
+    "количест": "Quantitative Modifier",
+    "длительн": "Duration Modifier",
+    "кратн": "Multiplicative Modifier",
+    "распред": "Distributive Modifier",
+    "сравнит": "Comparative Modifier",
+    "сравн-союзн": "Comparative Conjunction Clause",
+    "электив": "Partitive Dependent",
+    "аппоз": "Apposition",
+    "пасс-анал": "Passive Auxiliary",
+    "вспом": "Auxiliary",
+    "инф-союзн": "Infinitive Conjunction Clause",
+    "уточн": "Clarifying Modifier",
+    "эксплет": "Expletive",
+    "композ": "Compound Part",
+}
+
+CANONICAL_ASPECTS: list[str] = [
+    "imperfective",
+    "perfective",
+]
+
+CANONICAL_CASES: list[str] = [
+    "nominative",
+    "genitive",
+    "dative",
+    "accusative",
+    "instrumental",
+    "prepositional",
+]
+
+
 class SentenceItemBaseStrategy(ABC):
     """
     Abstract Base Class for sentence-level exercise strategies.
-
-    Provides utility methods for sentence fetching, syntactic dependency analysis,
-    orthographic surface rendering, and candidate token selection.
+    Manages querying, token-graph hydration, distractor harvesting,
+    and client-safe payload generation.
     """
 
     def __init__(
@@ -38,18 +83,12 @@ class SentenceItemBaseStrategy(ABC):
         self.db = db_session
         self.request_context = request_context
 
-        # Context settings extracted from the parent payload
         self.lem_ids: list[int] = request_context.lem_ids or []
         self.formats: list[schemas.EnumItemFormat] = request_context.ex_formats
         self.difficulty: schemas.EnumItemDifficulty = request_context.difficulty
         self.max_keys: int = request_context.max_keys
         self.max_distractors: int = request_context.max_distractors
 
-    # -------------------------------------------------------------------------
-    # HELPER METHODS
-    # -------------------------------------------------------------------------
-
-    # database scoping and eager hydration
     def _get_candidate_sentences(
         self,
         limit: int,
@@ -57,35 +96,17 @@ class SentenceItemBaseStrategy(ABC):
         max_tokens: int = 50,
         doc_id: Optional[int] = None,
         required_dep_rel: Optional[str] = None,
-        required_pos: Optional[str] = None,
+        required_pos: Optional[Any] = None,
     ) -> list[Sentence]:
         """
-        Samples candidate sentences from the corpus matching syntactic and length criteria.
-        Eagerly loads tokens sorted by `token_idx` to prevent DetachedInstanceError.
+        Samples candidate sentences from the corpus matching syntactic criteria.
+        Eagerly loads tokens sorted by token_idx.
         """
         stmt = select(Sentence).options(selectinload(Sentence.tokens))
 
         if doc_id is not None:
             stmt = stmt.where(Sentence.doc_id == doc_id)
 
-        # Token length boundaries via a grouped subquery
-        token_count_subq = (
-            select(
-                SentenceToken.sent_id,
-                func.count(SentenceToken.id).label("tok_count"),
-            )
-            .group_by(SentenceToken.sent_id)
-            .having(
-                and_(
-                    func.count(SentenceToken.id) >= min_tokens,
-                    func.count(SentenceToken.id) <= max_tokens,
-                )
-            )
-            .subquery()
-        )
-        stmt = stmt.join(token_count_subq, Sentence.id == token_count_subq.c.sent_id)
-
-        # filter by targeted curriculum lemmas if provided in ExerciseContext
         if self.lem_ids:
             lem_subq = (
                 select(SentenceToken.sent_id)
@@ -95,7 +116,6 @@ class SentenceItemBaseStrategy(ABC):
             )
             stmt = stmt.join(lem_subq, Sentence.id == lem_subq.c.sent_id)
 
-        # syntactic dependency filter (e.g. sentences with 'предик' or '1-компл')
         if required_dep_rel:
             dep_subq = (
                 select(SentenceToken.sent_id)
@@ -105,77 +125,143 @@ class SentenceItemBaseStrategy(ABC):
             )
             stmt = stmt.join(dep_subq, Sentence.id == dep_subq.c.sent_id)
 
-        # part-of-speech presence constraint (e.g. requires a VERB or NOUN)
         if required_pos:
+            pos_val = (
+                required_pos.value
+                if hasattr(required_pos, "value")
+                else str(required_pos).lower()
+            )
             pos_subq = (
                 select(SentenceToken.sent_id)
-                .where(SentenceToken.features["pos"].as_string() == required_pos)
+                .where(SentenceToken.features.contains({"pos": pos_val}))
                 .distinct()
                 .subquery()
             )
             stmt = stmt.join(pos_subq, Sentence.id == pos_subq.c.sent_id)
 
-        # randomize selection and fetch excess rows to allow in-memory filtering
-        stmt = stmt.order_by(func.random()).limit(limit * 3)
-        sentences = list(self.db.scalars(stmt).all())
+        fetch_limit = max(limit * 3, 10)
+        stmt = stmt.order_by(func.random()).limit(fetch_limit)
+        raw_candidates = list(self.db.scalars(stmt).all())
 
-        # ensure in-memory ordering guarantees for tokens
-        for s in sentences:
+        valid_sentences: list[Sentence] = []
+        for s in raw_candidates:
             s.tokens.sort(key=lambda t: t.token_idx)
+            if min_tokens <= len(s.tokens) <= max_tokens:
+                valid_sentences.append(s)
+            if len(valid_sentences) >= limit:
+                break
 
-        return sentences
+        return valid_sentences
 
-    # orthography and reconstruction helpers
     @staticmethod
-    def render_reconstructed_sentence(tokens: Sequence[SentenceToken]) -> str:
+    def render_reconstructed_sentence(
+        tokens: Sequence[SentenceToken],
+        highlight_indices: Optional[Sequence[int]] = None,
+    ) -> str:
         """
-        Reconstructs a sentence string respecting punctuation markers and capitalization.
-        Ensures correct typographical spacing (e.g., no space before commas or periods).
+        Собирает предложение из токенов с учетом пунктуационных правил,
+        экранирования символов и инлайн-выделения целевых слов.
         """
         output: list[str] = []
-        for tok in tokens:
-            prefix = tok.punctuation_before or ""
-            suffix = tok.punctuation_after or ""
-            word = tok.lex_raw
+        highlight_set = set(highlight_indices or [])
 
-            # If preceding punctuation exists, attach cleanly
-            tok_repr = f"{prefix}{word}{suffix}"
+        for i, tok in enumerate(tokens):
+            # Очистка артефактов экранирования кавычек из корпуса SynTagRus
+            prefix = (
+                (tok.punctuation_before or "").replace('\\"', '"').replace('"', "«", 1)
+            )
+            suffix = (
+                (tok.punctuation_after or "").replace('\\"', '"').replace('"', "»", 1)
+            )
+            word = tok.lex_raw.replace('\\"', '"')
+
+            if tok.token_idx in highlight_set:
+                tok_repr = f"{prefix}**{word}**{suffix}"
+            else:
+                tok_repr = f"{prefix}{word}{suffix}"
 
             if not output:
                 output.append(tok_repr)
             else:
-                # Decide if a space is required between tokens
-                prev_tok = tokens[tokens.index(tok) - 1]
-                # Skip space if previous token has trailing punctuation like an open quote
-                if prev_tok.punctuation_after and prev_tok.punctuation_after in '([«"':
+                prev_tok = tokens[i - 1]
+                prev_suffix = prev_tok.punctuation_after or ""
+
+                if prev_suffix and prev_suffix in "([«\"'":
                     output.append(tok_repr)
-                # Skip space if current token has leading punctuation attaching leftward
-                elif prefix and prefix in '.,!?:;)»"':
+                elif prefix and prefix in ".,!?:;)»\"'":
                     output.append(tok_repr)
                 else:
                     output.append(f" {tok_repr}")
 
-        return "".join(output).strip()
+        rendered = "".join(output).strip()
+        rendered = re.sub(r"\s+([.,!?:;»])", r"\1", rendered)
+        rendered = re.sub(r"([«])\s+", r"\1", rendered)
+        return rendered
 
-    # syntactic graph & token analysis
     @staticmethod
-    def get_token_dependents(
-        head_token: SentenceToken,
-        all_tokens: Sequence[SentenceToken],
-    ) -> list[SentenceToken]:
+    def assemble_tokens_with_punctuation(
+        tokens: Sequence[SentenceToken],
+    ) -> List[str]:
         """
-        Retrieves all syntactic children pointing to the given head_token via `head_idx`.
+        Synthesizes movable lexical tokens with contextual punctuation attached.
+
+        Handles both column-based punctuation (punctuation_before/after) and
+        relational punctuation tokens (dep_rel == 'пункт'):
+        - Left-attaching punctuation (.,!?:;)»"'-) binds to preceding word.
+        - Right-attaching punctuation (([«"') binds to following word.
         """
-        return [t for t in all_tokens if t.head_idx == head_token.token_idx]
+        OPENING_PUNCT: Set[str] = set("([«\"'‘“")
+        CLOSING_PUNCT: Set[str] = set(".,!?:;)»\"'’”…")
+
+        assembled: List[str] = []
+        pending_prefix = ""
+
+        # Guarantee sequential evaluation by token index
+        sorted_tokens = sorted(tokens, key=lambda t: t.token_idx)
+
+        for tok in sorted_tokens:
+            raw_text = (tok.lex_raw or "").strip().replace('\\"', '"')
+            if not raw_text:
+                continue
+
+            # Check if this token is a dedicated punctuation record
+            is_standalone_punct = tok.dep_rel == "пункт" or (
+                len(raw_text) == 1 and raw_text in (OPENING_PUNCT | CLOSING_PUNCT)
+            )
+
+            if is_standalone_punct:
+                if any(ch in OPENING_PUNCT for ch in raw_text):
+                    pending_prefix += raw_text
+                else:
+                    # Closing punctuation attaches directly to preceding content token
+                    if assembled:
+                        assembled[-1] = f"{assembled[-1]}{raw_text}"
+                    else:
+                        pending_prefix += raw_text
+                continue
+
+            # Handle content word token
+            prefix = (tok.punctuation_before or "").replace('\\"', '"')
+            suffix = (tok.punctuation_after or "").replace('\\"', '"')
+
+            full_prefix = f"{pending_prefix}{prefix}"
+            pending_prefix = ""
+
+            word_unit = f"{full_prefix}{raw_text}{suffix}".strip()
+            if word_unit:
+                assembled.append(word_unit)
+
+        # Flush any trailing punctuation to the final word
+        if pending_prefix and assembled:
+            assembled[-1] = f"{assembled[-1]}{pending_prefix}"
+
+        return assembled
 
     @staticmethod
     def get_token_governor(
         token: SentenceToken,
         all_tokens: Sequence[SentenceToken],
     ) -> Optional[SentenceToken]:
-        """
-        Retrieves the syntactic parent/governor for a given token.
-        """
         if token.head_idx is None:
             return None
         for candidate in all_tokens:
@@ -183,49 +269,85 @@ class SentenceItemBaseStrategy(ABC):
                 return candidate
         return None
 
-    # distractor harvesting engines
     def fetch_intra_lemma_distractors(
         self,
         target_token: SentenceToken,
         limit: int = 3,
     ) -> list[str]:
         """
-        Gathers alternative surface wordforms of the target token's lemma.
-
-        Uses Pattern 1: Database executes SELECT DISTINCT without ORDER BY random().
-        Deduplication and randomization are handled in Python to comply with
-        SQL standards and guarantee case-insensitive option unicity.
+        Extracts alternate inflected forms of the same lemma.
+        Strips dictionary accents so distractors match the target token orthography.
         """
-        stmt = (
-            select(SentenceToken.lex_raw)
-            .where(
-                and_(
-                    SentenceToken.lem_raw == target_token.lem_raw,
-                    func.lower(SentenceToken.lex_raw) != target_token.lex_raw.lower(),
-                )
-            )
-            .distinct()
+        unique_distractors: dict[str, str] = {}
+        target_raw = target_token.lex_raw
+        target_stripped = remove_accents(target_raw).lower()
+        has_accents_originally = any(
+            unicodedata.category(ch) == "Mn"
+            for ch in unicodedata.normalize("NFD", target_raw)
         )
-        raw_candidates = list(self.db.scalars(stmt).all())
 
-        # Collapse casing variants: prevent ['края', 'Края'] appearing simultaneously
-        unique_candidates: dict[str, str] = {}
-        target_lower = target_token.lex_raw.lower()
-
-        for form in raw_candidates:
-            folded = form.lower()
-            if folded != target_lower and folded not in unique_candidates:
-                # Maintain lowercase consistency unless original target was capitalized
-                clean_form = (
-                    form.capitalize() if target_token.is_capitalized else form.lower()
+        effective_lem_id = target_token.lem_id
+        if effective_lem_id is None and target_token.lem_raw:
+            lemma_stmt = (
+                select(models.Lemma.id)
+                .where(
+                    func.lower(models.Lemma.lem_text) == target_token.lem_raw.lower()
                 )
-                unique_candidates[folded] = clean_form
+                .limit(1)
+            )
+            effective_lem_id = self.db.scalar(lemma_stmt)
 
-        viable_forms = list(unique_candidates.values())
+        # 1. Primary pass: Dictionary tables via WordForm + Lexeme
+        if effective_lem_id:
+            dict_stmt = (
+                select(Lexeme.lex_text)
+                .join(WordForm, WordForm.lex_id == Lexeme.id)
+                .where(WordForm.lem_id == effective_lem_id)
+                .distinct()
+                .limit(limit * 4)
+            )
+            for form in self.db.scalars(dict_stmt).all():
+                # Strip accents unless the corpus target originally had them
+                cleaned_form = form if has_accents_originally else remove_accents(form)
+                folded = cleaned_form.lower()
 
-        if len(viable_forms) <= limit:
-            return viable_forms
-        return random.sample(viable_forms, limit)
+                if folded != target_stripped and folded not in unique_distractors:
+                    final_text = (
+                        cleaned_form.capitalize()
+                        if target_token.is_capitalized
+                        else cleaned_form.lower()
+                    )
+                    unique_distractors[folded] = final_text
+                if len(unique_distractors) >= limit:
+                    break
+
+        # 2. Secondary pass: Sentence corpus fallback
+        if len(unique_distractors) < limit and target_token.lem_raw:
+            token_stmt = (
+                select(SentenceToken.lex_raw)
+                .where(
+                    and_(
+                        func.lower(SentenceToken.lem_raw)
+                        == target_token.lem_raw.lower(),
+                        func.lower(SentenceToken.lex_raw) != target_stripped,
+                    )
+                )
+                .distinct()
+                .limit(limit * 2)
+            )
+            for form in self.db.scalars(token_stmt).all():
+                cleaned_form = form if has_accents_originally else remove_accents(form)
+                folded = cleaned_form.lower()
+                if folded != target_stripped and folded not in unique_distractors:
+                    final_text = (
+                        cleaned_form.capitalize()
+                        if target_token.is_capitalized
+                        else cleaned_form.lower()
+                    )
+                    unique_distractors[folded] = final_text
+
+        results = list(unique_distractors.values())
+        return results if len(results) <= limit else random.sample(results, limit)
 
     def fetch_feature_matched_distractors(
         self,
@@ -234,15 +356,9 @@ class SentenceItemBaseStrategy(ABC):
         limit: int = 3,
     ) -> list[str]:
         """
-        Samples wordforms from different lemmas sharing identical morphological slots.
-
-        Uses Pattern 2: Omits SQL DISTINCT so ORDER BY random() is valid.
-        Fetches an over-sampled buffer (limit * 5) and performs fast in-memory
-        deduplication against lemmas and surface forms.
+        Samples wordforms sharing identical morphological properties.
         """
-        # Buffer factor to ensure sufficient unique candidates after filtering
-        fetch_buffer_size = max(limit * 5, 15)
-
+        buffer_size = max(limit * 5, 20)
         stmt = (
             select(SentenceToken.lex_raw, SentenceToken.lem_raw)
             .where(
@@ -251,10 +367,10 @@ class SentenceItemBaseStrategy(ABC):
                     SentenceToken.features.contains(required_features),
                 )
             )
-            .order_by(func.random())
-            .limit(fetch_buffer_size)
+            .limit(buffer_size)
         )
-        sampled_rows = self.db.execute(stmt).all()
+        sampled_rows = list(self.db.execute(stmt).all())
+        random.shuffle(sampled_rows)
 
         unique_distractors: dict[str, str] = {}
         seen_lemmas: set[str] = {target_token.lem_raw}
@@ -262,7 +378,6 @@ class SentenceItemBaseStrategy(ABC):
 
         for lex_raw, lem_raw in sampled_rows:
             lex_lower = lex_raw.lower()
-            # Ensure different lemma, unique surface text, and not identical to key
             if (
                 lem_raw not in seen_lemmas
                 and lex_lower != target_lower
@@ -276,22 +391,17 @@ class SentenceItemBaseStrategy(ABC):
                 )
                 unique_distractors[lex_lower] = clean_word
 
-            if len(unique_distractors) == limit:
+            if len(unique_distractors) >= limit:
                 break
 
         return list(unique_distractors.values())
 
-    # sanitization & blueprint creation
     def build_sentence_blueprint_context(
         self,
         sentence: Sentence,
         target_indices: list[int],
         syntactic_focus: Optional[str] = None,
     ) -> schemas.SentenceBlueprintContext:
-        """
-        Converts SQLAlchemy ORM Sentence and Token rows into an internal
-        SentenceBlueprintContext schema. Retains ground-truth data on the backend.
-        """
         token_contexts = [
             schemas.SentenceTokenContext(
                 tok_idx=t.token_idx,
@@ -320,60 +430,62 @@ class SentenceItemBaseStrategy(ABC):
 
     def mask_sentence_for_cloze(
         self,
-        sentence: Sentence,
-        masked_token_indices: list[int],
+        sentence: models.Sentence,
+        masked_token_indices: Sequence[int],
         placeholder: str = " [___] ",
-    ) -> tuple[str, list[schemas.DisplayToken], list[str]]:
+    ) -> Tuple[str, List[schemas.DisplayToken], List[str]]:
         """
-        Produces client-safe cloze structures:
-        1. String prompt containing masked placeholders.
-        2. Sequence of DisplayTokens with masked words blanked.
-        3. String split parts around the blanks for FITB rendering.
+        Builds client-safe stimulus representations with zero solution leakage.
+
+        Returns:
+            Tuple[0]: Full prompt string containing placeholder markers.
+            Tuple[1]: Ordered list of DisplayTokens with targets masked.
+            Tuple[2]: Delimiting text parts for frontend input blank injection.
         """
-        display_tokens: list[schemas.DisplayToken] = []
-        parts: list[str] = []
-        current_segment: list[str] = []
+        display_tokens: List[schemas.DisplayToken] = []
+        parts: List[str] = []
+        current_segment: List[str] = []
+        masked_set = set(masked_token_indices)
 
         for tok in sentence.tokens:
-            is_target = tok.token_idx in masked_token_indices
+            is_target = tok.token_idx in masked_set
             prefix = tok.punctuation_before or ""
             suffix = tok.punctuation_after or ""
 
             if is_target:
-                # blank the text and flush segment to parts
+                # 1. Flush the preceding non-target text into the parts slice
+                parts.append("".join(current_segment))
+                current_segment = []
+
+                # 2. Add client-safe DisplayToken omitting target orthography
                 display_tokens.append(
                     schemas.DisplayToken(
                         tok_idx=tok.token_idx,
-                        text=placeholder,
+                        text=placeholder.strip(),
                         is_masked=True,
                         is_punctuation=False,
                     )
                 )
-                parts.append("".join(current_segment))
-                current_segment = []
             else:
-                text_repr = f"{prefix}{tok.lex_raw}{suffix}"
+                tok_str = f"{prefix}{tok.lex_raw}{suffix}"
                 display_tokens.append(
                     schemas.DisplayToken(
                         tok_idx=tok.token_idx,
-                        text=text_repr,
+                        text=tok_str,
                         is_masked=False,
                         is_punctuation=bool(tok.dep_rel == "пункт"),
                     )
                 )
-                current_segment.append(
-                    f" {text_repr}" if current_segment else text_repr
-                )
+                current_segment.append(f" {tok_str}" if current_segment else tok_str)
 
-        if current_segment:
-            parts.append("".join(current_segment))
+        # Invariant: Always append the final trailing segment (even if empty string "")
+        # Guarantees len(parts) == len(masked_token_indices) + 1
+        parts.append("".join(current_segment))
 
-        masked_prompt = placeholder.join(parts)
+        # Reconstruct the string prompt using the placeholder
+        masked_prompt = placeholder.join(parts).strip()
+
         return masked_prompt, display_tokens, parts
-
-    # -------------------------------------------------------------------------
-    # ABSTRACT INTERFACE
-    # -------------------------------------------------------------------------
 
     @abstractmethod
     def generate_item_blueprints(
@@ -383,8 +495,4 @@ class SentenceItemBaseStrategy(ABC):
         max_distractors: int,
         config: Optional[schemas.StrategyConfigs] = None,
     ) -> list[schemas.ItemBlueprint]:
-        """
-        Core contract for generating sentence blueprints.
-        Must return ItemBlueprints populated with `SentenceBlueprintContext`.
-        """
         pass

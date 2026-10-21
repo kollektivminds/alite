@@ -1,20 +1,22 @@
 # alite_backend/api/trainer/exercises.py
+import json
 import logging
 import re
 import unicodedata
 from datetime import datetime, timedelta, timezone
-from typing import Any, Iterable, Optional, Set, Tuple
+from typing import Any, Iterable, List, Optional, Set, Tuple
 
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
 from alite_backend.services.exercise_router import ExerciseRouter
 from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import false, select
+from sqlalchemy import and_, false, select
 from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+HEX_HANDLE_PATTERN = re.compile(r"^[0-9a-fA-F]{8}$")
 
 
 def reconcile_start_time(
@@ -168,79 +170,182 @@ def get_canonical_and_evaluation(
     return is_correct, canonical_key
 
 
-@router.post(
-    "/evaluate",
-    response_model=schemas.AnswerResult,
-    status_code=status.HTTP_200_OK,
-    summary="Evaluate student submission and log psychometric response data",
-)
-def evaluate_student_answer(
-    submission: schemas.AnswerSubmission,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
-) -> schemas.AnswerResult:
+def normalize_lexical_token(token: str) -> str:
+    """Removes stress marks, leading/trailing whitespace, and canonicalizes casing."""
+    decomposed = unicodedata.normalize("NFD", token.strip().lower())
+    # Strip combining acute accents (U+0301) commonly used in Russian language pedagogy
+    stripped = "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn")
+    return unicodedata.normalize("NFC", stripped)
 
-    try:
-        item = db.get(models.Item, submission.item_id)
-        # verify item existence
-        if not item:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Item {submission.item_id} not found.",
+
+def is_hex_handle_sequence(tokens: List[str]) -> bool:
+    """
+    Проверяет, является ли переданный список токенов последовательностью hex-хэндлов.
+    Исключает ошибочное принятие обычных слов естественного языка за UUID-хэндлы.
+    """
+    if not tokens:
+        return False
+    return all(bool(HEX_HANDLE_PATTERN.fullmatch(t.strip())) for t in tokens)
+
+
+def normalize_sentence_text(text: str, preserve_yo: bool = False) -> str:
+    """
+    Детерминированно нормализует предложение для синтаксической проверки порядка слов.
+
+    Пайплайн нормализации:
+    1. Сжатие всех пробельных символов в один пробел и обрезка краёв.
+    2. NFD-декомпозиция и удаление диакритических знаков ударения (категория 'Mn').
+    3. Приведение к нижнему регистру через casefold().
+    4. Замена 'ё' на 'е' (если не включен строгий режим).
+    5. Унификация всех видов тире к дефису '-'.
+    6. Удаление кавычек (как прямых, так и «ёлочек»).
+    7. Удаление финальных знаков препинания предложения (.?!).
+    8. Рекомпозиция в каноническую форму NFC.
+    """
+    if not text:
+        return ""
+
+    # Сжатие пробелов
+    cleaned = re.sub(r"\s+", " ", text.strip())
+
+    # Снятие знаков ударения
+    decomposed = unicodedata.normalize("NFD", cleaned)
+    stripped = "".join(ch for ch in decomposed if unicodedata.category(ch) != "Mn")
+    folded = stripped.casefold()
+
+    if not preserve_yo:
+        folded = folded.replace("ё", "е")
+
+    # Унификация тире и удаление кавычек
+    folded = re.sub(r"[\u2010\u2011\u2012\u2013\u2014\u2015]", "-", folded)
+    folded = re.sub(r"[\u00AB\u00BB\u201C\u201D\u201E\u201F\"]", "", folded)
+
+    # Удаление финальной точки/знака вопроса/восклицания на конце предложения
+    folded = re.sub(r"[.?!]+$", "", folded).strip()
+
+    return unicodedata.normalize("NFC", folded)
+
+
+def evaluate_unscramble_response(
+    db: Session,
+    item: models.Item,
+    submitted_answer: str,
+) -> Tuple[bool, str, int, int]:
+    """
+    Оценивает ответ студента на задание типа 'unscramble'.
+
+    Поддерживает два валидных входных формата:
+    1. Список 8-значных hex-хэндлов (в виде JSON-массива, через запятую или пробел).
+    2. Готовая текстовая строка собранного предложения.
+
+    Возвращает:
+        Tuple[is_correct, master_solution, matched_positions, total_tokens]
+    """
+    raw_submission = submitted_answer.strip()
+
+    # 1. Извлечение эталонного предложения
+    master_solution = ""
+    if item.settings and isinstance(item.settings, dict):
+        master_solution = item.settings.get("solution", "")
+
+    if not master_solution:
+        stmt = (
+            select(models.ItemOption.option_text)
+            .where(
+                and_(
+                    models.ItemOption.item_id == item.id,
+                    models.ItemOption.explanation == "complete_sentence",
+                )
             )
-
-        server_now = datetime.now(timezone.utc)
-
-        if item.start_time is None:
-            item.start_time = reconcile_start_time(
-                client_start=submission.client_item_start,
-                response_time_ms=submission.response_time_ms,
-                server_now=server_now,
-            )
-            db.add(item)
-
-        canonical_answer: Optional[str] = None
-        logger.debug("Item format: %s", item.item_format)
-        # polymorphic branching: Flashcards have no objective keys
-        if item.item_format == models.EnumItemFormat.FLASHCARD:
-            # map rating to BKT success threshold ('remembered' and 'mastered' count as positive recall)
-            is_correct = submission.response.lower() in {"remembered", "mastered"}
-            canonical_answer = None
-        else:
-            # objective verification against ItemOption
-            is_correct, canonical_answer = get_canonical_and_evaluation(
-                db=db, item_id=submission.item_id, submitted_answer=submission.response
-            )
-
-        # reveal answer if item is correct or user exhausted attempts
-        should_reveal = is_correct or submission.is_final_attempt
-
-        if should_reveal and item.finish_time is None:
-            item.finish_time = server_now
-            db.add(item)
-
-        # log response telemetry safely
-        response_record = models.ItemResponse(
-            user_id=current_user.id,  # type: ignore
-            item_id=submission.item_id,
-            response=submission.response.strip(),
-            is_correct=is_correct,
-            response_time_ms=submission.response_time_ms,
-            attempt_num=submission.attempt_num,
+            .limit(1)
         )
-        db.add(response_record)
-        db.commit()
+        master_solution = db.scalar(stmt) or ""
 
-        return schemas.AnswerResult(
-            is_correct=is_correct,
-            correct_answer=canonical_answer if should_reveal else None,
-            explanation=getattr(item, "explanation", None) if should_reveal else None,
+    # 2. Извлечение эталонных позиций токенов с числовой сортировкой
+    pos_stmt = select(models.ItemOption).where(
+        and_(
+            models.ItemOption.item_id == item.id,
+            models.ItemOption.explanation.like("position:%"),
         )
+    )
+    ordered_option_records = list(db.scalars(pos_stmt).all())
 
-    except Exception:
-        # Prevent connection leaks on unexpected errors
-        db.rollback()
-        raise
+    # Защита от лексикографической сортировки ('position:10' < 'position:2')
+    def get_position_index(opt: models.ItemOption) -> int:
+        if opt.explanation and ":" in opt.explanation:
+            part = opt.explanation.split(":", 1)[1]
+            if part.isdigit():
+                return int(part)
+        return 0
+
+    ordered_option_records.sort(key=get_position_index)
+    total_tokens = len(ordered_option_records)
+
+    # Если в базе нет детальных записей позиций, создаем резерв из слов эталона
+    if total_tokens == 0 and master_solution:
+        total_tokens = len(master_solution.split())
+
+    # -------------------------------------------------------------------------
+    # ВЕТКА 1: Проверка последовательности opaque-хэндлов
+    # -------------------------------------------------------------------------
+    candidate_handles: List[str] = []
+
+    if raw_submission.startswith("[") and raw_submission.endswith("]"):
+        try:
+            parsed = json.loads(raw_submission)
+            if isinstance(parsed, list):
+                candidate_handles = [str(h).strip() for h in parsed]
+        except Exception:
+            candidate_handles = []
+    elif "," in raw_submission:
+        candidate_handles = [h.strip() for h in raw_submission.split(",") if h.strip()]
+    elif " " in raw_submission:
+        candidate_handles = raw_submission.split()
+
+    # Вход только если ВСЕ элементы строго соответствуют hex-шаблону хэндла
+    if candidate_handles and is_hex_handle_sequence(candidate_handles):
+        handle_to_expected_pos = {
+            opt.option_uuid.hex[:8]: idx
+            for idx, opt in enumerate(ordered_option_records)
+        }
+
+        matched_positions = 0
+        for actual_pos, handle in enumerate(candidate_handles):
+            if handle_to_expected_pos.get(handle) == actual_pos:
+                matched_positions += 1
+
+        is_correct = (matched_positions == total_tokens) and (
+            len(candidate_handles) == total_tokens
+        )
+        return is_correct, master_solution, matched_positions, total_tokens
+
+    # -------------------------------------------------------------------------
+    # ВЕТКА 2: Проверка по тексту предложения (Surface Text Comparison)
+    # -------------------------------------------------------------------------
+    norm_sub = normalize_sentence_text(raw_submission)
+    norm_sol = normalize_sentence_text(master_solution)
+
+    # Точное совпадение нормализованных строк
+    is_correct = bool(norm_sub and norm_sub == norm_sol)
+
+    # Защитный уровень: сравнение без знаков препинания (если студент случайно убрал запятую)
+    if not is_correct and norm_sub and norm_sol:
+        alpha_sub = re.sub(r"[^\w\s]", "", norm_sub)
+        alpha_sol = re.sub(r"[^\w\s]", "", norm_sol)
+        if alpha_sub == alpha_sol:
+            is_correct = True
+
+    # Расчет пословного прогресса для диагностического фидбека
+    sub_words = norm_sub.split()
+    sol_words = norm_sol.split()
+    matched_positions = sum(1 for w1, w2 in zip(sub_words, sol_words) if w1 == w2)
+    display_total = max(total_tokens, len(sol_words))
+
+    # Если всё предложение верное, гарантируем равенство счётчиков
+    if is_correct:
+        matched_positions = display_total
+
+    return is_correct, master_solution, matched_positions, display_total
 
 
 @router.post("/{exercise_id}/complete", status_code=status.HTTP_200_OK)
@@ -282,3 +387,114 @@ def complete_exercise_session(
         "finish_time": exercise.finish_time.isoformat(),
         "duration_seconds": round(duration_seconds, 3),
     }
+
+
+@router.post(
+    "/evaluate",
+    response_model=schemas.AnswerResult,
+    status_code=status.HTTP_200_OK,
+    summary="Evaluate student submission and log psychometric response data",
+)
+def evaluate_student_answer(
+    submission: schemas.AnswerSubmission,
+    db: Session = Depends(deps.get_db),
+    current_user: models.User = Depends(deps.get_current_user),
+) -> schemas.AnswerResult:
+    try:
+        item = db.get(models.Item, submission.item_id)
+        if not item:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Item {submission.item_id} not found.",
+            )
+
+        server_now = datetime.now(timezone.utc)
+        canonical_answer: Optional[str] = None
+        feedback_message: Optional[str] = None
+        is_correct = False
+
+        # Monotonic start time reconciliation
+        if item.start_time is None:
+            item.start_time = reconcile_start_time(
+                client_start=submission.client_item_start,
+                response_time_ms=submission.response_time_ms,
+                server_now=server_now,
+            )
+            db.add(item)
+
+        # polymorphic format evaluation
+        if item.item_format == models.EnumItemFormat.FLASHCARD:
+            is_correct = submission.response.lower() in {"remembered", "mastered"}
+            feedback_message = "Recall status updated."
+
+        elif item.item_format == models.EnumItemFormat.UNSCRAMBLE:
+            is_correct, canonical_answer, matched, total = evaluate_unscramble_response(
+                db=db,
+                item=item,
+                submitted_answer=submission.response,
+            )
+
+            if is_correct:
+                feedback_message = "Correct! You reconstructed the sentence perfectly."
+            elif submission.is_final_attempt:
+                feedback_message = (
+                    "Incorrect word order. The correct sentence is shown below."
+                )
+            else:
+                feedback_message = (
+                    f"Not quite. {matched} of {total} words are in the correct position. "
+                    f"Try rearranging the remaining words. (Attempt {submission.attempt_num})"
+                )
+
+        else:
+            # Set-membership verification (MCQ, FITB)
+            is_correct, canonical_answer = get_canonical_and_evaluation(
+                db=db,
+                item_id=submission.item_id,
+                submitted_answer=submission.response,
+            )
+
+            if is_correct:
+                feedback_message = "Correct!"
+            elif submission.is_final_attempt:
+                feedback_message = "Incorrect. The correct answer is shown below."
+            else:
+                feedback_message = (
+                    f"Incorrect. Try again! (Attempt {submission.attempt_num})"
+                )
+
+        # protect canonical key on intermediate failures
+        should_reveal = is_correct or submission.is_final_attempt
+
+        if should_reveal and item.finish_time is None:
+            item.finish_time = server_now
+            db.add(item)
+
+        # Log psychometric attempt telemetry
+        db.add(
+            models.ItemResponse(
+                user_id=current_user.id,
+                item_id=submission.item_id,
+                response=submission.response.strip(),
+                is_correct=is_correct,
+                response_time_ms=submission.response_time_ms,
+                attempt_num=submission.attempt_num,
+            )
+        )
+        db.commit()
+
+        return schemas.AnswerResult(
+            is_correct=is_correct,
+            correct_answer=canonical_answer if should_reveal else None,
+            explanation=(
+                item.settings.get("syntactic_focus")
+                if should_reveal and item.settings
+                else None
+            ),
+            feedback=feedback_message,
+            attempt_num=submission.attempt_num,
+        )
+
+    except Exception:
+        db.rollback()
+        raise

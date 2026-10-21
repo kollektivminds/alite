@@ -1,7 +1,6 @@
 // src/features/sentences/SentenceStrategyPicker.tsx
 import React, { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { EnumItemFormat } from "../../types";
 import {
   EnumSentenceItemGroup,
   ORDERED_SENTENCE_GROUPS,
@@ -10,16 +9,16 @@ import {
 } from "./SentenceStrategyDefinitions";
 
 interface SentenceStrategyPickerProps {
-  /** Map of Strategy Identifier -> Allocated Item Count */
+  /** Map of strategy key to item count */
   typeCounts: Record<string, number>;
-  /** Dispatches change for an individual strategy */
+  /** Callback when an individual strategy count changes */
   onCountChange: (strategyId: string, newCount: number) => void;
-  /** Dispatches batch updates (used by Randomize and Reset) */
+  /** Callback for bulk state operations (Randomize / Reset) */
   onBatchCountChange: (newCounts: Record<string, number>) => void;
-  /** Overall target quota from SentenceExerciseConfigPanel */
+  /** Maximum items budget defined in the parent config */
   targetCount: number;
-  /** Currently active session delivery formats (MCQ, FITB, Unscramble) */
-  enabledFormats: EnumItemFormat[];
+  /** Trigger to collapse all accordions on global reset */
+  onResetAll?: () => void;
 }
 
 export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
@@ -27,14 +26,14 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
   onCountChange,
   onBatchCountChange,
   targetCount,
-  enabledFormats,
+  onResetAll,
 }) => {
   const { t } = useTranslation();
 
-  // 1. Accordion disclosure state: Initialize with all canonical groups expanded
+  // 1. STANDARD: Accordions start completely collapsed
   const [expandedGroups, setExpandedGroups] = useState<
     Set<EnumSentenceItemGroup>
-  >(() => new Set<EnumSentenceItemGroup>(ORDERED_SENTENCE_GROUPS));
+  >(() => new Set<EnumSentenceItemGroup>());
 
   const toggleGroupAccordion = (group: EnumSentenceItemGroup) => {
     setExpandedGroups((prev) => {
@@ -48,7 +47,7 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
     });
   };
 
-  // 2. Partition strategies into pedagogical groups matching ORDERED_SENTENCE_GROUPS
+  // Group strategy definitions hierarchically
   const groupedStrategies = useMemo(() => {
     const map = new Map<EnumSentenceItemGroup, SentenceStrategyDefinition[]>();
     ORDERED_SENTENCE_GROUPS.forEach((group) => map.set(group, []));
@@ -63,7 +62,7 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
     return map;
   }, []);
 
-  // 3. Compute aggregate allocation telemetry
+  // Compute total questions currently allocated
   const totalAllocatedItems = useMemo(() => {
     return Object.values(typeCounts || {}).reduce(
       (sum, count) => sum + (count || 0),
@@ -71,17 +70,11 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
     );
   }, [typeCounts]);
 
-  // 4. Identify strategies compatible with currently active session delivery formats
-  const viableStrategies = useMemo(() => {
-    const activeFormatSet = new Set(enabledFormats);
-    return SentenceStrategyTooltips.filter((strat) =>
-      strat.supportedFormats.some((fmt) => activeFormatSet.has(fmt)),
-    );
-  }, [enabledFormats]);
+  const remainingHeadroom = Math.max(0, targetCount - totalAllocatedItems);
 
-  // 5. Stochastic Distributor: Distribute quota across compatible strategies
+  // 2. Uniform Randomization: Distribute across all valid strategies
   const handleRandomizeDistribution = () => {
-    if (viableStrategies.length === 0 || targetCount <= 0) return;
+    if (SentenceStrategyTooltips.length === 0 || targetCount <= 0) return;
 
     const randomized: Record<string, number> = {};
     SentenceStrategyTooltips.forEach((strat) => {
@@ -89,36 +82,37 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
     });
 
     for (let i = 0; i < targetCount; i++) {
-      const randomIndex = Math.floor(Math.random() * viableStrategies.length);
-      const chosenStrategy = viableStrategies[randomIndex];
+      const randomIndex = Math.floor(
+        Math.random() * SentenceStrategyTooltips.length,
+      );
+      const chosenStrategy = SentenceStrategyTooltips[randomIndex];
       randomized[chosenStrategy.id] = (randomized[chosenStrategy.id] || 0) + 1;
     }
 
     onBatchCountChange(randomized);
   };
 
-  const handleResetDistribution = () => {
+  // 3. Clear strategies and collapse all groups
+  const handleReset = () => {
     const cleared: Record<string, number> = {};
     SentenceStrategyTooltips.forEach((strat) => {
       cleared[strat.id] = 0;
     });
     onBatchCountChange(cleared);
+    setExpandedGroups(new Set());
+    if (onResetAll) onResetAll();
   };
 
-  const remainingHeadroom = Math.max(0, targetCount - totalAllocatedItems);
-
   return (
-    <div className="flex flex-col gap-5">
-      {/* =================================================================== */}
-      {/* TELEMETRY & STOCHASTIC ALLOCATION BAR                               */}
-      {/* =================================================================== */}
+    <div className="flex flex-col gap-4">
+      {/* Telemetry and Control Header */}
       <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-xs flex items-center justify-between transition-colors">
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-            {t("exercises.settings.questionTypes")}
+            {t("exercises.settings.questionTypes") || "Question Types"}
           </h3>
           <span className="text-[11px] text-slate-500 dark:text-slate-400">
-            {t("exercises.settings.allocated")}:{" "}
+            {t("exercises.settings.allocated") || "Allocated"}:{" "}
             <strong
               className={
                 totalAllocatedItems > targetCount
@@ -128,15 +122,15 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
             >
               {totalAllocatedItems}
             </strong>{" "}
-            / {targetCount} {t("exercises.settings.target")}
+            / {targetCount} {t("exercises.settings.target") || "Target"}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handleResetDistribution}
-            disabled={totalAllocatedItems === 0}
+            onClick={handleReset}
+            disabled={totalAllocatedItems === 0 && expandedGroups.size === 0}
             className="rounded bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 px-2.5 py-1 text-xs font-semibold text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             {t("exercises.settings.reset") || "Reset"}
@@ -145,25 +139,21 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
           <button
             type="button"
             onClick={handleRandomizeDistribution}
-            disabled={viableStrategies.length === 0 || targetCount <= 0}
+            disabled={targetCount <= 0}
             className="rounded bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/50 dark:hover:bg-blue-900/60 px-3 py-1 text-xs font-semibold text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-2xs flex items-center gap-1.5"
           >
-            <span>{t("exercises.settings.randomize")}</span>
+            <span>{t("exercises.settings.randomize") || "Randomize"}</span>
           </button>
         </div>
       </div>
 
-      {/* =================================================================== */}
-      {/* HIERARCHICAL STRATEGY ACCORDION LIST                                */}
-      {/* =================================================================== */}
-      <div className="space-y-4">
+      {/* Accordion Group List */}
+      <div className="space-y-3">
         {ORDERED_SENTENCE_GROUPS.map((groupName) => {
           const strategies = groupedStrategies.get(groupName) || [];
           if (strategies.length === 0) return null;
 
           const isExpanded = expandedGroups.has(groupName);
-
-          // Calculate total items allocated within this specific category
           const groupAllocatedCount = strategies.reduce(
             (sum, s) => sum + (typeCounts[s.id] || 0),
             0,
@@ -174,7 +164,6 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
               key={groupName}
               className="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden shadow-xs transition-colors"
             >
-              {/* Category Accordion Header */}
               <button
                 type="button"
                 onClick={() => toggleGroupAccordion(groupName)}
@@ -183,7 +172,8 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
               >
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
-                    {t(`exercises.sentencesMenu.groups.${groupName}`)}
+                    {t(`exercises.sentencesMenu.strategies.${groupName}`) ||
+                      groupName}
                   </span>
                   <span className="text-[11px] text-slate-400 font-mono">
                     ({strategies.length})
@@ -201,7 +191,7 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                     {groupAllocatedCount}{" "}
                     {t("exercises.settings.item", {
                       count: groupAllocatedCount,
-                    })}
+                    }) || "items"}
                   </span>
                   <span className="text-slate-400 text-xs font-mono">
                     {isExpanded ? "▲" : "▼"}
@@ -209,29 +199,22 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                 </div>
               </button>
 
-              {/* Accordion Content Area */}
               {isExpanded && (
                 <div className="p-3.5 border-t border-slate-100 dark:border-slate-700/60 space-y-3 bg-slate-50/30 dark:bg-slate-900/20">
                   {strategies.map((def) => {
                     const currentCount = typeCounts[def.id] || 0;
                     const maxAllowedForThis = currentCount + remainingHeadroom;
-                    const isViable = def.supportedFormats.some((fmt) =>
-                      enabledFormats.includes(fmt),
-                    );
 
                     return (
                       <div
                         key={def.id}
                         className={`rounded-lg border p-3.5 transition-all ${
-                          !isViable
-                            ? "border-slate-200/40 bg-slate-100/40 dark:border-slate-800/40 dark:bg-slate-900/40 opacity-50"
-                            : currentCount > 0
-                              ? "border-blue-300 bg-blue-50/30 dark:border-blue-900/60 dark:bg-blue-950/20 shadow-2xs"
-                              : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 shadow-2xs hover:border-slate-300"
+                          currentCount > 0
+                            ? "border-blue-300 bg-blue-50/30 dark:border-blue-900/60 dark:bg-blue-950/20 shadow-2xs"
+                            : "border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800 shadow-2xs hover:border-slate-300"
                         }`}
                       >
                         <div className="flex items-start justify-between gap-4">
-                          {/* Left Column: Metadata & Linguistic Spec */}
                           <div className="space-y-1.5 flex-1">
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-xs font-bold text-slate-900 dark:text-slate-100">
@@ -240,23 +223,17 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                               <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500">
                                 [{def.id}]
                               </span>
-                              {!isViable && (
-                                <span className="text-[10px] font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/50 px-1.5 py-0.2 rounded border border-amber-200 dark:border-amber-800">
-                                  Format Disabled
-                                </span>
-                              )}
                             </div>
 
                             <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed">
                               {def.description}
                             </p>
 
-                            {/* Linguistic Stem & Key Example Scaffolding */}
                             {def.stemExample && (
                               <div className="mt-2 rounded bg-slate-50 dark:bg-slate-900/60 p-2 border border-slate-200/70 dark:border-slate-700/70 text-[11px] font-mono text-slate-700 dark:text-slate-300 flex items-center justify-between gap-2">
                                 <div className="truncate">
                                   <span className="text-slate-400 text-[10px] font-semibold uppercase mr-1.5">
-                                    {t("exercises.settings.ex")}:
+                                    {t("exercises.settings.ex") || "Ex"}:
                                   </span>
                                   <span>{def.stemExample}</span>
                                 </div>
@@ -268,7 +245,7 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                               </div>
                             )}
 
-                            {/* Format Pill Tags */}
+                            {/* Format Pill Indicators */}
                             <div className="mt-2.5 flex items-center gap-1.5 pt-2 border-t border-slate-100 dark:border-slate-700/40">
                               <span className="text-[9px] uppercase tracking-wider text-slate-400 font-semibold">
                                 {t("exercises.settings.formats.format") ||
@@ -276,27 +253,19 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                                 :
                               </span>
                               <div className="flex gap-1 flex-wrap">
-                                {def.supportedFormats.map((fmt) => {
-                                  const isFmtActive =
-                                    enabledFormats.includes(fmt);
-                                  return (
-                                    <span
-                                      key={fmt}
-                                      className={`rounded px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider ${
-                                        isFmtActive
-                                          ? "bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
-                                          : "bg-slate-100/50 dark:bg-slate-800 text-slate-400 dark:text-slate-600 line-through"
-                                      }`}
-                                    >
-                                      {fmt}
-                                    </span>
-                                  );
-                                })}
+                                {def.supportedFormats.map((fmt) => (
+                                  <span
+                                    key={fmt}
+                                    className="rounded px-1.5 py-0.2 text-[9px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                                  >
+                                    {fmt}
+                                  </span>
+                                ))}
                               </div>
                             </div>
                           </div>
 
-                          {/* Right Column: Numeric Counter Controls */}
+                          {/* Stepper Input */}
                           <div className="flex items-center gap-1.5 select-none shrink-0 pt-0.5">
                             <button
                               type="button"
@@ -306,9 +275,9 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                                   Math.max(0, currentCount - 1),
                                 )
                               }
-                              disabled={currentCount === 0 || !isViable}
+                              disabled={currentCount === 0}
                               className="w-7 h-7 flex items-center justify-center rounded-md bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-2xs"
-                              aria-label={`Decrease count for ${def.label}`}
+                              aria-label={`Decrease ${def.label}`}
                             >
                               -
                             </button>
@@ -318,7 +287,6 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                               min={0}
                               max={maxAllowedForThis}
                               value={currentCount}
-                              disabled={!isViable}
                               onChange={(e) =>
                                 onCountChange(
                                   def.id,
@@ -331,7 +299,7 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                                   ),
                                 )
                               }
-                              className="w-12 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-1 py-1 text-center text-xs font-bold font-mono text-slate-800 dark:text-slate-100 focus:border-blue-500 focus:outline-none disabled:opacity-40 shadow-2xs"
+                              className="w-12 rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-1 py-1 text-center text-xs font-bold font-mono text-slate-800 dark:text-slate-100 focus:border-blue-500 focus:outline-none shadow-2xs"
                             />
 
                             <button
@@ -339,11 +307,9 @@ export const SentenceStrategyPicker: React.FC<SentenceStrategyPickerProps> = ({
                               onClick={() =>
                                 onCountChange(def.id, currentCount + 1)
                               }
-                              disabled={
-                                !isViable || totalAllocatedItems >= targetCount
-                              }
+                              disabled={totalAllocatedItems >= targetCount}
                               className="w-7 h-7 flex items-center justify-center rounded-md bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-200 font-bold hover:bg-slate-100 dark:hover:bg-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shadow-2xs"
-                              aria-label={`Increase count for ${def.label}`}
+                              aria-label={`Increase ${def.label}`}
                             >
                               +
                             </button>

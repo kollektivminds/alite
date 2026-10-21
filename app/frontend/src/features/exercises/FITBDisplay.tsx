@@ -3,6 +3,7 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AttemptRecord, FITBResponseItem } from "../../types/exercise";
 import { renderFormattedPrompt } from "../../utils/formatPrompt";
 
@@ -21,6 +22,7 @@ export const FITBDisplay: React.FC<FITBDisplayProps> = ({
 }) => {
   const [inputValue, setInputValue] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setInputValue("");
@@ -67,7 +69,7 @@ export const FITBDisplay: React.FC<FITBDisplayProps> = ({
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           disabled={isResolved}
-          placeholder="Введите пропущенное слово..."
+          placeholder={t("exercises.navigation.fitb.typeWord")}
           autoComplete="off"
           spellCheck="false"
           className={`
@@ -79,20 +81,22 @@ export const FITBDisplay: React.FC<FITBDisplayProps> = ({
         <div className="h-16 flex items-center justify-center w-full">
           {isResolved && attemptsRecord.revealedAnswer && (
             <div className="text-red-600 font-medium text-center">
-              Правильный ответ: {attemptsRecord.revealedAnswer}
+              {t("exercises.navigation.correctAnswer")}:{" "}
+              {attemptsRecord.revealedAnswer}
             </div>
           )}
+          <br />
           {!isResolved ? (
             <button
               type="submit"
               disabled={!inputValue.trim()}
               className="px-8 py-3 rounded-xl font-semibold bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors shadow-sm"
             >
-              Ответить
+              {t("exercises.navigation.check")}
             </button>
           ) : (
             <div className="text-slate-500 italic text-sm">
-              Задание завершено.
+              {t("exercises.navigation.exComplete")}.
             </div>
           )}
         </div>

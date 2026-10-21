@@ -7,7 +7,7 @@ import {
   Lemma,
   LessonList,
 } from "../../types";
-import { ExerciseContainer } from "../exercises/ExerciseContainer";
+import { ExerciseContainer } from "../exercises/exerciseContainer";
 import { WordsSubLandingPage } from "./wordSubLandingPage";
 
 interface WordsMenuProps {
