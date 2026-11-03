@@ -80,7 +80,7 @@ export const WordsSubLandingPage: React.FC<WordsSubLandingPageProps> = ({
         data = await requestPipelineApi(tokenArray);
       } else {
         const response = await axios.post<PipelineResponse>(
-          "/api/trainer/lemmas/pipeline-lookup",
+          "/api/v1/lemmas/pipeline-lookup",
           payload,
         );
         data = response.data;
@@ -119,7 +119,7 @@ export const WordsSubLandingPage: React.FC<WordsSubLandingPageProps> = ({
         if (pendingTokens.length === 0) return;
 
         const response = await axios.post<any[]>(
-          "/api/trainer/lemmas/queue-status",
+          "/api/v1/lemmas/queue-status",
           {
             tokens: pendingTokens,
           },
@@ -139,7 +139,7 @@ export const WordsSubLandingPage: React.FC<WordsSubLandingPageProps> = ({
             // Auto-stage newly parsed lemmas upon completion
             if (fresh.status === "completed" && fresh.existing_lemma_id) {
               axios
-                .get<Lemma>(`/api/trainer/lemmas/${fresh.existing_lemma_id}`)
+                .get<Lemma>(`/api/v1/lemmas/${fresh.existing_lemma_id}`)
                 .then((res) => {
                   if (res.data) {
                     dispatch({ type: "ADD_MANUAL_LEMMA", payload: res.data });

@@ -110,7 +110,7 @@ export const ExerciseConfigPanel: React.FC<ExerciseConfigPanelProps> = ({
     );
   }, [safeTypeCounts]);
 
-  // 6. Compute allowed formats using safeTypeCounts[cite: 21]
+  // compute allowed formats using safeTypeCounts
   const allowedFormats = useMemo(() => {
     const formats = new Set<EnumItemFormat>();
 

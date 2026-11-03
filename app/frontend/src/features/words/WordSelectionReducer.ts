@@ -33,7 +33,7 @@ export const initialState: WordSelectionState = {
     maxKeys: 1,
     maxDistractors: 3,
     allowOddOneOut: false,
-    itemFormats: [], // STANDARD: Unselected at start
+    itemFormats: [],
     typeCounts: {},
     maxItems: 10,
   },

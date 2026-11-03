@@ -1,8 +1,11 @@
 // src/features/sentences/SentencesMenu.tsx
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { DifficultyLevel, ExerciseResponse } from "../../types/exercise";
-import { ExerciseContainer } from "../exercises/exerciseContainer";
+import type {
+  EnumItemDifficulty,
+  ExerciseResponse,
+} from "../../types/exercise";
+import { ExerciseContainer } from "../exercises/ExerciseContainer";
 import { SentenceExerciseConfigPanel } from "./SentenceExerciseConfigPanel";
 import { SentenceStrategyPicker } from "./SentenceStrategyPicker";
 import type {
@@ -36,7 +39,7 @@ export function SentencesMenu({ onBack }: Props) {
     null,
   );
   const [activeDifficulty, setActiveDifficulty] =
-    useState<DifficultyLevel | null>(null);
+    useState<EnumItemDifficulty | null>(null);
 
   const handleConfigChange = (
     updated: Partial<SentenceExerciseConfigState>,
@@ -100,7 +103,7 @@ export function SentencesMenu({ onBack }: Props) {
       }
 
       const data: ExerciseResponse = await response.json();
-      setActiveDifficulty(config.difficulty as DifficultyLevel);
+      setActiveDifficulty(config.difficulty as EnumItemDifficulty);
       setActiveExercise(data);
     } catch (err: any) {
       console.error("Exercise generation failed:", err);

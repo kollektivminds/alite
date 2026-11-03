@@ -35,7 +35,7 @@ export const usePipelineSync = ({
 
         if (pendingTokens.length === 0) return;
 
-        const response = await axios.post("/api/trainer/lemmas/queue-status", {
+        const response = await axios.post("/api/v1/lemmas/queue-status", {
           tokens: pendingTokens,
         });
 
