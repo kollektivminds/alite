@@ -5,7 +5,7 @@ Reusable column formatters for SQLAdmin in ALITE.
 Handles foreign keys, relationships, and sequential token streams.
 """
 
-from typing import Any, Callable, Optional
+from typing import Any
 
 from markupsafe import Markup, escape
 
@@ -37,7 +37,7 @@ def format_document_link(model: Any, attribute: str) -> Markup:
     display_text = str(label) if label else f"#doc-{doc_id}"
 
     url = f"/admin/document/details/{escape(str(doc_id))}"
-    return Markup(
+    return Markup(  # noqa: S704
         f'<a href="{url}" class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle text-decoration-none">'
         f'<i class="fa-solid fa-file-lines me-1"></i>{escape(display_text)}'
         f"</a>"

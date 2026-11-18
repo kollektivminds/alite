@@ -4,11 +4,12 @@ import getpass
 import logging
 import sys
 
+from sqlalchemy.orm import Session
+
 from alite_backend.db.crud import user_crud
 from alite_backend.db.db_session import SessionLocal
 from alite_backend.db.models import EnumUserRole
 from alite_backend.db.schemas import UserCreate
-from sqlalchemy.orm import Session
 
 # Configure terminal logging
 logging.basicConfig(level=logging.INFO)

@@ -6,12 +6,13 @@ import unicodedata
 from datetime import datetime, timedelta, timezone
 from typing import Any, Iterable, List, Optional, Set, Tuple
 
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from sqlalchemy import and_, select
+from sqlalchemy.orm import Session
+
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
 from alite_backend.services.exercise_router import ExerciseRouter
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-from sqlalchemy import and_, false, select
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +55,8 @@ def reconcile_start_time(
 async def create_custom_exercise(
     http_request: Request,
     request: schemas.ExerciseRequest,
-    db: Session = Depends(deps.get_db),
-    current_user=Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db),  # noqa: B008
+    current_user=Depends(deps.get_current_user),  # noqa: B008
 ):
     try:
         raw_body = await http_request.json()

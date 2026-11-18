@@ -7,6 +7,13 @@ import logging
 import traceback
 from pathlib import Path
 
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
+from sqladmin import Admin
+from sqlalchemy.exc import IntegrityError
+
 # from alite_backend.api.admin.analytics import AnalyticsDashboardView
 from alite_backend.api.admin.auth import admin_auth
 from alite_backend.api.admin.views import (
@@ -16,8 +23,11 @@ from alite_backend.api.admin.views import (
     ExerciseAdminView,
     GramPropAdminView,
     ItemAdminView,
+    ItemIRTAdminView,
     ItemOptionAdminView,
     ItemResponseAdminView,
+    ItemTargetAdminView,
+    KSAAdminView,
     LemmaAdminView,
     LemmaDefinitionAdminView,
     LemmaPronunciationAdminView,
@@ -29,18 +39,13 @@ from alite_backend.api.admin.views import (
     PronunciationAdminView,
     SentenceAdminView,
     SentenceTokenAdminView,
+    StudentKSAStateAdminView,
     UserAdminView,
     WordFormAdminView,
 )
 from alite_backend.api.router import api_router
 from alite_backend.config import settings
 from alite_backend.db.db_session import engine
-from fastapi import FastAPI, HTTPException, Request, status
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
-from sqladmin import Admin
-from sqlalchemy.exc import IntegrityError
 
 logger = logging.getLogger(__name__)
 
@@ -85,6 +90,10 @@ admin_dashboard.add_view(ItemAdminView)
 admin_dashboard.add_view(LemmaDefinitionAdminView)
 admin_dashboard.add_view(ItemOptionAdminView)
 admin_dashboard.add_view(ItemResponseAdminView)
+admin_dashboard.add_view(KSAAdminView)
+admin_dashboard.add_view(ItemTargetAdminView)
+admin_dashboard.add_view(StudentKSAStateAdminView)
+admin_dashboard.add_view(ItemIRTAdminView)
 
 # admin_dashboard.add_view(AnalyticsDashboardView)
 

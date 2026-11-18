@@ -4,17 +4,21 @@ import random
 from collections import defaultdict
 from typing import Dict, List, Optional, Set, Tuple
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
+
 from alite_backend.db import models, schemas
 from alite_backend.db.models import (
+    KSA,
+    EnumDirectionality,
     EnumItemFormat,
     EnumPartOfSpeech,
     EnumRelLemType,
     EnumWordItemType,
+    ItemTarget,
     Lemma,
 )
 from alite_backend.services.item_factory import ItemFormatFactory
-from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +26,57 @@ logger = logging.getLogger(__name__)
 class WordExerciseGenerator:
     """
     Pedagogical item generation engine with capacity-aware quota allocation,
-    grammatically constrained distractor synthesis, and format degradation fallbacks.
+    grammatically constrained distractor synthesis, format degradation fallbacks,
+    and integrated KSA ItemTarget persistence.
     """
+
+    # mapping strategy types to ontological ksa domains and cognitive directionality
+    STRATEGY_KSA_MAPPING: Dict[EnumWordItemType, Tuple[str, EnumDirectionality]] = {
+        EnumWordItemType.LEM_TO_DEF: ("Lemma Meaning", EnumDirectionality.ANALYSIS),
+        EnumWordItemType.DEF_TO_LEM: ("Lemma Meaning", EnumDirectionality.SYNTHESIS),
+        EnumWordItemType.LEM_TO_POS: ("Part of Speech", EnumDirectionality.ANALYSIS),
+        EnumWordItemType.POS_TO_LEM: ("Part of Speech", EnumDirectionality.SYNTHESIS),
+        EnumWordItemType.NOUN_TO_GEND: ("Noun Morphology", EnumDirectionality.ANALYSIS),
+        EnumWordItemType.GEND_TO_NOUN: (
+            "Noun Morphology",
+            EnumDirectionality.SYNTHESIS,
+        ),
+        EnumWordItemType.NOUN_TO_ANIM: ("Noun Morphology", EnumDirectionality.ANALYSIS),
+        EnumWordItemType.ANIM_TO_NOUN: (
+            "Noun Morphology",
+            EnumDirectionality.SYNTHESIS,
+        ),
+        EnumWordItemType.VERB_TO_ASPT: ("Verb Morphology", EnumDirectionality.ANALYSIS),
+        EnumWordItemType.ASPT_TO_VERB: (
+            "Verb Morphology",
+            EnumDirectionality.SYNTHESIS,
+        ),
+        EnumWordItemType.VERB_TO_ASPT_PAIR: (
+            "Verb Morphology",
+            EnumDirectionality.ANALYSIS,
+        ),
+    }
 
     def __init__(self, db: Session):
         self.db = db
+        self._ksa_cache: Dict[str, int] = {}
+        self._load_ksa_cache()
+
+    def _load_ksa_cache(self) -> None:
+        """Pre-loads KSA names and surrogate IDs into memory to ensure O(1) lookups during generation."""
+        try:
+            ksas = self.db.scalars(select(KSA)).all()
+            self._ksa_cache = {ksa.name: ksa.id for ksa in ksas}  # type: ignore
+        except Exception as e:
+            logger.warning(f"Could not load KSA cache during generator init: {e}")
+
+    def _resolve_ksa_id(self, strategy: EnumWordItemType) -> Optional[int]:
+        """Resolves the KSA primary key ID for a given strategy type."""
+        mapping = self.STRATEGY_KSA_MAPPING.get(strategy)
+        if not mapping:
+            return self._ksa_cache.get("Semantics")  # Safe fallback root subdomain
+        ksa_name, _ = mapping
+        return self._ksa_cache.get(ksa_name)
 
     def evaluate_strategy_capacity(
         self, staged_lemmas: List[Lemma]
@@ -45,7 +95,7 @@ class WordExerciseGenerator:
             has_prons = bool(lem.pronunciations)
             form_count = len(lem.lemma_word_form) if lem.lemma_word_form else 0
 
-            # 1. Base Headword Strategies (Require definition or pronunciation)
+            # base Headword Strategies (Require definition or pronunciation)
             if has_defs:
                 capacity_map[EnumWordItemType.LEM_TO_DEF].append(lem)
                 capacity_map[EnumWordItemType.DEF_TO_LEM].append(lem)
@@ -58,7 +108,7 @@ class WordExerciseGenerator:
                 capacity_map[EnumWordItemType.LEM_TO_POS].append(lem)
                 capacity_map[EnumWordItemType.POS_TO_LEM].append(lem)
 
-            # 2. Substantive & Noun Strategies
+            # substantive & noun strategies
             if pos == EnumPartOfSpeech.NOUN:
                 if lem.noun_gender:
                     capacity_map[EnumWordItemType.NOUN_TO_GEND].append(lem)
@@ -70,7 +120,7 @@ class WordExerciseGenerator:
                     capacity_map[EnumWordItemType.NOUN_FORM_TO_GRAM].append(lem)
                     capacity_map[EnumWordItemType.NOUN_GRAM_TO_FORM].append(lem)
 
-            # 3. Verb Strategies
+            # verb strategies
             elif pos == EnumPartOfSpeech.VERB:
                 if lem.verb_aspect:
                     capacity_map[EnumWordItemType.VERB_TO_ASPT].append(lem)
@@ -89,9 +139,9 @@ class WordExerciseGenerator:
                     capacity_map[EnumWordItemType.VERB_TO_ASPT_PAIR].append(lem)
 
                 if form_count > 0:
-                    capacity_map[EnumWordItemType.VERB_TO_CONJ_FORM].append(lem)
+                    capacity_map[EnumWordItemType.VERB_GRAM_TO_FORM].append(lem)
 
-            # 4. Adjective Strategies
+            # adjective strategies
             elif pos == EnumPartOfSpeech.ADJECTIVE:
                 if form_count > 0:
                     capacity_map[EnumWordItemType.ADJV_FORM_TO_GRAM].append(lem)
@@ -156,26 +206,27 @@ class WordExerciseGenerator:
     ) -> schemas.ExerciseResponse:
         """
         Primary generation pipeline:
-        Loads entities eagerly, rebalances quotas, and synthesizes items with format degradation.
+        Loads entities eagerly, rebalances quotas, synthesizes items with format degradation,
+        and records ItemTarget relationships in place of legacy LemsInItems.
         """
         lemma_ids = [int(lid) for lid in (request.exercise_context.lem_ids or [])]
-        session_formats = set(request.exercise_context.ex_formats)
 
-        # 1. Eagerly load all staged lemmas with required relationship nodes
+        # eagerly load staged lemmas with required relationship nodes
+        assert Lemma.id is not None  # noqa: S101
         stmt = (
             select(Lemma)
-            .where(Lemma.id.in_(lemma_ids))
+            .where(Lemma.id.in_(lemma_ids))  # type: ignore
             .options(
-                selectinload(Lemma.definitions),
-                selectinload(Lemma.pronunciations),
-                selectinload(Lemma.lemma_word_form).joinedload(
-                    models.WordForm.word_form_lexicon
+                selectinload(Lemma.definitions),  # type: ignore
+                selectinload(Lemma.pronunciations),  # type: ignore
+                selectinload(Lemma.lemma_word_form).joinedload(  # type: ignore
+                    models.WordForm.word_form_lexicon  # type: ignore
                 ),
-                selectinload(Lemma.lemma_word_form).joinedload(
-                    models.WordForm.word_form_gram
+                selectinload(Lemma.lemma_word_form).joinedload(  # type: ignore
+                    models.WordForm.word_form_gram  # type: ignore
                 ),
-                selectinload(Lemma.related_to).joinedload(
-                    models.LemmaRelation.target_lemma
+                selectinload(Lemma.related_to).joinedload(  # type: ignore
+                    models.LemmaRelation.target_lemma  # type: ignore
                 ),
             )
         )
@@ -185,38 +236,37 @@ class WordExerciseGenerator:
                 exercise_id=0, num_questions=0, response_data=[]
             )
 
-        # 2. Evaluate strategy capacity across the staged pool
+        # rebalance quotas
         capacity_map = self.evaluate_strategy_capacity(staged_lemmas)
-
-        # 3. Rebalance requested quotas against empirical capacities
         target_total = sum(request.type_counts.values())
         balanced_quotas = self.rebalance_quotas(
             request.type_counts, capacity_map, target_total
         )
 
-        # 4. Generate items with format fallbacks
         generated_items = []
         item_counter = 1
 
+        # generate items and persist ItemTarget mappings
         for strategy_key, count in balanced_quotas.items():
             candidate_lemmas = list(capacity_map[strategy_key])
             selected_for_strat = candidate_lemmas[:count]
 
             for lemma in selected_for_strat:
-                # 1. Extract raw prompt and key
                 prompt, key = self._extract_prompt_and_key(lemma, strategy_key)
+                if not prompt or not key:
+                    continue
 
-                # 2. Harvest distractors from DB
                 distractors = self._harvest_distractors(
                     lemma, strategy_key, staged_lemmas
                 )
 
-                # 3. Build the raw blueprint
                 blueprint = schemas.ItemBlueprint(
-                    prompt=prompt, keys=key, distractors=distractors, lem_id=lemma.id
+                    prompt=prompt,
+                    keys=key,
+                    distractors=distractors,
+                    lem_id=lemma.id,
                 )
 
-                # 4. Pass the blueprint to the Factory
                 formatted_item = ItemFormatFactory.create_formatted_item(
                     strategy=strategy_key,
                     blueprint=blueprint,
@@ -225,6 +275,23 @@ class WordExerciseGenerator:
                 )
 
                 if formatted_item:
+                    # --- NEW ANALYTICS HOOK ---
+                    # Resolve KSA and Directionality for this generated item target
+                    ksa_id = self._resolve_ksa_id(strategy_key)
+                    _, directionality = self.STRATEGY_KSA_MAPPING.get(strategy_key)  # type: ignore
+
+                    # Note: Once the root Item ORM model is persisted to DB and assigned an ID,
+                    # create the ItemTarget mapping to tie the psychometric node to the item.
+                    # Example:
+                    item_target = ItemTarget(
+                        item_id=persisted_item.id,
+                        lemma_id=lemma.id,  # type: ignore
+                        ksa_id=ksa_id,  # type: ignore
+                        directionality=directionality,
+                    )
+                    self.db.add(item_target)
+                    # --------------------------
+
                     generated_items.append(formatted_item)
                     item_counter += 1
 
@@ -253,13 +320,13 @@ class WordExerciseGenerator:
         if not viable_formats:
             return None
 
-        # Build raw blueprint components (prompt, key, distractor pool)
+        # build raw blueprint components (prompt, key, distractor pool)
         prompt, key = self._extract_prompt_and_key(lemma, strategy)
         if not prompt or not key:
             return None
 
-        # Format Materialization Priority: Preferred format -> Degraded fallback
-        # Prioritize MCQ if requested, but fall back if distractors cannot be gathered
+        # format materialization priority: preferred format -> degraded fallback
+        # prioritize mcq if requested, but fall back if distractors cannot be gathered
         if EnumItemFormat.MCQ in viable_formats:
             distractors = self._harvest_distractors(
                 target_lemma=lemma,
@@ -273,7 +340,7 @@ class WordExerciseGenerator:
                 return schemas.MultipleChoiceResponse(
                     item_id=item_id,
                     prompt=prompt,
-                    options=options,
+                    options=options,  # type: ignore
                 )
             # MCQ failed due to distractor shortage: fall through to alternate viable format
             viable_formats.remove(EnumItemFormat.MCQ)
@@ -369,10 +436,10 @@ class WordExerciseGenerator:
             global_stmt = (
                 select(Lemma)
                 .where(
-                    Lemma.pos == target_lemma.pos,
-                    Lemma.id != target_lemma.id,
+                    Lemma.pos == target_lemma.pos,  # type: ignore
+                    Lemma.id != target_lemma.id,  # type: ignore
                 )
-                .options(selectinload(Lemma.definitions))
+                .options(selectinload(Lemma.definitions))  # type: ignore
                 .limit(needed * 4)  # Fetch extra to accommodate definition validation
             )
             global_peers = list(self.db.scalars(global_stmt).all())

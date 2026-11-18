@@ -2,6 +2,10 @@
 import logging
 from typing import Any, List, Optional
 
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
+from sqlalchemy import String, cast, func, or_, select
+from sqlalchemy.orm import Session, selectinload
+
 from alite_backend.api import deps
 from alite_backend.api.trainer.translit import is_latin_text, latin_to_cyrillic
 from alite_backend.db import schemas
@@ -14,14 +18,7 @@ from alite_backend.db.models import (
     LookupQueue,
     User,
 )
-from alite_backend.services.lookup_validator import (
-    LemmaCapabilityReport,
-    LemmaReadinessValidator,
-)
 from alite_backend.words.pipeline import load_words
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, status
-from sqlalchemy import String, cast, func, or_, select
-from sqlalchemy.orm import Session, selectinload
 
 logger = logging.getLogger(__name__)
 
@@ -342,21 +339,21 @@ def evaluate_lemma_capabilities(
     advisory_warnings: List[str] = []
     supported_types: List[str] = []
 
-    # 1. Base semantic verification (Required for almost all exercise types)
+    # base semantic verification (Required for almost all exercise types)
     if not lemma.definitions:
         critical_errors.append("No definitions recorded.")
     else:
         supported_types.extend(["lem_to_def", "def_to_lem"])
 
-    # 2. Phonetic support
+    # phonetic support
     if lemma.pronunciations:
         supported_types.extend(["lem_to_pron", "pron_to_lem"])
 
-    # 3. Part-of-speech classification support
+    # part-of-speech classification support
     if lemma.pos:
         supported_types.extend(["lem_to_pos", "pos_to_lem"])
 
-    # 4. Grammatical & Inflectional Analysis (Non-blocking advisories)
+    # grammatical & Inflectional Analysis (Non-blocking advisories)
     form_count = len(lemma.lemma_word_form) if lemma.lemma_word_form else 0
 
     if lemma.pos == EnumPartOfSpeech.VERB:

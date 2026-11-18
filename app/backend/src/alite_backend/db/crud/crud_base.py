@@ -151,14 +151,14 @@ class CRUDBase(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         except IntegrityError as e:
             db.rollback()
             logger.exception(f"IntegrityError creating {self.model.__name__}: {str(e)}")
-            raise HTTPException(
+            raise HTTPException(  # noqa: B904
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Record creation violates database constraints for {self.model.__name__}.",
             )
         except SQLAlchemyError as e:
             db.rollback()
             logger.exception(f"Database error creating {self.model.__name__}: {str(e)}")
-            raise HTTPException(
+            raise HTTPException(  # noqa: B904
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="An unexpected database error occurred during persistence.",
             )

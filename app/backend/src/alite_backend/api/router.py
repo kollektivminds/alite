@@ -1,3 +1,5 @@
+from fastapi import APIRouter
+
 from alite_backend.api.dashboard.student import exercise_results
 from alite_backend.api.trainer import (
     documents,
@@ -8,7 +10,6 @@ from alite_backend.api.trainer import (
     sentences,
     users,
 )
-from fastapi import APIRouter
 
 api_router = APIRouter()
 api_router.include_router(lemmas.router, prefix="/lemmas", tags=["lemmas"])

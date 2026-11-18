@@ -2,6 +2,9 @@ import logging
 import random
 from typing import Any, Optional, Sequence
 
+from sqlalchemy import and_, func, select
+from sqlalchemy.orm import Session, selectinload
+
 from alite_backend.db.crud.crud_base import CRUDBase
 from alite_backend.db.models import Document, Sentence, SentenceToken
 from alite_backend.db.schemas import (
@@ -12,8 +15,6 @@ from alite_backend.db.schemas import (
     SentenceTokenUpdate,
     SentenceUpdate,
 )
-from sqlalchemy import and_, func, select
-from sqlalchemy.orm import Session, selectinload
 
 logger = logging.getLogger(__name__)
 

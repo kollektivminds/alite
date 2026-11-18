@@ -9,15 +9,20 @@ import logging
 
 # from ..words.funcs import load_json
 import os
-import random
 
 # import json
 from collections import defaultdict
 from pathlib import Path
 
+from alembic.config import Config
+from cytoolz import concat
+from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
+from sqlalchemy.orm import Session
+
 # import alite_backend.db.schemas as schemas
 from alembic import command
-from alembic.config import Config
 from alite_backend.config import settings
 
 # from alite_backend.db.crud.word_crud import (
@@ -29,12 +34,7 @@ from alite_backend.config import settings
 from alite_backend.db.db_session import SessionLocal, engine
 from alite_backend.db.models import Base, EnumUserRole
 from alite_backend.logging_config import setup_logging
-from alite_backend.words.funcs import load_json, save_json
-from cytoolz import concat
-from dotenv import load_dotenv
-from sqlalchemy import create_engine, exc, text
-from sqlalchemy.exc import OperationalError
-from sqlalchemy.orm import Session
+from alite_backend.words.funcs import load_json
 
 setup_logging()
 logger = logging.getLogger(__name__)
@@ -309,8 +309,11 @@ def get_all_words(vocab_list_path: str = VOCAB_LIST_LOC):  # type: ignore
     # Load the JSON file
     data = load_json(vocab_list_path)
 
+    assert data is not None  # noqa: S101
     chapter_gen = (
-        (mod, chap, cont) for mod, chaps in data.items() for chap, cont in chaps.items()  # type: ignore
+        (mod, chap, cont)
+        for mod, chaps in data.items()
+        for chap, cont in chaps.items()  # type: ignore
     )
 
     rows = list(concat(get_rows(*item) for item in chapter_gen))  # type: ignore

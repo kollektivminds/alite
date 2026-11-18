@@ -4,7 +4,8 @@ This module...
 """
 
 from pathlib import Path
-from pydantic import Field, SecretStr, computed_field, EmailStr
+
+from pydantic import EmailStr, Field, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -42,7 +43,7 @@ class Settings(BaseSettings):
     VITE_API_BASE_URL: str = Field(
         ..., description="React frontend connection base URL"
     )
-    
+
     # --- admin ---
     FIRST_SUPERUSER_USERNAME: str = "admin"
     FIRST_SUPERUSER_EMAIL: EmailStr = "alite@dliflc.edu"
@@ -51,7 +52,7 @@ class Settings(BaseSettings):
         ...,
         min_length=32,
         description="Cryptographic secret key used for signing JWTs and session cookies. "
-                    "Must be an entropy-rich 32+ character string supplied via environment."
+        "Must be an entropy-rich 32+ character string supplied via environment.",
     )
 
     # Computed Database URL (as a property)

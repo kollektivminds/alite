@@ -1,27 +1,14 @@
 import logging
 from functools import wraps
-from typing import List, Optional, Sequence
-from uuid import UUID
+
+from sqlalchemy import func, or_
+from sqlalchemy.orm import Session, selectinload
 
 from alite_backend.api.trainer.translit import is_latin_text, latin_to_cyrillic
 from alite_backend.db.crud.crud_base import CRUDBase
 from alite_backend.db.models import (
     Definition,
     DefinitionExample,
-    EnumAltAdjvType,
-    EnumAltNounType,
-    EnumConjPerson,
-    EnumGramGender,
-    EnumGramTense,
-    EnumPartOfSpeech,
-    EnumPartType,
-    EnumPartVoice,
-    EnumPronType,
-    EnumSubstCase,
-    EnumVerbAspect,
-    EnumVerbMood,
-    EnumVerbTransRefl,
-    EnumVerbType,
     Example,
     GramProp,
     Lemma,
@@ -38,75 +25,40 @@ from alite_backend.db.models import (
     WordForm,
 )
 from alite_backend.db.schemas import (
-    DefExamplesRecord,
     DefExCreate,
-    DefExReturn,
     DefExUpdate,
     DefinitionCreate,
-    DefinitionReturn,
-    DefinitionsRecord,
     DefinitionUpdate,
     ExampleCreate,
-    ExampleReturn,
     ExampleUpdate,
     GramPropCreate,
-    GramPropReturn,
-    GramPropsRecord,
     GramPropUpdate,
     LemDefCreate,
-    LemDefReturn,
     LemDefUpdate,
     LemInLessListCreate,
-    LemInLessListReturn,
     LemInLessListUpdate,
     LemmaCreate,
     LemmaSearchParams,
-    LemmasRecord,
     LemmaUpdate,
     LemPronCreate,
-    LemPronReturn,
     LemPronUpdate,
     LemRelCreate,
-    LemRelReturn,
     LemRelUpdate,
     LessListInModCreate,
-    LessListInModReturn,
     LessListInModUpdate,
     LessonListCreate,
-    LessonListReturn,
     LessonListUpdate,
     LexemeCreate,
-    LexemeReturn,
     LexemeUpdate,
-    LexiconRecord,
     LookupQueueCreate,
     LookupQueueReturn,
-    LookupQueueUpdate,
     ModuleCreate,
-    ModuleReturn,
     ModuleUpdate,
-    ProcessedPayload,
     PronunciationCreate,
-    PronunciationReturn,
-    PronunciationsRecord,
     PronunciationUpdate,
-    RelatedLemmaRecord,
     WordFormCreate,
-    WordFormReturn,
     WordFormUpdate,
 )
-from alite_backend.words.funcs import remove_accents
-from fastapi import HTTPException, status
-from sqlalchemy import String, and_, cast, delete, func, or_, select, update
-from sqlalchemy.exc import (
-    DBAPIError,
-    IntegrityError,
-    NoResultFound,
-    ProgrammingError,
-    SQLAlchemyError,
-    StatementError,
-)
-from sqlalchemy.orm import Session, selectinload
 
 logger = logging.getLogger(__name__)
 
@@ -152,7 +104,6 @@ def at_least_one_of(*search_keys):
 
 
 class CRUDLemmas(CRUDBase[Lemma, LemmaCreate, LemmaUpdate]):
-
     def search(self, db: Session, params: LemmaSearchParams) -> list[Lemma]:
         # convert to dictionary (and drop instances of None)
         search_kwargs = params.model_dump(exclude_none=True)

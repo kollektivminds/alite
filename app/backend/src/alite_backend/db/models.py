@@ -4,24 +4,16 @@ from typing import TYPE_CHECKING, Any, Dict, List, Optional
 from uuid import UUID
 
 from pydantic import EmailStr
-from sqlalchemy import JSON, Boolean, Column, DateTime
-from sqlalchemy import Enum
-from sqlalchemy import Enum as SQLEnum
 from sqlalchemy import (
-    Float,
-    ForeignKey,
+    Column,
+    DateTime,
     Index,
-    Integer,
     String,
-    Text,
     UniqueConstraint,
-    func,
-    null,
 )
+from sqlalchemy import Enum as SQLEnum
 from sqlalchemy.dialects.postgresql import ARRAY, JSONB
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.orm.exc import DetachedInstanceError
-from sqlalchemy.sql import func
 from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
@@ -244,13 +236,13 @@ class EnumWordItemType(str, enum.Enum):
     # --- SUBSTANTIVES ---
     # --- ADJECTIVES ---
     # lemma (adjective) <-> comparative / superlative form
-    ADJV_FORM_TO_TYPE = "adjv_form_to_type"  # "What is the [comparative | superlative] form of X?" (MCQ)
+    ADJV_FORM_TO_TYPE = "adjv_form_to_type"  # "What is the [comparative | superlative] form of X?" (MCQ)  # noqa: E501
     ADJV_TYPE_TO_LEM = (
         "adjv_type_to_lem"  # "What is the base form of [adjective]?" (MCQ/Cloze)
     )
     # adjective form <-> adjective type
-    ADJV_FORM_TO_GRAM = "adjv_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
-    ADJV_GRAM_TO_FORM = "adjv_gram_to_form"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)
+    ADJV_FORM_TO_GRAM = "adjv_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)  # noqa: E501
+    ADJV_GRAM_TO_FORM = "adjv_gram_to_form"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)  # noqa: E501
     # --- NOUNS ---
     # lemma (noun) <-> gender
     NOUN_TO_GEND = "noun_to_gend"  # "What gender is [noun]?" (MCQ)
@@ -259,8 +251,8 @@ class EnumWordItemType(str, enum.Enum):
     NOUN_TO_ANIM = "noun_to_anim"  # "Is [noun] animate or inanimate?" (MCQ)
     ANIM_TO_NOUN = "anim_to_noun"  # "Which lemma(s) is/are ["verb_aspect"]?" (MCQ)
     # noun form <-> noun GNC
-    NOUN_FORM_TO_GRAM = "noun_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)
-    NOUN_GRAM_TO_FORM = "noun_gram_to_form"  # "Which of the following noun forms is/are an example of [grammar]?" (MCQ)
+    NOUN_FORM_TO_GRAM = "noun_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)  # noqa: E501
+    NOUN_GRAM_TO_FORM = "noun_gram_to_form"  # "Which of the following noun forms is/are an example of [grammar]?" (MCQ)  # noqa: E501
     # noun lemma -> diminutive form
     NOUN_TO_DMIN_FORM = (
         "noun_to_dmin_form"  # What is the diminutive form of [lemma]? (MCQ/Cloze)
@@ -272,13 +264,13 @@ class EnumWordItemType(str, enum.Enum):
 
     # --- VERBS ----
     # Aspect
-    # lemmas.filter(pos==verb).lem_canon <-> lemmas(id=lem_id).filter(pos==verb).verb_aspect
+    # lemmas.filter(pos==verb).lem_canon <-> lemmas(id=lem_id).filter(pos==verb).verb_aspect  # noqa: E501
     VERB_TO_ASPT = "verb_to_aspt"  # "What is the aspect of [verb]?" (FC/MCQ)
     ASPT_TO_VERB = "aspt_to_verb"  # "Which of these verbs is [aspect]?" (MCQ)
     # Aspectual pairs
     # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id, target_id].lem_canon
     # <-> lemmas(id=lem_id).verb_aspect
-    VERB_PAIR_TO_REL = "verb_pair_to_rel"  # "Choose the [aspect] verb(s) of the aspectual group." (MCQ)
+    VERB_PAIR_TO_REL = "verb_pair_to_rel"  # "Choose the [aspect] verb(s) of the aspectual group." (MCQ)  # noqa: E501
     # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id].lem_canon
     # <-> lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[target_id].lem_canon
     VERB_TO_ASPT_PAIR = (
@@ -289,7 +281,7 @@ class EnumWordItemType(str, enum.Enum):
     VERB_TO_TYPE = "verb_to_type"  # "What type of verb is X?" (MCQ)
     TYPE_TO_VERB = "type_to_verb"  # "Which lemma(s) is/are type X?" (MCQ)
     # Conjugation Forms (tense, number, gender, person, mood)
-    # word_forms[gram_id=gram_props.[gram_tense, gram_num, gram_gender, conj_person, verb_mood]].lem_id[pos=PRONOUN].lem_canon
+    # word_forms[gram_id=gram_props.[gram_tense, gram_num, gram_gender, conj_person, verb_mood]].lem_id[pos=PRONOUN].lem_canon  # noqa: E501
     # + lemmas.filter(pos==verb).lem_canon
     # <-> word_forms(lem_id=lem, gram_id=gram_prop).lex_id.lex_text
     VERB_FORM_TO_GRAM = "verb_form_to_gram"  # "What is the X form of Y?" (MCQ/Cloze)
@@ -350,6 +342,12 @@ class EnumSystemTheme(str, enum.Enum):
     LIGHT = "light"
     DARK = "dark"
     SYSTEM = "system"
+
+
+class EnumDirectionality(str, enum.Enum):
+    ANALYSIS = "analysis"
+    SYNTHESIS = "synthesis"
+    NEUTRAL = "neutral"
 
 
 #
@@ -462,6 +460,9 @@ class Lemma(Base, table=True):
             "secondary": "lems_in_items",
         },
     )
+    item_targets: List["ItemTarget"] = Relationship(
+        back_populates="lemma", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
     # Unique pair of "lem_text" and "pos" to prevent duplicates
     __table_args__ = (UniqueConstraint("id", "entry_key", name="unique_lemma"),)
 
@@ -537,7 +538,7 @@ class GramProp(Base, table=True):
 
 
 class WordForm(Base, table=True):
-    """The central junction table linking a lemma to a lexicon entry with specific properties."""
+    """The central junction table linking a lemma to a lexicon entry with specific properties."""  # noqa: E501
 
     __tablename__: str = "word_forms"  # type: ignore
 
@@ -712,6 +713,7 @@ class LemmaDefinition(SQLModel, table=True):
 
     lemma: "Lemma" = Relationship(back_populates="definitions")
     definition: "Definition" = Relationship(back_populates="lemmas")
+    def_text: str | None = None
 
 
 class DefinitionExample(SQLModel, table=True):
@@ -1013,7 +1015,7 @@ class Exercise(Base, table=True):
     finish_time: Optional[datetime] = Field(
         default=None,
         sa_column=Column(DateTime(timezone=True), nullable=True),
-        description="Timestamp when the session was finalized; NULL if abandoned or in-progress",
+        description="Timestamp when the session was finalized; NULL if abandoned or in-progress",  # noqa: E501
     )
     has_item: List["Item"] = Relationship(
         back_populates="in_ex",
@@ -1051,7 +1053,7 @@ class Item(Base, table=True):
     order_in_ex: int = Field(index=True, unique=False, nullable=False)
     item_type: str = Field(
         sa_column=Column(String(64), index=True, nullable=False),
-        description="Categorical identifier for the drill strategy (e.g. 'cloze_noun_morph', 'lem_to_pos')",
+        description="Categorical identifier for the drill strategy (e.g. 'cloze_noun_morph', 'lem_to_pos')",  # noqa: E501
     )
     item_format: EnumItemFormat = Field(index=True, unique=False, nullable=False)
     # content
@@ -1079,6 +1081,10 @@ class Item(Base, table=True):
         back_populates="in_item", sa_relationship_kwargs={"secondary": "lems_in_items"}
     )
     in_ex: "Exercise" = Relationship(back_populates="has_item")
+    targets: List["ItemTarget"] = Relationship(
+        back_populates="item", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+    irt_params: Optional["ItemIRT"] = Relationship(back_populates="item")
 
     @property
     def duration(self) -> Optional[str]:
@@ -1156,47 +1162,141 @@ class ItemResponse(Base, table=True):
     item: "Item" = Relationship(back_populates="responses")
 
 
-"""
-class Skill(Base):
-    __tablename__ = "skills"
+class KSA(Base, table=True):
+    """
+    Hierarchical ontology table for Knowledge, Skills, and Abilities (KSAs).
+    Uses an Adjacency List pattern for nested subdomains (e.g., Words -> Grammar -> Nouns -> Gender).
+    """  # noqa: E501
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    skill_name: Mapped[int] = mapped_column(String(255), nullable=False, unique=True)
-    skill_description: Mapped[int] = mapped_column(Text)
+    __tablename__: str = "ksas"
 
+    parent_id: Optional[int] = Field(
+        default=None, foreign_key="ksas.id", index=True, nullable=True
+    )
+    name: str = Field(index=True, max_length=96, nullable=False)
+    description: Optional[str] = Field(default=None, max_length=255)
 
-class SkillInQuestion(Base):
-    __tablename__ = "question_skills"
+    # Self-referential relationship for the KSA tree hierarchy
+    parent: Optional["KSA"] = Relationship(
+        back_populates="children", sa_relationship_kwargs={"remote_side": "KSA.id"}
+    )
+    children: List["KSA"] = Relationship(back_populates="parent")
 
-    question_id: Mapped[int] = mapped_column(Integer, ForeignKey("questions.id"), primary_key=True)
-    skill_id: Mapped[int] = mapped_column(Integer, ForeignKey("skills.id"), primary_key=True)
-
-
-class StudentSkillMastery(Base):
-    __tablename__ = "student_skill_mastery"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    skill_id: Mapped[int] = mapped_column(Integer, ForeignKey("skills.id"), nullable=False)
-    mastery_level: Mapped[int] = mapped_column(Float, default=0.0)
-    p_learn: Mapped[int] = mapped_column(Float)
-    p_guess: Mapped[int] = mapped_column(Float)
-    p_slip: Mapped[int] = mapped_column(Float)
-    last_seen_at: Mapped[int] = mapped_column(DateTime(timezone=True))
-    next_review_at: Mapped[int] = mapped_column(DateTime(timezone=True))
-
-    user = relationship("User")
-    skill = relationship("Skill")
+    # One KSA can be tested by many item targets
+    item_targets: List["ItemTarget"] = Relationship(
+        back_populates="ksa", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
 
-class UserExperiment(Base):
-    __tablename__ = "user_experiments"
+class ItemTarget(Base, table=True):
+    """
+    Junction table mapping an Item to its specific Lemma and KSA intersection,
+    including the required cognitive directionality (Analysis vs. Synthesis).
+    """
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
-    experiment_name: Mapped[int] = mapped_column(String(255), nullable=False)
-    variant_name: Mapped[int] = mapped_column(String(255), nullable=False)
-    assigned_at: Mapped[int] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    __tablename__: str = "item_targets"
 
-    user = relationship("User")
-"""
+    item_id: int = Field(
+        foreign_key="items.id", index=True, nullable=False, ondelete="CASCADE"
+    )
+    lemma_id: int = Field(
+        foreign_key="lemmas.id", index=True, nullable=False, ondelete="CASCADE"
+    )
+    ksa_id: int = Field(
+        foreign_key="ksas.id", index=True, nullable=False, ondelete="CASCADE"
+    )
+
+    directionality: EnumDirectionality = Field(
+        sa_type=SQLEnum(
+            EnumDirectionality,
+            name="enumdirectionality",
+            values_callable=lambda obj: [e.value for e in obj],
+            native_enum=True,
+        ),  # type: ignore
+        nullable=False,
+        default=EnumDirectionality.NEUTRAL,
+    )
+
+    # ORM Relationships
+    ksa: "KSA" = Relationship(back_populates="item_targets")
+    item: "Item" = Relationship(back_populates="targets")
+    lemma: "Lemma" = Relationship(back_populates="item_targets")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "item_id",
+            "lemma_id",
+            "ksa_id",
+            "directionality",
+            name="uq_item_lemma_ksa_dir",
+        ),
+    )
+
+
+class StudentKSAState(Base, table=True):
+    """
+    Tracks longitudinal Bayesian Knowledge Tracing (BKT) and Ebbinghaus
+    forgetting curve parameters for a specific user on a Lemma + KSA intersection.
+    """
+
+    __tablename__: str = "student_ksa_states"
+
+    user_id: int = Field(
+        foreign_key="users.id", index=True, nullable=False, ondelete="CASCADE"
+    )
+    lemma_id: int = Field(
+        foreign_key="lemmas.id", index=True, nullable=False, ondelete="CASCADE"
+    )
+    ksa_id: int = Field(
+        foreign_key="ksas.id", index=True, nullable=False, ondelete="CASCADE"
+    )
+
+    # BKT probability that the learner has mastered this KSA-Lemma pair (0.0 to 1.0)
+    p_known: float = Field(default=0.1, nullable=False)
+
+    # Memory retention strength for Ebbinghaus spacing decay calculations
+    memory_strength: float = Field(default=1.0, nullable=False)
+
+    last_practiced: datetime = Field(
+        default_factory=get_utc_now,
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+        description="Timestamp of last interaction used for forgetting curve decay",
+    )
+
+    # Composite index for high-performance lookup during adaptive question generation
+    __table_args__ = (
+        Index("ix_student_ksa_lookup", "user_id", "lemma_id", "ksa_id", unique=True),
+    )
+
+
+# Additions to app/backend/db/models.py
+
+
+class ItemIRT(Base, table=True):
+    """
+    Stores Item Response Theory (IRT) psychometric parameters for items,
+    enabling adaptive difficulty scaling and test validity audits.
+    """
+
+    __tablename__: str = "item_irt"
+
+    item_id: int = Field(
+        foreign_key="items.id",
+        index=True,
+        unique=True,
+        nullable=False,
+        ondelete="CASCADE",
+    )
+
+    # 2PL / 3PL parameters
+    difficulty_b: float = Field(
+        default=0.0, nullable=False, description="Item difficulty parameter (b)"
+    )
+    discrimination_a: float = Field(
+        default=1.0, nullable=False, description="Item discrimination parameter (a)"
+    )
+    guessing_c: float = Field(
+        default=0.0, nullable=False, description="Pseudoguessing parameter (c) for MCQ"
+    )
+
+    item: "Item" = Relationship(back_populates="irt_params")

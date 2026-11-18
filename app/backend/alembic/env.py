@@ -5,11 +5,11 @@ ALITE Database Migration Environment Configuration
 import logging
 from logging.config import fileConfig
 
-import alite_backend.db.models
-from alembic import context
-from alite_backend.config import settings
 from sqlalchemy import engine_from_config, pool, text
 from sqlmodel import SQLModel
+
+from alembic import context
+from alite_backend.config import settings
 
 # alembic config
 config = context.config

@@ -1,31 +1,21 @@
 # generate class for users
 import logging
-from typing import List, Optional, Sequence
-from uuid import UUID
-from functools import wraps
-from sqlalchemy import select, update, delete
-from sqlalchemy.orm import Session
-from sqlalchemy.exc import (
-    SQLAlchemyError,
-    IntegrityError,
-    ProgrammingError,
-    DBAPIError,
-    NoResultFound,
-    StatementError,
-)
+
 from pydantic import EmailStr
-from fastapi import HTTPException, status
-from alite_backend.db.models import User, UserGroup, UserInGroup, EnumUserRole
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
+from alite_backend.db.crud.crud_base import CRUDBase
+from alite_backend.db.models import User, UserGroup, UserInGroup
 from alite_backend.db.schemas import (
     UserCreate,
-    UserUpdate,
     UserGroupCreate,
     UserGroupUpdate,
     UserInGroupCreate,
     UserInGroupUpdate,
+    UserUpdate,
 )
 from alite_backend.services.security import get_password_hash, verify_password
-from alite_backend.db.crud.crud_base import CRUDBase
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +25,6 @@ logger = logging.getLogger(__name__)
 
 
 class CRUDUser(CRUDBase[User, UserCreate, UserUpdate]):
-
     def create(self, db: Session, *, obj_in: UserCreate) -> User:
         """
         Intercepts creation payload, hashes the raw password, and saves the User instance.

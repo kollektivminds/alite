@@ -3,10 +3,25 @@
 import re
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, FrozenSet, List, Optional, Set, Union
+from typing import Any, Dict, FrozenSet, List, Optional, Set, Tuple, TypedDict, Union
 from uuid import UUID, uuid4
 
+from pydantic import (
+    UUID4,
+    UUID5,
+    AliasChoices,
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    HttpUrl,
+    JsonValue,
+    field_validator,
+    model_validator,
+)
+
 from alite_backend.db.models import (
+    EnumDirectionality,
     EnumGramGender,
     EnumItemDifficulty,
     EnumItemFormat,
@@ -22,20 +37,6 @@ from alite_backend.db.models import (
     EnumVerbTransRefl,
     EnumVerbType,
     EnumWordItemType,
-)
-from click import Option
-from pydantic import (
-    UUID4,
-    UUID5,
-    AliasChoices,
-    BaseModel,
-    ConfigDict,
-    EmailStr,
-    Field,
-    HttpUrl,
-    JsonValue,
-    field_validator,
-    model_validator,
 )
 
 AnyItemType = Union[EnumWordItemType, EnumSentItemType]
@@ -530,7 +531,7 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     password: str = Field(
         min_length=8,
-        description="Plain text password submitted on creation. Will be hashed before DB save.",
+        description="Plain text password submitted on creation. Will be hashed before DB save.",  # noqa: E501
     )
     alias: Optional[str]
 
@@ -1314,7 +1315,7 @@ class ExerciseRequest(BaseModel):
             compatible_formats = STRATEGY_FORMAT_COMPATIBILITY.get(target_strategy)
             if not compatible_formats:
                 incompatible_errors.append(
-                    f"Strategy '{strat_key}' has no registered format compatibility matrix."
+                    f"Strategy '{strat_key}' has no registered format compatibility matrix."  # noqa: E501
                 )
                 continue
 
@@ -1324,7 +1325,7 @@ class ExerciseRequest(BaseModel):
                 allowed_str = ", ".join(f.value for f in compatible_formats)
                 active_str = ", ".join(f.value for f in session_formats)
                 incompatible_errors.append(
-                    f"Strategy '{strat_key}' (count: {count}) requires one of [{allowed_str}], "
+                    f"Strategy '{strat_key}' (count: {count}) requires one of [{allowed_str}], "  # noqa: E501
                     f"but active session formats only provide [{active_str}]."
                 )
 
@@ -1414,11 +1415,11 @@ class SentenceBlueprintContext(BaseModel):
     )
     target_token_indices: list[int] = Field(
         default_factory=list,
-        description="Indices (tok_idx) of tokens targeted for blanking, MCQ options, or syntax labeling",
+        description="Indices (tok_idx) of tokens targeted for blanking, MCQ options, or syntax labeling",  # noqa: E501
     )
     syntactic_focus: Optional[str] = Field(
         None,
-        description="Target dependency relation or grammar quality (e.g., 'предик', 'Aspect=Perf')",
+        description="Target dependency relation or grammar quality (e.g., 'предик', 'Aspect=Perf')",  # noqa: E501
     )
 
 
@@ -1442,7 +1443,7 @@ class ItemBlueprint(BaseModel):
     # Expose explicit hint field for FITB inflection instructions
     hint: Optional[str] = Field(
         default=None,
-        description="Base dictionary lemma to display in-situ for FITB items (e.g. 'человек')",
+        description="Base dictionary lemma to display in-situ for FITB items (e.g. 'человек')",  # noqa: E501
     )
 
 
@@ -1486,7 +1487,7 @@ class FillInTheBlankResponse(BaseModel):
     prompt: str
     parts: List[str] = Field(
         default_factory=list,
-        description="Text slices flanking the target blanks. Must never contain the key.",
+        description="Text slices flanking the target blanks. Must never contain the key.",  # noqa: E501
     )
     sentence_tokens: Optional[List[DisplayToken]] = Field(
         default=None,
@@ -1561,7 +1562,7 @@ class AnswerResult(BaseModel):
     """
     Outcome deliverable for student response evaluation.
     Provides immediate pedagogical feedback while protecting answer keys on intermediate attempts.
-    """
+    """  # noqa: E501
 
     is_correct: bool = Field(description="Evaluation verdict for this submission")
     correct_answer: Optional[str] = Field(
@@ -1574,7 +1575,7 @@ class AnswerResult(BaseModel):
     )
     feedback: Optional[str] = Field(
         default=None,
-        description="User-facing feedback message explaining attempt outcome or retry status",
+        description="User-facing feedback message explaining attempt outcome or retry status",  # noqa: E501
     )
     attempt_num: Optional[int] = Field(
         default=None,
@@ -1655,7 +1656,7 @@ class PipelineLookupRequest(BaseModel):
         for t in raw_items:
             cleaned = t.strip().lower()
             if cleaned and cleaned not in seen:
-                # Strictly require alphabetic Cyrillic or Latin characters with optional internal hyphen
+                # Strictly require alphabetic Cyrillic or Latin characters with optional internal hyphen  # noqa: E501
                 if re.fullmatch(r"^[а-яёa-z]+([-'`][а-яёa-z]+)?$", cleaned):
                     seen.add(cleaned)
                     sanitized.append(cleaned)
@@ -1996,3 +1997,46 @@ STRATEGY_FORMAT_COMPATIBILITY: Dict[AnyItemType, FrozenSet[EnumItemFormat]] = {
         }
     ),
 }
+
+
+class KSABase(BaseModel):
+    name: str = Field(description="KSA Node name")
+    description: str | None = None
+    parent_id: int | None = None
+
+
+class KSAOut(KSABase):
+    id: int
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class KSATreeOut(KSAOut):
+    """Recursive schema"""
+
+    children: list["KSATreeOut"] = []
+
+
+class ItemTargetBase(BaseModel):
+    item_id: int
+    lemma_id: int
+    ksa_id: int
+    directionality: EnumDirectionality
+
+
+class StudentStateOut(BaseModel):
+    user_id: int
+    lemma_id: int
+    ksa_id: int
+    p_known: float = Field(..., ge=0.0, le=1.0)
+    memory_strength: float
+    last_practiced: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StrategyConfigEntry(TypedDict):
+    strategy_class: Any
+    kwargs: Dict[str, Any]
+    formats: List[EnumItemFormat]
+    ksa: Tuple[str, EnumDirectionality]

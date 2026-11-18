@@ -3,11 +3,11 @@ import time
 from collections import defaultdict
 from threading import Lock
 
-from alite_backend.db import schemas
-from alite_backend.db.crud import user_crud
-from alite_backend.db.db_session import SessionLocal
 from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
+
+from alite_backend.db.crud import user_crud
+from alite_backend.db.db_session import SessionLocal
 
 
 # database dependency
@@ -21,7 +21,7 @@ def get_db():
 
 
 # institutional authentication dependency
-def get_current_user(request: Request, db: Session = Depends(get_db)):
+def get_current_user(request: Request, db: Session = Depends(get_db)):  # noqa: B008
     """
     Extracts the authenticated user's identity provided by the institutional
     intranet gateway and maps it to an ALITE user.
@@ -50,7 +50,7 @@ def get_current_user(request: Request, db: Session = Depends(get_db)):
 
 
 # role-based authorization dependency
-def get_current_instructor(current_user=Depends(get_current_user)):
+def get_current_instructor(current_user=Depends(get_current_user)):  # noqa: B008
     """Ensures the authenticated user has instructor privileges."""
     if not current_user.is_instructor:
         raise HTTPException(

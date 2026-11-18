@@ -1,7 +1,9 @@
 # create class for generating word-level questions
 
 import logging
-from typing import List
+
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
 from alite_backend.api import deps
 from alite_backend.db.crud.crud_base import CRUDBase
@@ -16,9 +18,6 @@ from alite_backend.db.schemas import (
     ItemResponseUpdate,
     ItemUpdate,
 )
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
-from sqlalchemy.orm import Session
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +29,6 @@ router = APIRouter()
 
 
 class CRUDExercises(CRUDBase[Exercise, ExerciseCreate, ExerciseUpdate]):
-
     def get_exercise_record(
         self,
         db: Session,
@@ -52,7 +50,6 @@ crud_exercise = CRUDExercises(Exercise)
 
 
 class CRUDItems(CRUDBase[Item, ItemCreate, ItemUpdate]):
-
     def get_completed_items(
         self,
         db: Session,

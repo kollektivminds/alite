@@ -1,5 +1,8 @@
 import logging
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session, selectinload
+
 from alite_backend.db.crud.crud_base import CRUDBase
 from alite_backend.db.models import (
     LemmaInLessonList,
@@ -11,17 +14,12 @@ from alite_backend.db.schemas import (
     LemInLessListCreate,
     LemInLessListUpdate,
     LessListInModCreate,
-    LessListInModReturn,
     LessListInModUpdate,
     LessonListCreate,
-    LessonListReturn,
     LessonListUpdate,
     ModuleCreate,
-    ModuleReturn,
     ModuleUpdate,
 )
-from sqlalchemy import select
-from sqlalchemy.orm import Session, selectinload
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +41,6 @@ crud_module = CRUDModule(Module)
 
 
 class CRUDLessList(CRUDBase[LessonList, LessonListCreate, LessonListUpdate]):
-
     def get_id_by_name(self, db: Session, less_list_name: str) -> int | None:
         stmt = select(self.model).where(self.model.title == less_list_name)
         result = db.scalars(stmt).first()

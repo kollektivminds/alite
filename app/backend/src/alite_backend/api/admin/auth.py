@@ -1,12 +1,12 @@
 import logging
 from typing import Optional
 
+from sqladmin.authentication import AuthenticationBackend
+from starlette.requests import Request
+
 from alite_backend.config import settings
 from alite_backend.db.crud import user_crud
 from alite_backend.db.db_session import SessionLocal
-from sqladmin.authentication import AuthenticationBackend
-from starlette.requests import Request
-from starlette.responses import RedirectResponse
 
 logger = logging.getLogger(__name__)
 

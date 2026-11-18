@@ -1,30 +1,29 @@
-from ast import Mod
 from datetime import datetime
-from pydoc import Doc
-from tracemalloc import start
 from typing import Any
+
+from sqladmin import ModelView
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from starlette.requests import Request
 
 from alite_backend.api.admin.formatters import (
     format_document_link,
-    format_document_title,
     format_lemma_label,
-    format_lemma_link,
     format_lexeme_label,
-    format_lexeme_link,
-    format_sentence_tokens,
     format_word_form_label,
-    format_word_form_link,
 )
 from alite_backend.db.models import (
+    KSA,
     Definition,
-    DefinitionExample,
     Document,
     Example,
     Exercise,
     GramProp,
     Item,
+    ItemIRT,
     ItemOption,
     ItemResponse,
+    ItemTarget,
     Lemma,
     LemmaDefinition,
     LemmaPronunciation,
@@ -36,19 +35,10 @@ from alite_backend.db.models import (
     Pronunciation,
     Sentence,
     SentenceToken,
+    StudentKSAState,
     User,
-    UserGroup,
-    UserInGroup,
     WordForm,
 )
-from alite_backend.services import exercise_router
-from hypothesis import example
-from markupsafe import Markup
-from sqladmin import ModelView
-from sqlalchemy import select
-from sqlalchemy.orm import selectinload
-from starlette.requests import Request
-from tomlkit import date, item
 
 
 def calc_duration(view: Any, context: Any, model: Any, name: Any):
@@ -215,13 +205,18 @@ class WordFormAdminView(ModelView, model=WordForm):
 
 
 class DefinitionAdminView(ModelView, model=Definition):
-
     name = "Definition"
     name_plural = "Definitions"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Auxiliary"
 
-    column_list = [Definition.id, Definition.def_text, Definition.def_tags, Definition.lemmas, Definition.example]  # type: ignore
+    column_list = [
+        Definition.id,
+        Definition.def_text,
+        Definition.def_tags,
+        Definition.lemmas,
+        Definition.example,
+    ]  # type: ignore
     column_sortable_list = [Definition.id, Definition.def_text, Definition.def_tags]  # type: ignore
     column_searchable_list = [Definition.def_text]
     column_default_sort = [(Definition.id, False)]
@@ -232,10 +227,9 @@ class DefinitionAdminView(ModelView, model=Definition):
 
 
 class LemmaDefinitionAdminView(ModelView, model=LemmaDefinition):
-
     name = "Lemma-Definition"
     name_plural = "Lemma-Definitions"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Auxiliary"
 
     column_list = [LemmaDefinition.lemma, LemmaDefinition.definition]  # type: ignore
@@ -247,10 +241,9 @@ class LemmaDefinitionAdminView(ModelView, model=LemmaDefinition):
 
 
 class ExampleAdminView(ModelView, model=Example):
-
     name = "Example"
     name_plural = "Examples"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Auxiliary"
 
     column_list = [Example.id, Example.ex_text]  # type: ignore
@@ -261,28 +254,41 @@ class ExampleAdminView(ModelView, model=Example):
 
 
 class PronunciationAdminView(ModelView, model=Pronunciation):
-
     name = "Pronunciation"
     name_plural = "Pronunciations"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Auxiliary"
 
-    column_list = [Pronunciation.id, Pronunciation.pron_tags, Pronunciation.pron_text, Pronunciation.pron_type]  # type: ignore
+    column_list = [
+        Pronunciation.id,
+        Pronunciation.pron_tags,
+        Pronunciation.pron_text,
+        Pronunciation.pron_type,
+    ]  # type: ignore
     column_searchable_list = [Pronunciation.pron_text]
-    column_sortable_list = [Pronunciation.id, Pronunciation.pron_tags, Pronunciation.pron_text, Pronunciation.pron_type]  # type: ignore
+    column_sortable_list = [
+        Pronunciation.id,
+        Pronunciation.pron_tags,
+        Pronunciation.pron_text,
+        Pronunciation.pron_type,
+    ]  # type: ignore
     column_default_sort = [(Pronunciation.id, False)]
 
     page_size = 50
 
 
 class LemmaPronunciationAdminView(ModelView, model=LemmaPronunciation):
-
     name = "Lemma-Pronunciation"
     name_plural = "Lemma-Pronunciations"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Auxiliary"
 
-    column_list = [LemmaPronunciation.lem_id, LemmaPronunciation.lemma, LemmaPronunciation.pron_id, LemmaPronunciation.pronunciation]  # type: ignore
+    column_list = [
+        LemmaPronunciation.lem_id,
+        LemmaPronunciation.lemma,
+        LemmaPronunciation.pron_id,
+        LemmaPronunciation.pronunciation,
+    ]  # type: ignore
     column_searchable_list = [LemmaPronunciation.pronunciation]  # type: ignore
     column_sortable_list = [LemmaPronunciation.lem_id, LemmaPronunciation.pron_id]  # type: ignore
     column_default_sort = [(LemmaPronunciation.lem_id, False)]
@@ -293,38 +299,57 @@ class LemmaPronunciationAdminView(ModelView, model=LemmaPronunciation):
 
 
 class LemmaRelationAdminView(ModelView, model=LemmaRelation):
-
     name = "Lemma Relation"
     name_plural = "Lemma Relations"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Auxiliary"
 
-    column_list = [LemmaRelation.id, LemmaRelation.rel_type, LemmaRelation.source_lemma, LemmaRelation.target_lemma]  # type: ignore
-    column_sortable_list = [LemmaRelation.id, LemmaRelation.rel_type, LemmaRelation.source_lemma, LemmaRelation.target_lemma]  # type: ignore
+    column_list = [
+        LemmaRelation.id,
+        LemmaRelation.rel_type,
+        LemmaRelation.source_lemma,
+        LemmaRelation.target_lemma,
+    ]  # type: ignore
+    column_sortable_list = [
+        LemmaRelation.id,
+        LemmaRelation.rel_type,
+        LemmaRelation.source_lemma,
+        LemmaRelation.target_lemma,
+    ]  # type: ignore
     column_default_sort = [(LemmaRelation.id, False)]
 
     page_size = 50
 
 
 class LookupQueueAdminView(ModelView, model=LookupQueue):
-
     name = "Lookup Queue"
     name_plural = "Lookup Queue"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Auxiliary"
 
-    column_list = [LookupQueue.id, LookupQueue.rel_type, LookupQueue.source_id, LookupQueue.target_lem, LookupQueue.status]  # type: ignore
-    column_sortable_list = [LookupQueue.id, LookupQueue.rel_type, LookupQueue.source_id, LookupQueue.target_lem, LookupQueue.status]  # type: ignore
+    column_list = [
+        LookupQueue.id,
+        LookupQueue.rel_type,
+        LookupQueue.source_id,
+        LookupQueue.target_lem,
+        LookupQueue.status,
+    ]  # type: ignore
+    column_sortable_list = [
+        LookupQueue.id,
+        LookupQueue.rel_type,
+        LookupQueue.source_id,
+        LookupQueue.target_lem,
+        LookupQueue.status,
+    ]  # type: ignore
     column_default_sort = [(LookupQueue.id, False)]
 
     page_size = 50
 
 
 class ModuleAdminView(ModelView, model=Module):
-
     name = "Module"
     name_plural = "Modules"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Organization"
 
     column_list = [Module.id, Module.module_name]  # type: ignore
@@ -334,14 +359,24 @@ class ModuleAdminView(ModelView, model=Module):
 
 
 class LessListAdminView(ModelView, model=LessonList):
-
     name = "LessonList"
     name_plural = "Lessons / Lists"
-    icon = "fa-solid" "fa-book"
+    icon = "fa-solidfa-book"
     category = "Lemmas - Organization"
 
-    column_list = [LessonList.id, LessonList.title, LessonList.topic, LessonList.owner_id, LessonList.has_lemma]  # type: ignore
-    column_sortable_list = [LessonList.id, LessonList.title, LessonList.topic, LessonList.owner_id]  # type: ignore
+    column_list = [
+        LessonList.id,
+        LessonList.title,
+        LessonList.topic,
+        LessonList.owner_id,
+        LessonList.has_lemma,
+    ]  # type: ignore
+    column_sortable_list = [
+        LessonList.id,
+        LessonList.title,
+        LessonList.topic,
+        LessonList.owner_id,
+    ]  # type: ignore
     column_default_sort = [(LessonList.id, False)]
     page_size = 50
 
@@ -356,7 +391,13 @@ class DocumentAdminView(ModelView, model=Document):
     icon = "fa-solid fa-align-left"
     category = "Sentences"
 
-    column_list = [Document.id, Document.title, Document.author, Document.source, Document.date]  # type: ignore
+    column_list = [
+        Document.id,
+        Document.title,
+        Document.author,
+        Document.source,
+        Document.date,
+    ]  # type: ignore
     column_searchable_list = [
         Document.title,
         Document.author,
@@ -377,7 +418,13 @@ class SentenceAdminView(ModelView, model=Sentence):
     icon = "fa-solid fa-align-left"
     category = "Sentences"
 
-    column_list = [Sentence.id, Sentence.doc_id, Sentence.raw_text, Sentence.sent_idx, Sentence.tokens]  # type: ignore
+    column_list = [
+        Sentence.id,
+        Sentence.doc_id,
+        Sentence.raw_text,
+        Sentence.sent_idx,
+        Sentence.tokens,
+    ]  # type: ignore
     column_searchable_list = [Sentence.raw_text]
     column_default_sort = [(Sentence.id, False)]
 
@@ -468,7 +515,15 @@ class UserAdminView(ModelView, model=User):
     category = "Users"
 
     # Explicitly list visible table columns to prevent exposing hashed passwords
-    column_list = [User.id, User.username, User.alias, User.email, User.role, User.settings, User.created_at]  # type: ignore
+    column_list = [
+        User.id,
+        User.username,
+        User.alias,
+        User.email,
+        User.role,
+        User.settings,
+        User.created_at,
+    ]  # type: ignore
     column_searchable_list = [User.username, User.email]  # type: ignore
     column_sortable_list = [User.role]
 
@@ -486,8 +541,22 @@ class ExerciseAdminView(ModelView, model=Exercise):
     icon = "fa-solid fa-puzzle-piece"
     category = "Assessment"
 
-    column_list = [Exercise.id, Exercise.user_id, "duration", Exercise.start_time, Exercise.finish_time, Exercise.has_item]  # type: ignore
-    column_details_list = [Exercise.id, Exercise.user_id, "duration", Exercise.start_time, Exercise.finish_time, Exercise.has_item]  # type: ignore
+    column_list = [
+        Exercise.id,
+        Exercise.user_id,
+        "duration",
+        Exercise.start_time,
+        Exercise.finish_time,
+        Exercise.has_item,
+    ]  # type: ignore
+    column_details_list = [
+        Exercise.id,
+        Exercise.user_id,
+        "duration",
+        Exercise.start_time,
+        Exercise.finish_time,
+        Exercise.has_item,
+    ]  # type: ignore
     column_sortable_list = [
         Exercise.id,
         Exercise.user_id,
@@ -591,4 +660,112 @@ class ItemResponseAdminView(ModelView, model=ItemResponse):
     ]  # type: ignore
     column_sortable_list = [ItemResponse.item_id]  # type: ignore
     column_searchable_list = [ItemResponse.item_id, ItemResponse.response]  # type: ignore
+    page_size = 50
+
+
+class KSAAdminView(ModelView, model=KSA):
+    """
+    Administrative UI mapping for Generated Exercise Test Items.
+    """
+
+    name = "KSA"
+    name_plural = "KSAs"
+    icon = "fa-solid fa-puzzle-piece"
+    category = "Analytics"
+
+    column_list = [
+        KSA.id,
+        KSA.parent_id,
+        KSA.name,
+        KSA.description,
+        KSA.parent,
+        KSA.children,
+    ]  # type: ignore
+    column_sortable_list = [KSA.id, KSA.parent_id]  # type: ignore
+    column_searchable_list = [KSA.name, KSA.description, KSA.parent, KSA.children]  # type: ignore
+    page_size = 50
+
+
+class ItemTargetAdminView(ModelView, model=ItemTarget):
+    """
+    Administrative UI mapping for Generated Exercise Test Items.
+    """
+
+    name = "Item Target"
+    name_plural = "Item Targets"
+    icon = "fa-solid fa-puzzle-piece"
+    category = "Analytics"
+
+    column_list = [
+        ItemTarget.id,
+        ItemTarget.item_id,
+        ItemTarget.lemma_id,
+        ItemTarget.ksa_id,
+        ItemTarget.directionality,
+    ]  # type: ignore
+    column_sortable_list = [
+        ItemTarget.id,
+        ItemTarget.item_id,
+        ItemTarget.lemma_id,
+        ItemTarget.ksa_id,
+        ItemTarget.directionality,
+    ]  # type: ignore
+    # column_searchable_list = [KSA.name, KSA.description, KSA.parent, KSA.children]  # type: ignore
+    page_size = 50
+
+
+class StudentKSAStateAdminView(ModelView, model=StudentKSAState):
+    """
+    Administrative UI mapping for Generated Exercise Test Items.
+    """
+
+    name = "Student KSA State"
+    name_plural = "Student KSA States"
+    icon = "fa-solid fa-puzzle-piece"
+    category = "Analytics"
+
+    column_list = [
+        StudentKSAState.user_id,
+        StudentKSAState.lemma_id,
+        StudentKSAState.ksa_id,
+        StudentKSAState.p_known,
+        StudentKSAState.memory_strength,
+        StudentKSAState.last_practiced,
+    ]  # type: ignore
+    column_sortable_list = [
+        StudentKSAState.user_id,
+        StudentKSAState.lemma_id,
+        StudentKSAState.ksa_id,
+        StudentKSAState.p_known,
+        StudentKSAState.memory_strength,
+        StudentKSAState.last_practiced,
+    ]  # type: ignore
+    page_size = 50
+
+
+class ItemIRTAdminView(ModelView, model=ItemIRT):
+    """
+    Administrative UI mapping for Generated Exercise Test Items.
+    """
+
+    name = "Item IRT"
+    name_plural = "Item IRT"
+    icon = "fa-solid fa-puzzle-piece"
+    category = "Analytics"
+
+    column_list = [
+        ItemIRT.id,
+        ItemIRT.item_id,
+        ItemIRT.discrimination_a,
+        ItemIRT.difficulty_b,
+        ItemIRT.guessing_c,
+        ItemIRT.item,
+    ]  # type: ignore
+    column_sortable_list = [
+        ItemIRT.item_id,
+        ItemIRT.discrimination_a,
+        ItemIRT.difficulty_b,
+        ItemIRT.guessing_c,
+    ]  # type: ignore
+    # column_searchable_list = [KSA.name, KSA.description, KSA.parent, KSA.children]  # type: ignore
     page_size = 50
