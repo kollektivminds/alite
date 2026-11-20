@@ -4,7 +4,6 @@ from functools import wraps
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, selectinload
 
-from alite_backend.api.trainer.translit import is_latin_text, latin_to_cyrillic
 from alite_backend.db.crud.crud_base import CRUDBase
 from alite_backend.db.models import (
     Definition,
@@ -59,6 +58,7 @@ from alite_backend.db.schemas import (
     WordFormCreate,
     WordFormUpdate,
 )
+from alite_backend.services.translit import is_latin_text, latin_to_cyrillic
 
 logger = logging.getLogger(__name__)
 

@@ -12,11 +12,13 @@ from sqlalchemy.orm import Session
 
 from alite_backend.api import deps
 from alite_backend.db import models, schemas
+from alite_backend.services.analytics import apply_response_to_student_ksa_states
 from alite_backend.services.exercise_router import ExerciseRouter
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/exercises", tags=["exercises"])
+
 HEX_HANDLE_PATTERN = re.compile(r"^[0-9a-fA-F]{8}$")
 
 
@@ -27,7 +29,7 @@ def reconcile_start_time(
     Reconciles client-reported start time against server reality.
     Guarantees monotonically valid timestamps without negative durations.
     """
-    # maximum tolerable discrepancy between client clock and server estimation (network latency allowance)
+    # maximum tolerable discrepancy between client clock and server estimation (network latency allowance)  # noqa: E501
     CLOCK_SKEW_TOLERANCE_SECONDS = 10.0
 
     # monotonically expected start time based on reported reaction latency
@@ -43,7 +45,7 @@ def reconcile_start_time(
     # check clock skew delta
     skew = abs((client_start - expected_start).total_seconds())
 
-    # if client clock is within reasonable network/drift tolerance, respect client timestamp.
+    # if client clock is within reasonable network/drift tolerance, respect client timestamp.  # noqa: E501
     # otherwise, fallback to server estimation to protect database telemetry.
     if skew <= CLOCK_SKEW_TOLERANCE_SECONDS and client_start <= server_now:
         return client_start
@@ -86,7 +88,7 @@ def normalize_token(
     4. Applies case-folding for case-insensitive matching.
     5. Optionally normalizes 'ё' to 'е' to prevent false negatives.
     6. Re-composes characters back to Canonical Composition (NFC).
-    """
+    """  # noqa: E501
     if not text:
         return ""
 
@@ -102,7 +104,7 @@ def normalize_token(
             ch for ch in decomposed if unicodedata.category(ch) != "Mn"
         )
 
-    # standard case-folding (more aggressive and comprehensive than .lower() across locales)
+    # standard case-folding (more aggressive and comprehensive than .lower() across locales)  # noqa: E501
     folded = decomposed.casefold()
 
     # interchangeable Russian 'ё' -> 'е' normalization
@@ -251,11 +253,11 @@ def evaluate_unscramble_response(
 
     if not master_solution:
         stmt = (
-            select(models.ItemOption.option_text)
+            select(models.ItemOption.option_text)  # type: ignore
             .where(
                 and_(
-                    models.ItemOption.item_id == item.id,
-                    models.ItemOption.explanation == "complete_sentence",
+                    models.ItemOption.item_id == item.id,  # type: ignore
+                    models.ItemOption.explanation == "complete_sentence",  # type: ignore
                 )
             )
             .limit(1)
@@ -265,8 +267,8 @@ def evaluate_unscramble_response(
     # 2. Извлечение эталонных позиций токенов с числовой сортировкой
     pos_stmt = select(models.ItemOption).where(
         and_(
-            models.ItemOption.item_id == item.id,
-            models.ItemOption.explanation.like("position:%"),
+            models.ItemOption.item_id == item.id,  # type: ignore
+            models.ItemOption.explanation.like("position:%"),  # type: ignore
         )
     )
     ordered_option_records = list(db.scalars(pos_stmt).all())
@@ -329,7 +331,7 @@ def evaluate_unscramble_response(
     # Точное совпадение нормализованных строк
     is_correct = bool(norm_sub and norm_sub == norm_sol)
 
-    # Защитный уровень: сравнение без знаков препинания (если студент случайно убрал запятую)
+    # Защитный уровень: сравнение без знаков препинания (если студент случайно убрал запятую)  # noqa: E501
     if not is_correct and norm_sub and norm_sol:
         alpha_sub = re.sub(r"[^\w\s]", "", norm_sub)
         alpha_sol = re.sub(r"[^\w\s]", "", norm_sol)
@@ -339,7 +341,9 @@ def evaluate_unscramble_response(
     # Расчет пословного прогресса для диагностического фидбека
     sub_words = norm_sub.split()
     sol_words = norm_sol.split()
-    matched_positions = sum(1 for w1, w2 in zip(sub_words, sol_words) if w1 == w2)
+    matched_positions = sum(
+        1 for w1, w2 in zip(sub_words, sol_words, strict=False) if w1 == w2
+    )  # noqa: E501
     display_total = max(total_tokens, len(sol_words))
 
     # Если всё предложение верное, гарантируем равенство счётчиков
@@ -352,8 +356,8 @@ def evaluate_unscramble_response(
 @router.post("/{exercise_id}/complete", status_code=status.HTTP_200_OK)
 def complete_exercise_session(
     exercise_id: int,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db),  # noqa: B008
+    current_user: models.User = Depends(deps.get_current_user),  # noqa: B008
 ) -> dict[str, Any]:
     """
     Finalizes an active exercise session by stamping finish_time.
@@ -380,11 +384,11 @@ def complete_exercise_session(
         db.commit()
         db.refresh(exercise)
 
-    duration_seconds = (exercise.finish_time - exercise.start_time).total_seconds()
+    duration_seconds = (exercise.finish_time - exercise.start_time).total_seconds()  # type: ignore
 
     return {
         "exercise_id": exercise.id,
-        "start_time": exercise.start_time.isoformat(),
+        "start_time": exercise.start_time.isoformat(),  # type: ignore
         "finish_time": exercise.finish_time.isoformat(),
         "duration_seconds": round(duration_seconds, 3),
     }
@@ -398,8 +402,8 @@ def complete_exercise_session(
 )
 def evaluate_student_answer(
     submission: schemas.AnswerSubmission,
-    db: Session = Depends(deps.get_db),
-    current_user: models.User = Depends(deps.get_current_user),
+    db: Session = Depends(deps.get_db),  # noqa: B008
+    current_user: models.User = Depends(deps.get_current_user),  # noqa: B008
 ) -> schemas.AnswerResult:
     try:
         item = db.get(models.Item, submission.item_id)
@@ -443,12 +447,12 @@ def evaluate_student_answer(
                 )
             else:
                 feedback_message = (
-                    f"Not quite. {matched} of {total} words are in the correct position. "
-                    f"Try rearranging the remaining words. (Attempt {submission.attempt_num})"
+                    f"Not quite. {matched} of {total} words are in the correct position. "  # noqa: E501
+                    f"Try rearranging the remaining words. (Attempt {submission.attempt_num})"  # noqa: E501
                 )
 
         else:
-            # Set-membership verification (MCQ, FITB)
+            # set-membership verification (mcq, fitb)
             is_correct, canonical_answer = get_canonical_and_evaluation(
                 db=db,
                 item_id=submission.item_id,
@@ -471,10 +475,46 @@ def evaluate_student_answer(
             item.finish_time = server_now
             db.add(item)
 
-        # Log psychometric attempt telemetry
+        # check existing attempts for this user + item to guard against duplicate
+        # or out-of-order submissions (e.g., attempt 2 arriving before attempt 1).
+        existing_attempts = list(
+            db.scalars(
+                select(models.ItemResponse).where(
+                    models.ItemResponse.user_id == current_user.id,  # type: ignore
+                    models.ItemResponse.item_id == submission.item_id,  # type: ignore
+                )
+            ).all()
+        )
+        has_prior_first_attempt = any(r.attempt_num == 1 for r in existing_attempts)
+        has_earlier_attempt_logged = any(
+            r.attempt_num < submission.attempt_num for r in existing_attempts
+        )
+
+        # gate bkt / ebbinghaus state updates:
+        # 1. exclude non-empirical self-reported flashcard responses.
+        # 2. only update on attempt_num == 1, and only if attempt 1 hasn't already been processed  # noqa: E501
+        #    and no earlier attempt was already recorded out of order.
+        is_eligible_for_bkt = (
+            item.item_format != models.EnumItemFormat.FLASHCARD
+            and submission.attempt_num == 1
+            and not has_prior_first_attempt
+            and not has_earlier_attempt_logged
+        )
+
+        if is_eligible_for_bkt:
+            apply_response_to_student_ksa_states(
+                db=db,
+                user_id=current_user.id,  # type: ignore
+                item_id=submission.item_id,
+                is_correct=is_correct,
+                attempt_num=submission.attempt_num,
+                observed_at=server_now,
+            )
+
+        # log raw attempt telemetry unconditionally for auditability and retry analysis.
         db.add(
             models.ItemResponse(
-                user_id=current_user.id,
+                user_id=current_user.id,  # type: ignore
                 item_id=submission.item_id,
                 response=submission.response.strip(),
                 is_correct=is_correct,
@@ -482,6 +522,7 @@ def evaluate_student_answer(
                 attempt_num=submission.attempt_num,
             )
         )
+
         db.commit()
 
         return schemas.AnswerResult(

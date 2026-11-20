@@ -47,7 +47,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Noun POS", EnumDirectionality.ANALYSIS),
+        "ksa": ("Parts of Speech", EnumDirectionality.ANALYSIS),
     },
     EnumWordItemType.POS_TO_LEM: {
         "strategy_class": LemmaStandaloneAttributeStrategy,
@@ -57,7 +57,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Noun POS", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Parts of Speech", EnumDirectionality.SYNTHESIS),
     },
     EnumWordItemType.NOUN_TO_GEND: {
         "strategy_class": LemmaStandaloneAttributeStrategy,
@@ -171,7 +171,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Lemma Definition", EnumDirectionality.ANALYSIS),
+        "ksa": ("Definitions", EnumDirectionality.ANALYSIS),
     },
     EnumWordItemType.DEF_TO_LEM: {
         "strategy_class": LemmaSiblingAttributeStrategy,
@@ -184,7 +184,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Lemma Definition", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Definitions", EnumDirectionality.SYNTHESIS),
     },
     EnumWordItemType.LEM_TO_PRON: {
         "strategy_class": LemmaSiblingAttributeStrategy,
@@ -197,7 +197,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Lemma Pronunciation", EnumDirectionality.ANALYSIS),
+        "ksa": ("Pronunciation", EnumDirectionality.NEUTRAL),
     },
     EnumWordItemType.PRON_TO_LEM: {
         "strategy_class": LemmaSiblingAttributeStrategy,
@@ -210,7 +210,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Lemma Pronunciation", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Spelling", EnumDirectionality.NEUTRAL),
     },
     # lemmas - morphology types
     EnumWordItemType.NOUN_FORM_TO_GRAM: {
@@ -220,7 +220,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Noun Form Grammar", EnumDirectionality.ANALYSIS),
+        "ksa": ("Noun Morphology", EnumDirectionality.ANALYSIS),
     },
     EnumWordItemType.NOUN_GRAM_TO_FORM: {
         "strategy_class": LemmaMorphologicalStrategy,
@@ -229,7 +229,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Noun Form Grammar", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Noun Morphology", EnumDirectionality.SYNTHESIS),
     },
     EnumWordItemType.ADJV_FORM_TO_GRAM: {
         "strategy_class": LemmaMorphologicalStrategy,
@@ -238,7 +238,7 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": False,
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Adjv Form Grammar", EnumDirectionality.ANALYSIS),
+        "ksa": ("Adjective Morphology", EnumDirectionality.ANALYSIS),
     },
     EnumWordItemType.ADJV_GRAM_TO_FORM: {
         "strategy_class": LemmaMorphologicalStrategy,
@@ -247,7 +247,19 @@ EXERCISE_CONFIG: Dict[
             "is_reverse": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Adjv Form Grammar", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Adjective Morphology", EnumDirectionality.SYNTHESIS),
+    },
+    EnumWordItemType.VERB_FORM_TO_GRAM: {
+        "strategy_class": LemmaMorphologicalStrategy,
+        "kwargs": {
+            "target_pos": models.EnumPartOfSpeech.VERB,
+            "is_reverse": False,
+        },
+        "formats": [
+            models.EnumItemFormat.MCQ,
+            models.EnumItemFormat.FLASHCARD,
+        ],
+        "ksa": ("Verb Morphology", EnumDirectionality.ANALYSIS),
     },
     EnumWordItemType.VERB_GRAM_TO_FORM: {
         "strategy_class": LemmaMorphologicalStrategy,
@@ -260,19 +272,7 @@ EXERCISE_CONFIG: Dict[
             models.EnumItemFormat.FITB,
             models.EnumItemFormat.FLASHCARD,
         ],
-        "ksa": ("Verb Form Grammar", EnumDirectionality.ANALYSIS),
-    },
-    EnumWordItemType.VERB_FORM_TO_GRAM: {
-        "strategy_class": LemmaMorphologicalStrategy,
-        "kwargs": {
-            "target_pos": models.EnumPartOfSpeech.VERB,
-            "is_reverse": False,
-        },
-        "formats": [
-            models.EnumItemFormat.MCQ,
-            models.EnumItemFormat.FLASHCARD,
-        ],
-        "ksa": ("Verb Form Grammar", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Verb Morphology", EnumDirectionality.SYNTHESIS),
     },
     # lemmas - relation types
     EnumWordItemType.VERB_PAIR_TO_REL: {
@@ -283,7 +283,7 @@ EXERCISE_CONFIG: Dict[
             "drill_mode": "find_target",
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Verb Pair Rel", EnumDirectionality.ANALYSIS),
+        "ksa": ("Verb Pairs", EnumDirectionality.ANALYSIS),
     },
     EnumWordItemType.VERB_TO_ASPT_PAIR: {
         "strategy_class": LemmaRelationStrategy,
@@ -293,7 +293,7 @@ EXERCISE_CONFIG: Dict[
             "drill_mode": "find_source",
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Verb Pair Rel", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Verb Pairs", EnumDirectionality.SYNTHESIS),
     },
     EnumWordItemType.LEM_LEM_TO_REL: {
         "strategy_class": LemmaRelationStrategy,
@@ -303,7 +303,7 @@ EXERCISE_CONFIG: Dict[
             "drill_mode": "find_relation",
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Lem Pair Rel", EnumDirectionality.ANALYSIS),
+        "ksa": ("Semantics", EnumDirectionality.ANALYSIS),
     },
     EnumWordItemType.REL_TO_LEM_LEM: {
         "strategy_class": LemmaRelationStrategy,
@@ -313,7 +313,7 @@ EXERCISE_CONFIG: Dict[
             "drill_mode": "find_pair",
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Lem Pair Rel", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Semantics", EnumDirectionality.SYNTHESIS),
     },
     # sentences - tokens
     EnumSentItemType.NOUN_MORPH: {
@@ -324,7 +324,7 @@ EXERCISE_CONFIG: Dict[
             "show_lemma_hint": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Sent Noun Morph", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Nouns in Context", EnumDirectionality.SYNTHESIS),
     },
     EnumSentItemType.ADJECTIVE_MORPH: {
         "strategy_class": SentenceClozeStrategy,
@@ -334,7 +334,7 @@ EXERCISE_CONFIG: Dict[
             "show_lemma_hint": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Sent Adjv Morph", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Adjectives in Context", EnumDirectionality.SYNTHESIS),
     },
     EnumSentItemType.VERB_MORPH: {
         "strategy_class": SentenceClozeStrategy,
@@ -344,7 +344,7 @@ EXERCISE_CONFIG: Dict[
             "show_lemma_hint": True,
         },
         "formats": [models.EnumItemFormat.MCQ, models.EnumItemFormat.FITB],
-        "ksa": ("Sent Verb Morph", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Verbs in Context", EnumDirectionality.SYNTHESIS),
     },
     EnumSentItemType.LEXICAL: {
         "strategy_class": SentenceClozeStrategy,
@@ -365,7 +365,7 @@ EXERCISE_CONFIG: Dict[
             "target_pos_filter": None,
         },
         "formats": [models.EnumItemFormat.MCQ],
-        "ksa": ("Dependecy Relation", EnumDirectionality.SYNTHESIS),
+        "ksa": ("Sentence Dependency", EnumDirectionality.SYNTHESIS),
     },
     EnumSentItemType.NOUN_CASE: {
         "strategy_class": SentenceAnnotationStrategy,
@@ -445,18 +445,36 @@ class ExerciseRouter:
         except Exception as e:
             logger.warning(f"Could not load KSA cache during ExerciseRouter init: {e}")
 
-    def _resolve_ksa_metadata(
-        self, strategy: Union[EnumWordItemType, EnumSentItemType]
-    ) -> Tuple[Optional[int], EnumDirectionality]:
+    def _resolve_item_ksas(
+        self,
+        strategy: Union[EnumWordItemType, EnumSentItemType],
+        override_names: Optional[List[str]] = None,
+    ) -> Tuple[List[int], EnumDirectionality]:
         """
-        Extracts the KSA node ID and cognitive directionality directly from EXERCISE_CONFIG.
-        """  # noqa: E501
+        Resolves a list of KSA IDs and the cognitive directionality for an item.
+        Prioritizes blueprint-level leaf KSA overrides; falls back to EXERCISE_CONFIG.
+        """
         config_entry = EXERCISE_CONFIG.get(strategy)
         if not config_entry or "ksa" not in config_entry:
-            return self._ksa_cache.get("Semantics"), EnumDirectionality.NEUTRAL
+            default_id = self._ksa_cache.get("Semantics")
+            return ([default_id] if default_id else []), EnumDirectionality.NEUTRAL
 
-        ksa_name, directionality = config_entry["ksa"]
-        return self._ksa_cache.get(ksa_name), directionality
+        default_ksa_name, directionality = config_entry["ksa"]
+
+        # Use dynamic leaf KSAs if the strategy provided them; otherwise use the static default  # noqa: E501
+        target_names = override_names if override_names else [default_ksa_name]
+        ksa_ids = [
+            self._ksa_cache[name] for name in target_names if name in self._ksa_cache
+        ]
+
+        if not ksa_ids:
+            logger.warning(
+                "No KSA IDs resolved for strategy=%s, target_names=%s",
+                strategy,
+                target_names,
+            )
+
+        return ksa_ids, directionality
 
     def get_exercise_generator(
         self, exercise_type: Union[EnumWordItemType, EnumSentItemType, str]
@@ -492,7 +510,7 @@ class ExerciseRouter:
         is_sentence_session = request.exercise_context.lem_ids is None
 
         # ---------------------------------------------------------------------
-        # 1. Primary Strategy Generation Pass
+        # 1. primary strategy generation pass
         # ---------------------------------------------------------------------
         for item_strategy_raw, base_qty in strategies_to_process:
             if base_qty <= 0 and rolling_deficit <= 0:
@@ -559,7 +577,7 @@ class ExerciseRouter:
                 )
 
         # ---------------------------------------------------------------------
-        # 2. Deficit Compensation Pass (High-Capacity Domain Fallbacks)
+        # 2. deficit compensation pass (high-capacity domain fallbacks)
         # ---------------------------------------------------------------------
         if rolling_deficit > 0:
             domain_fallbacks: List[schemas.AnyItemType] = (
@@ -624,7 +642,7 @@ class ExerciseRouter:
                         rolling_deficit -= 1
 
         # ---------------------------------------------------------------------
-        # 3. Assemble and Commit Deliverables
+        # 3. assemble and commit deliverables
         # ---------------------------------------------------------------------
         response_items = self._compile_deliverables(exercise_payload)
 
@@ -676,7 +694,7 @@ class ExerciseRouter:
                         bp.sentence_context.syntactic_focus
                     )
 
-            # Persist master string in database settings for grading lookups
+            # persist master string in database settings for grading lookups
             item_settings["solution"] = full_solution_text
 
             raw_prompt = bp.prompt or ""
@@ -694,11 +712,10 @@ class ExerciseRouter:
                 ]
 
             # -------------------------------------------------------------
-            # FORMAT: Fill-in-the-Blank (FITB) - In-Situ Lemma Injection
+            # format: fill-in-the-blank (fitb) - in-situ lemma injection
             # -------------------------------------------------------------
             if raw_item_format == models.EnumItemFormat.FITB:
                 if "[___]" in raw_prompt and not bp.hint:
-                    # Если пропуск есть, а подсказки нет, проверяем возможность переключения в MCQ  # noqa: E501
                     if bp.distractors and len(bp.distractors) >= 1:
                         logger.warning(
                             "FITB blueprint for item %s lacks lemma hint. Degrading to MCQ.",  # noqa: E501
@@ -706,12 +723,38 @@ class ExerciseRouter:
                         )
                         raw_item_format = models.EnumItemFormat.MCQ
 
-            def persist_base_item(prompt_text: str) -> models.Item:
+            def seed_item_irt(
+                db_item: models.Item,
+                item_format: models.EnumItemFormat,
+                num_options: int = 0,
+            ) -> None:
+                """
+                Seeds cold-start Item Response Theory (IRT) parameters for a newly created Item.
+                Prevents empty item_irt rows and provides a baseline before batch calibration runs.
+                """  # noqa: E501
+                # guessing floor c is 1/k for multi-option mcq and 0.0 for recall/open/unscramble formats.  # noqa: e501
+                if item_format == models.EnumItemFormat.MCQ and num_options > 1:
+                    guessing_c = round(1.0 / num_options, 4)
+                else:
+                    guessing_c = 0.0
+
+                self.db.add(
+                    models.ItemIRT(
+                        item_id=db_item.id,  # type: ignore
+                        difficulty_b=0.0,
+                        discrimination_a=1.0,
+                        guessing_c=guessing_c,
+                    )
+                )
+
+            def persist_base_item(
+                prompt_text: str, num_options: int = 0
+            ) -> models.Item:  # noqa: E501
                 db_item = models.Item(
                     ex_id=self.exercise_in.id,  # type: ignore
                     order_in_ex=idx,  # noqa: B023
-                    item_type=raw_item_type.value
-                    if hasattr(raw_item_type, "value")
+                    item_type=raw_item_type.value  # noqa: B023
+                    if hasattr(raw_item_type, "value")  # noqa: B023
                     else str(raw_item_type),  # noqa: B023, E501
                     item_format=raw_item_format,  # noqa: B023
                     prompt=prompt_text,
@@ -720,16 +763,39 @@ class ExerciseRouter:
                 self.db.add(db_item)
                 self.db.flush()
 
+                # seed cold-start irt params for new item
+                seed_item_irt(
+                    db_item=db_item,
+                    item_format=raw_item_format,  # noqa: B023
+                    num_options=num_options,
+                )  # noqa: B023, E501
+
+                # resolve ksa and directionality from unified exercise_config
+                ksa_ids, directionality = self._resolve_item_ksas(
+                    strategy=raw_item_type,  # noqa: B023
+                    override_names=bp.ksa_names,  # noqa: B023
+                )
+
                 if bp.lem_id is not None:  # noqa: B023
                     self.db.add(LemmaInItem(item_id=db_item.id, lem_id=bp.lem_id))  # type: ignore # noqa: B023
 
-                    # Resolve KSA and Directionality from unified EXERCISE_CONFIG
-                    ksa_id, directionality = self._resolve_ksa_metadata(raw_item_type)  # noqa: B023
-                    if ksa_id is not None:
+                    for ksa_id in ksa_ids:
                         self.db.add(
                             ItemTarget(
                                 item_id=db_item.id,  # type: ignore
                                 lemma_id=bp.lem_id,  # noqa: B023
+                                ksa_id=ksa_id,
+                                directionality=directionality,
+                            )
+                        )
+
+                # optional branch if ItemTarget.lemma_id is nullable and you want non-lemma KSA tracking:  # noqa: E501
+                elif ksa_ids:
+                    for ksa_id in ksa_ids:
+                        self.db.add(
+                            ItemTarget(
+                                item_id=db_item.id,  # type: ignore
+                                lemma_id=None,  # type: ignore
                                 ksa_id=ksa_id,
                                 directionality=directionality,
                             )
@@ -757,27 +823,9 @@ class ExerciseRouter:
                     clean_parts = [raw_prompt, ""]
                     final_prompt = raw_prompt
 
-                # 2. Создание родительского Item с валидным prompt
-                db_item = persist_base_item(final_prompt)
-                # db_item = models.Item(
-                #     ex_id=self.exercise_in.id,
-                #     order_in_ex=idx,
-                #     item_type=item_type_str,
-                #     item_format=raw_item_format,
-                #     prompt=final_prompt,
-                #     settings=item_settings,
-                #     start_time=None,
-                #     finish_time=None,
-                # )
-                # self.db.add(db_item)
-                # self.db.flush()
+                # create parent item
+                db_item = persist_base_item(final_prompt, num_options=0)
 
-                # if bp.lem_id is not None:
-                #     self.db.add(
-                #         models.LemmaInItem(item_id=db_item.id, lem_id=bp.lem_id)
-                #     )
-
-                # 3. Сохранение эталонного ключа в ItemOption
                 for key in canonical_keys:
                     self.db.add(
                         models.ItemOption(
@@ -800,29 +848,14 @@ class ExerciseRouter:
                 )
 
             # -------------------------------------------------------------
-            # FORMAT: Multiple Choice (MCQ) - Options Only, Clean Prompt
+            # format: multiple choice (mcq) - options only, clean prompt
             # -------------------------------------------------------------
             elif raw_item_format == models.EnumItemFormat.MCQ:
-                db_item = persist_base_item(prompt_text=raw_prompt)
-                # db_item = models.Item(
-                #     ex_id=self.exercise_in.id,
-                #     order_in_ex=idx,
-                #     item_type=item_type_str,
-                #     item_format=raw_item_format,
-                #     prompt=raw_prompt,
-                #     settings=item_settings,
-                #     start_time=None,
-                #     finish_time=None,
-                # )
-                # self.db.add(db_item)
-                # self.db.flush()
-
-                # if bp.lem_id is not None:
-                #     self.db.add(
-                #         models.LemmaInItem(item_id=db_item.id, lem_id=bp.lem_id)
-                #     )
-
                 all_options = canonical_keys + (bp.distractors or [])
+                db_item = persist_base_item(
+                    prompt_text=raw_prompt, num_options=len(all_options)
+                )  # noqa: E501
+
                 for opt in all_options:
                     self.db.add(
                         models.ItemOption(
@@ -848,22 +881,10 @@ class ExerciseRouter:
                 )
 
             # -------------------------------------------------------------
-            # FORMAT: Unscramble - Token Shuffle & Master Solution Storage
+            # format: unscramble - token shuffle & master solution storage
             # -------------------------------------------------------------
             elif raw_item_format == models.EnumItemFormat.UNSCRAMBLE:
                 db_item = persist_base_item(prompt_text=raw_prompt)
-                # db_item = models.Item(
-                #     ex_id=self.exercise_in.id,
-                #     order_in_ex=idx,
-                #     item_type=item_type_str,
-                #     item_format=raw_item_format,
-                #     prompt=raw_prompt,
-                #     settings=item_settings,
-                #     start_time=None,
-                #     finish_time=None,
-                # )
-                # self.db.add(db_item)
-                # self.db.flush()
 
                 self.db.add(
                     models.ItemOption(
@@ -898,7 +919,7 @@ class ExerciseRouter:
                 self.db.add_all(token_options)
                 self.db.flush()
 
-                # Перемешивание токенов с гарантией нетождественности
+                # shuffle tokens
                 shuffled_pairs = list(handle_pairs)
                 if len(shuffled_pairs) > 1:
                     attempts = 0
@@ -920,22 +941,10 @@ class ExerciseRouter:
                 )
 
             # -------------------------------------------------------------
-            # FORMAT: Flashcard
+            # format: flashcard
             # -------------------------------------------------------------
             elif raw_item_format == models.EnumItemFormat.FLASHCARD:
                 db_item = persist_base_item(prompt_text=raw_prompt)
-                # db_item = models.Item(
-                #     ex_id=self.exercise_in.id,
-                #     order_in_ex=idx,
-                #     item_type=item_type_str,
-                #     item_format=raw_item_format,
-                #     prompt=raw_prompt,
-                #     settings=item_settings,
-                #     start_time=None,
-                #     finish_time=None,
-                # )
-                # self.db.add(db_item)
-                # self.db.flush()
 
                 response_items.append(
                     schemas.FlashcardResponse(

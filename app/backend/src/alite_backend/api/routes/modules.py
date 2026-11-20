@@ -2,14 +2,15 @@
 import logging
 from typing import List
 
-from alite_backend.api import deps
-from alite_backend.db import models, schemas
-from alite_backend.db.crud import orgi_crud
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-router = APIRouter()
+from alite_backend.api import deps
+from alite_backend.db import models, schemas
+from alite_backend.db.crud import orgi_crud
+
+router = APIRouter(prefix="/modules", tags=["modules"])
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,8 @@ def get_lemmas_for_lesson(module_id: int, db: Session = Depends(deps.get_db)):
         )
         .join(
             models.LessonListInModule,
-            models.LessonListInModule.less_list_id == models.LemmaInLessonList.less_list_id,  # type: ignore
+            models.LessonListInModule.less_list_id
+            == models.LemmaInLessonList.less_list_id,  # type: ignore
         )
         .where(models.LessonListInModule.mod_id == module_id)  # type: ignore
         .distinct()

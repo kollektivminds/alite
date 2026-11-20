@@ -430,17 +430,17 @@ class SentenceAdminView(ModelView, model=Sentence):
 
     column_formatters = {
         Sentence.doc_id: format_document_link,
-    }
+    }  # type: ignore
     column_formatters_detail = column_formatters
 
     def list_query(self, request: Request):
         return (
             select(Sentence)
             .options(
-                selectinload(Sentence.document),
-                selectinload(Sentence.tokens),
+                selectinload(Sentence.document),  # type: ignore
+                selectinload(Sentence.tokens),  # type: ignore
             )
-            .order_by(Sentence.id.desc())
+            .order_by(Sentence.id.desc())  # type: ignore
         )
 
     page_size = 25
@@ -468,7 +468,7 @@ class SentenceTokenAdminView(ModelView, model=SentenceToken):
         SentenceToken.status,
         SentenceToken.lemma,
         SentenceToken.lexeme,
-    ]
+    ]  # type: ignore
 
     column_select_related_list = [
         SentenceToken.lemma,
@@ -478,29 +478,29 @@ class SentenceTokenAdminView(ModelView, model=SentenceToken):
 
     column_formatters = {
         SentenceToken.wf_id: format_word_form_label,
-        SentenceToken.word_form: format_word_form_label,
+        SentenceToken.word_form: format_word_form_label,  # type: ignore
         SentenceToken.lem_id: format_lemma_label,
-        SentenceToken.lemma: format_lemma_label,
+        SentenceToken.lemma: format_lemma_label,  # type: ignore
         SentenceToken.lex_id: format_lexeme_label,
-        SentenceToken.lexeme: format_lexeme_label,
-    }
+        SentenceToken.lexeme: format_lexeme_label,  # type: ignore
+    }  # type: ignore
     column_formatters_detail = column_formatters
 
     def list_query(self, request: Request):
         return (
             select(SentenceToken)
             .options(
-                selectinload(SentenceToken.lemma),
-                selectinload(SentenceToken.lexeme),
-                selectinload(SentenceToken.sentence),
-                selectinload(SentenceToken.word_form).selectinload(
-                    WordForm.word_form_lexicon
+                selectinload(SentenceToken.lemma),  # type: ignore
+                selectinload(SentenceToken.lexeme),  # type: ignore
+                selectinload(SentenceToken.sentence),  # type: ignore
+                selectinload(SentenceToken.word_form).selectinload(  # type: ignore
+                    WordForm.word_form_lexicon  # type: ignore
                 ),
-                selectinload(SentenceToken.word_form).selectinload(
-                    WordForm.word_form_lemma
+                selectinload(SentenceToken.word_form).selectinload(  # type: ignore
+                    WordForm.word_form_lemma  # type: ignore
                 ),
             )
-            .order_by(SentenceToken.id.desc())
+            .order_by(SentenceToken.id.desc())  # type: ignore
         )
 
 
@@ -584,6 +584,9 @@ class ItemAdminView(ModelView, model=Item):
         Item.ex_id,
         Item.item_type,
         Item.item_format,
+        Item.order_in_ex,
+        Item.item_type,
+        Item.item_format,
         "duration",
         Item.prompt,
         Item.options,
@@ -592,12 +595,17 @@ class ItemAdminView(ModelView, model=Item):
         Item.start_time,
         Item.finish_time,
         Item.ref_lems,
+        Item.targets,
+        Item.irt_params,
     ]  # type: ignore
     column_details_list = [
         Item.id,
         Item.ex_id,
         Item.item_type,
         Item.item_format,
+        Item.order_in_ex,
+        Item.item_type,
+        Item.item_format,
         "duration",
         Item.prompt,
         Item.options,
@@ -606,14 +614,20 @@ class ItemAdminView(ModelView, model=Item):
         Item.start_time,
         Item.finish_time,
         Item.ref_lems,
+        Item.targets,
+        Item.irt_params,
     ]  # type: ignore
     column_sortable_list = [
         Item.id,
+        Item.ex_id,
+        Item.order_in_ex,
         Item.item_type,
         Item.item_format,
         "duration",
         Item.start_time,
         Item.finish_time,
+        Item.targets,
+        Item.irt_params,
     ]  # type: ignore
     column_searchable_list = [Item.item_type, Item.item_format, Item.prompt]  # type: ignore
     page_size = 50

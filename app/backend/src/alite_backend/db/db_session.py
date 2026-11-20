@@ -1,9 +1,11 @@
 # backend/src/alite_backend/sb/db_session.py
 
 import logging
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import QueuePool
+
 from alite_backend.config import settings
 
 logger = logging.getLogger(__name__)
@@ -16,7 +18,7 @@ elif ENV_MODE == "test":
 else:
     DATABASE_URL = str(settings.DEV_DATABASE_URL)
 
-# --- 1. Default Development Engine ---
+# --- default development engine ---
 engine = create_engine(
     DATABASE_URL,
     poolclass=QueuePool,
@@ -27,11 +29,11 @@ engine = create_engine(
     echo=False,
 )
 
-# --- 2. Session Factory ---
+# --- session factory ---
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-# --- 3. API Dependency ---
+# --- api dependency ---
 def get_db():
     db = SessionLocal()
     try:

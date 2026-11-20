@@ -7,7 +7,6 @@ from sqlalchemy import String, cast, func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from alite_backend.api import deps
-from alite_backend.api.trainer.translit import is_latin_text, latin_to_cyrillic
 from alite_backend.db import schemas
 from alite_backend.db.crud.word_crud import crud_lemma
 from alite_backend.db.db_session import SessionLocal
@@ -18,11 +17,12 @@ from alite_backend.db.models import (
     LookupQueue,
     User,
 )
+from alite_backend.services.translit import is_latin_text, latin_to_cyrillic
 from alite_backend.words.pipeline import load_words
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/lemmas", tags=["lemmas"])
 
 
 @router.post("/", response_model=schemas.LemmaDetailsReturn)

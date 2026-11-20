@@ -6,11 +6,7 @@ set up database
 """
 
 import logging
-
-# from ..words.funcs import load_json
 import os
-
-# import json
 from collections import defaultdict
 from pathlib import Path
 
@@ -21,18 +17,11 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session
 
-# import alite_backend.db.schemas as schemas
 from alembic import command
 from alite_backend.config import settings
-
-# from alite_backend.db.crud.word_crud import (
-#     crud_lem_in_less_list,
-#     crud_less_list,
-#     crud_less_list_in_mod,
-#     crud_module,
-# )
 from alite_backend.db.db_session import SessionLocal, engine
 from alite_backend.db.models import Base, EnumUserRole
+from alite_backend.db.seeds.seed_ksas import seed_ksa_ontology
 from alite_backend.logging_config import setup_logging
 from alite_backend.words.funcs import load_json
 
@@ -107,7 +96,7 @@ def load_org_tables(db: Session, vocab_list_path: str = VOCAB_LIST_LOC):  # type
             # logger.debug("less_list: %s", less_list)
             less_list_data = data[mod][less_list]  # type: ignore
             # logger.debug("data[mod][less_list]: %s", less_list_data)  # type: ignore
-            # list_lems = [lemma for pos_list in less_list_data["vocab"] for lemma in pos_list]
+            # list_lems = [lemma for pos_list in less_list_data["vocab"] for lemma in pos_list]  # noqa: E501
             filters = {"title": less_list, "topic": None, "owner_id": None}
             if mod in ["ales", "other"]:
                 # list of ales or "other" words
@@ -115,7 +104,7 @@ def load_org_tables(db: Session, vocab_list_path: str = VOCAB_LIST_LOC):  # type
                 # logger.debug("list_lems: %s", list_lems)
             else:
                 # try:  # type: ignore
-                #     logger.debug("data[mod][less_list]['topic']: %s", less_list_data["topic"])  # type: ignore
+                #     logger.debug("data[mod][less_list]['topic']: %s", less_list_data["topic"])  # type: ignore  # noqa: E501
                 # except:
                 #     logger.debug("no topic found")
                 filters["topic"] = less_list_data["topic"]  # type: ignore
@@ -139,10 +128,10 @@ def load_org_tables(db: Session, vocab_list_path: str = VOCAB_LIST_LOC):  # type
         # logger.debug("less_list_in_mod: %s", llim)
         filters = llim
         llim_in = schemas.LessListInModCreate(**filters)
-        new_llim = crud_less_list_in_mod.get_or_create(
+        new_llim = crud_less_list_in_mod.get_or_create(  # noqa: F841
             db=db, obj_in=llim_in, filter_kwargs=filters
         )
-        # logger.debug("new less_list_in_mod id: (%d, %d)", new_llim.mod_id, new_llim.less_list_id)
+        # logger.debug("new less_list_in_mod id: (%d, %d)", new_llim.mod_id, new_llim.less_list_id)  # noqa: E501
 
     # logger.debug("Lems in lists: %s", lems_in_lists)
     # create reverse lookup for which lems are in what lists
@@ -376,6 +365,7 @@ def init_database():
             # create tables in db
             seed_superuser(db=db)
             load_org_tables(db=db)
+            seed_ksa_ontology(session=db)
             db.commit()
             logger.info("Database tables loaded and committed successfully")
 

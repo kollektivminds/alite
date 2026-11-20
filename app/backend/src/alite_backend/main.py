@@ -51,7 +51,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(
     title="ALITE Backend API",
-    description="Autonomous Learning and Informed Teaching Engine - Statistical & Item Analytics Core",
+    description="Autonomous Learning and Informed Teaching Engine - Statistical & Item Analytics Core",  # noqa: E501
     version="0.1.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -117,7 +117,7 @@ async def catch_exceptions_and_log_middleware(request: Request, call_next):
 
         # Log the error heavily to the terminal running Uvicorn
         logger.error(
-            f"CRITICAL UNHANDLED EXCEPTION on {request.method} {request.url.path}:\n{tb_str}"
+            f"CRITICAL UNHANDLED EXCEPTION on {request.method} {request.url.path}:\n{tb_str}"  # noqa: E501
         )
 
         # Return a structured JSON response to the browser / DevTools network tab
@@ -129,7 +129,7 @@ async def catch_exceptions_and_log_middleware(request: Request, call_next):
                 "detail": "Internal Server Error captured by ALITE middleware.",
                 "error_type": type(exc).__name__,
                 "error_message": str(exc),
-                "traceback": tb_str.splitlines(),  # Breaks lines for clean inspection in console
+                "traceback": tb_str.splitlines(),  # Breaks lines for clean inspection in console  # noqa: E501
             },
         )
 

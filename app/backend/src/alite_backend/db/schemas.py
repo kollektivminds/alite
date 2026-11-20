@@ -1,5 +1,6 @@
-# schemas.py
+# alite_backend/db/schemas.py
 # pydantic models for API data validation and response shaping
+import logging
 import re
 from datetime import datetime
 from enum import Enum
@@ -38,6 +39,9 @@ from alite_backend.db.models import (
     EnumVerbType,
     EnumWordItemType,
 )
+
+logger = logging.getLogger(__name__)
+
 
 AnyItemType = Union[EnumWordItemType, EnumSentItemType]
 
@@ -934,218 +938,6 @@ class EnumGramExFocus(str, Enum):
     PART_TENSE = "part_tense"
 
 
-STRATEGY_FORMATS: Dict[AnyItemType, FrozenSet[EnumItemFormat]] = {
-    # words - lemmas
-    EnumWordItemType.LEM_TO_POS: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.POS_TO_LEM: frozenset(
-        {
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.LEM_TO_DEF: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.DEF_TO_LEM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.LEM_TO_PRON: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.PRON_TO_LEM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.LEM_LEM_TO_REL: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.REL_TO_LEM_LEM: frozenset(
-        {
-            EnumItemFormat.MCQ,
-        }
-    ),
-    # words - adjectives
-    EnumWordItemType.ADJV_FORM_TO_TYPE: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.ADJV_TYPE_TO_LEM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.ADJV_FORM_TO_GRAM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.ADJV_GRAM_TO_FORM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    # words - nouns
-    EnumWordItemType.NOUN_TO_GEND: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.GEND_TO_NOUN: frozenset(
-        {
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.NOUN_TO_ANIM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.ANIM_TO_NOUN: frozenset(
-        {
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.NOUN_FORM_TO_GRAM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.NOUN_GRAM_TO_FORM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.NOUN_TO_DMIN_FORM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    # words - participles
-    EnumWordItemType.PART_FORM_TO_TYPE: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.PART_TYPE_TO_FORM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    # words - verbs
-    EnumWordItemType.VERB_TO_ASPT: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.ASPT_TO_VERB: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.VERB_PAIR_TO_REL: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.VERB_TO_ASPT_PAIR: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.VERB_TO_TYPE: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.TYPE_TO_VERB: frozenset(
-        {
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.VERB_TO_TNRF: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.TNRF_TO_VERB: frozenset(
-        {
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.VERB_FORM_TO_GRAM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    EnumWordItemType.VERB_GRAM_TO_FORM: frozenset(
-        {
-            EnumItemFormat.FLASHCARD,
-            EnumItemFormat.FITB,
-            EnumItemFormat.MCQ,
-        }
-    ),
-    # sentences
-    EnumSentItemType.NOUN_MORPH: frozenset({EnumItemFormat.FITB, EnumItemFormat.MCQ}),
-    EnumSentItemType.VERB_MORPH: frozenset({EnumItemFormat.FITB, EnumItemFormat.MCQ}),
-    EnumSentItemType.ADJECTIVE_MORPH: frozenset(
-        {EnumItemFormat.FITB, EnumItemFormat.MCQ}
-    ),
-    EnumSentItemType.LEXICAL: frozenset({EnumItemFormat.MCQ}),
-    EnumSentItemType.DEP_REL: frozenset({EnumItemFormat.MCQ}),
-    EnumSentItemType.FIND_HEAD: frozenset({EnumItemFormat.MCQ}),
-    EnumSentItemType.FIND_SUBJECT: frozenset({EnumItemFormat.MCQ}),
-    EnumSentItemType.NOUN_CASE: frozenset({EnumItemFormat.MCQ}),
-    EnumSentItemType.VERB_ASPECT: frozenset({EnumItemFormat.MCQ}),
-    EnumSentItemType.UNSCRAMBLE: frozenset({EnumItemFormat.UNSCRAMBLE}),
-}
-
-
 class LemmaSearchResults(BaseModel):
     id: int
     lem_text: str
@@ -1444,6 +1236,11 @@ class ItemBlueprint(BaseModel):
     hint: Optional[str] = Field(
         default=None,
         description="Base dictionary lemma to display in-situ for FITB items (e.g. 'человек')",  # noqa: E501
+    )
+    # optional override: allow dynamic strategies to declare KSA(s)
+    ksa_names: List[str] = Field(
+        default_factory=list,
+        description="Leaf KSA node names resolved at generation time",
     )
 
 
@@ -1744,7 +1541,7 @@ class PoolValidationResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-# Pedagogical Capability Matrix: Strategy -> Compatible Item Formats
+# pedagogical capability matrix: strategy -> compatible item formats
 STRATEGY_FORMAT_COMPATIBILITY: Dict[AnyItemType, FrozenSet[EnumItemFormat]] = {
     # --- Lemma-Level Strategies ---
     EnumWordItemType.LEM_TO_POS: frozenset(
@@ -2040,3 +1837,70 @@ class StrategyConfigEntry(TypedDict):
     kwargs: Dict[str, Any]
     formats: List[EnumItemFormat]
     ksa: Tuple[str, EnumDirectionality]
+
+
+# --- Student Analytics View ---
+class StudentKSAMasteryItem(BaseModel):
+    ksa_id: int
+    ksa_name: str
+    parent_id: Optional[int] = None
+    avg_p_known: float = Field(..., ge=0.0, le=1.0)
+    avg_retention: float = Field(..., ge=0.0, le=1.0)
+    tracked_targets: int = Field(..., ge=0)
+    last_practiced: Optional[datetime] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StudentDashboardSummary(BaseModel):
+    user_id: int
+    total_attempts: int = Field(..., ge=0)
+    first_attempt_accuracy: float = Field(..., ge=0.0, le=1.0)
+    exercises_completed: int = Field(..., ge=0)
+    mean_p_known: float = Field(..., ge=0.0, le=1.0)
+    mean_retention: float = Field(..., ge=0.0, le=1.0)
+    ksa_breakdown: List[StudentKSAMasteryItem] = Field(default_factory=list)
+
+
+# --- Instructor Analytics View ---
+class CohortStudentRow(BaseModel):
+    user_id: int
+    username: Optional[str] = None
+    mean_p_known: float = Field(..., ge=0.0, le=1.0)
+    mean_retention: float = Field(..., ge=0.0, le=1.0)
+    first_attempt_count: int = Field(..., ge=0)
+
+
+class CohortKSASummary(BaseModel):
+    ksa_id: int
+    ksa_name: str
+    cohort_avg_p_known: float = Field(..., ge=0.0, le=1.0)
+    cohort_avg_retention: float = Field(..., ge=0.0, le=1.0)
+    struggling_student_count: int = Field(..., ge=0)
+
+
+class ClassAnalyticsSummary(BaseModel):
+    group_id: int
+    group_name: str
+    student_count: int = Field(..., ge=0)
+    cohort_mean_p_known: float = Field(..., ge=0.0, le=1.0)
+    weakest_ksas: List[CohortKSASummary] = Field(default_factory=list)
+    students: List[CohortStudentRow] = Field(default_factory=list)
+
+
+# --- Admin Analytics View ---
+class AdminKSAHealthRow(BaseModel):
+    ksa_id: int
+    ksa_name: str
+    target_item_count: int = Field(..., ge=0)
+    learner_state_count: int = Field(..., ge=0)
+    system_avg_p_known: float = Field(..., ge=0.0, le=1.0)
+
+
+class AdminPlatformSummary(BaseModel):
+    total_users: int = Field(..., ge=0)
+    total_exercises: int = Field(..., ge=0)
+    total_items_generated: int = Field(..., ge=0)
+    total_first_attempt_responses: int = Field(..., ge=0)
+    calibrated_irt_items: int = Field(..., ge=0)
+    ksa_health: List[AdminKSAHealthRow] = Field(default_factory=list)

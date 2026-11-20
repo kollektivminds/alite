@@ -2,15 +2,16 @@
 import logging
 from typing import List
 
-from alite_backend.api import deps
-from alite_backend.db import schemas
-from alite_backend.db.crud import sent_crud
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from alite_backend.api import deps
+from alite_backend.db import schemas
+from alite_backend.db.crud import sent_crud
+
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/documents", tags=["documents"])
 
 
 @router.get("/{document_id}", response_model=schemas.DocumentReturn)

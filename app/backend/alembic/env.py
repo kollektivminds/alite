@@ -6,10 +6,11 @@ import logging
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config, pool, text
-from sqlmodel import SQLModel
 
+# from sqlmodel import SQLModel
 from alembic import context
 from alite_backend.config import settings
+from alite_backend.db.models import Base
 
 # alembic config
 config = context.config
@@ -20,7 +21,13 @@ if config.config_file_name is not None:
 logger = logging.getLogger("alembic.env")
 
 # the SQLModel metadata registry
-target_metadata = SQLModel.metadata
+target_metadata = Base.metadata
+
+# Optional sanity check during dev: fail fast if metadata is ever empty
+# so Alembic can never generate an accidental "drop everything" migration.
+assert target_metadata.tables, (
+    "target_metadata has no tables registered. Check model imports in alembic/env.py."
+)
 
 # inject the dynamic database URL from Pydantic into Alembic's configuration
 config.set_main_option("sqlalchemy.url", settings.DEV_DATABASE_URL)

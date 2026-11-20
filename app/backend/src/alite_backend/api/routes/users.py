@@ -1,15 +1,16 @@
 # alite_backend/api/trainer/users.py
 import logging
 
-from alite_backend.api import deps
-from alite_backend.db import models, schemas
-from alite_backend.db.crud.user_crud import crud_user
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from alite_backend.api import deps
+from alite_backend.db import models, schemas
+from alite_backend.db.crud.user_crud import crud_user
+
 logger = logging.getLogger(__name__)
 
-router = APIRouter()
+router = APIRouter(prefix="/users", tags=["users"])
 
 
 @router.get("/{user_id}", response_model=schemas.UserReturn)

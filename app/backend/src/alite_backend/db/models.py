@@ -213,28 +213,28 @@ class EnumItemFormat(str, enum.Enum):
 
 
 class EnumWordItemType(str, enum.Enum):
-    # --- LEMMAS ---
-    # Part of Speech
+    # --- lemmas ---
+    # part of speech
     # lemmas.lem_canon <-> lemmas.pos
     LEM_TO_POS = "lem_to_pos"
     POS_TO_LEM = "pos_to_lem"
-    # Definitions
+    # definitions
     # lemmas.lem_canon <-> definitions.def_text
     LEM_TO_DEF = "lem_to_def"
     DEF_TO_LEM = "def_to_lem"
-    # Pronunciations
+    # pronunciations
     # lemmas.lem_canon <-> pronunciations.pron_text
     LEM_TO_PRON = "lem_to_pron"
     PRON_TO_LEM = "pron_to_lem"
-    # Lemma Relations
+    # lemma relations
     # lem_rels.source_id(lemmas.lem_canon)
     # + lem_rels.target_id(lemmas.lem_canon)
     # <-> lem_rels.rel_type
     LEM_LEM_TO_REL = "lem_lem_to_rel"
     REL_TO_LEM_LEM = "rel_to_lem_lem"
 
-    # --- SUBSTANTIVES ---
-    # --- ADJECTIVES ---
+    # --- substantives ---
+    # --- adjectives ---
     # lemma (adjective) <-> comparative / superlative form
     ADJV_FORM_TO_TYPE = "adjv_form_to_type"  # "What is the [comparative | superlative] form of X?" (MCQ)  # noqa: E501
     ADJV_TYPE_TO_LEM = (
@@ -243,32 +243,32 @@ class EnumWordItemType(str, enum.Enum):
     # adjective form <-> adjective type
     ADJV_FORM_TO_GRAM = "adjv_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)  # noqa: E501
     ADJV_GRAM_TO_FORM = "adjv_gram_to_form"  # "Which of the following adjectival forms is/are an example of [grammar]?" (MCQ)  # noqa: E501
-    # --- NOUNS ---
+    # --- nouns ---
     # lemma (noun) <-> gender
     NOUN_TO_GEND = "noun_to_gend"  # "What gender is [noun]?" (MCQ)
     GEND_TO_NOUN = "gend_to_noun"  # "Which lemma(s) is/are [noun_gender]?" (MCQ)
     # lemma (noun) <-> animacy (bool)
     NOUN_TO_ANIM = "noun_to_anim"  # "Is [noun] animate or inanimate?" (MCQ)
     ANIM_TO_NOUN = "anim_to_noun"  # "Which lemma(s) is/are ["verb_aspect"]?" (MCQ)
-    # noun form <-> noun GNC
+    # noun form <-> noun gnc
     NOUN_FORM_TO_GRAM = "noun_form_to_gram"  # "What is the gender, number, case of [adjective form]?" (MCQ)  # noqa: E501
     NOUN_GRAM_TO_FORM = "noun_gram_to_form"  # "Which of the following noun forms is/are an example of [grammar]?" (MCQ)  # noqa: E501
     # noun lemma -> diminutive form
     NOUN_TO_DMIN_FORM = (
         "noun_to_dmin_form"  # What is the diminutive form of [lemma]? (MCQ/Cloze)
     )
-    # --- PARTICIPLES ---
+    # --- participles ---
     # participle <-> type (tense, mood)
     PART_FORM_TO_TYPE = "part_form_to_type"  # "What type of participle is X?" (MCQ)
     PART_TYPE_TO_FORM = "part_type_to_form"  # "What form is type X?" (MCQ)
 
-    # --- VERBS ----
-    # Aspect
-    # lemmas.filter(pos==verb).lem_canon <-> lemmas(id=lem_id).filter(pos==verb).verb_aspect  # noqa: E501
+    # --- verbs ----
+    # aspect
+    # lemmas.filter(pos==verb).lem_canon <-> lemmas(id=lem_id).filter(pos==verb).verb_aspect  # noqa: e501
     VERB_TO_ASPT = "verb_to_aspt"  # "What is the aspect of [verb]?" (FC/MCQ)
     ASPT_TO_VERB = "aspt_to_verb"  # "Which of these verbs is [aspect]?" (MCQ)
-    # Aspectual pairs
-    # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id, target_id].lem_canon
+    # aspectual pairs
+    # lem_rels(rel_type=imperfective/perfective).[source_id, target_id].lem_canon
     # <-> lemmas(id=lem_id).verb_aspect
     VERB_PAIR_TO_REL = "verb_pair_to_rel"  # "Choose the [aspect] verb(s) of the aspectual group." (MCQ)  # noqa: E501
     # lem_rels(rel_type=IMPERFECTIVE/PERFECTIVE).[source_id].lem_canon
@@ -276,17 +276,17 @@ class EnumWordItemType(str, enum.Enum):
     VERB_TO_ASPT_PAIR = (
         "verb_to_aspt_pair"  # "What is the [aspect] partner of [verb]?" (FC/MCQ/Cloze)
     )
-    # Conjugation Type
+    # conjugation type
     # lemmas.filter(pos==verb).lem_canon <-> lemmas.filter(pos==verb).verb_type
     VERB_TO_TYPE = "verb_to_type"  # "What type of verb is X?" (MCQ)
     TYPE_TO_VERB = "type_to_verb"  # "Which lemma(s) is/are type X?" (MCQ)
-    # Conjugation Forms (tense, number, gender, person, mood)
-    # word_forms[gram_id=gram_props.[gram_tense, gram_num, gram_gender, conj_person, verb_mood]].lem_id[pos=PRONOUN].lem_canon  # noqa: E501
+    # conjugation forms (tense, number, gender, person, mood)
+    # word_forms[gram_id=gram_props.[gram_tense, gram_num, gram_gender, conj_person, verb_mood]].lem_id[pos=pronoun].lem_canon  # noqa: e501
     # + lemmas.filter(pos==verb).lem_canon
     # <-> word_forms(lem_id=lem, gram_id=gram_prop).lex_id.lex_text
     VERB_FORM_TO_GRAM = "verb_form_to_gram"  # "What is the X form of Y?" (MCQ/Cloze)
     VERB_GRAM_TO_FORM = "verb_gram_to_form"  # "What is the X form of Y?" (MCQ/Cloze)
-    # Transitivity & Reflexivity
+    # transitivity & reflexivity
     # lemmas.filter(pos==verb).lem_canon
     # <-> lemmas.filter(pos==verb).verb_trans_refl
     VERB_TO_TNRF = "verb_to_tnrf"  # "Is X transitive, reflexive, or neither?" (MCQ)
@@ -363,9 +363,6 @@ def get_utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-# Base = declarative_base()
-
-
 class Base(SQLModel):
     """
     All database models
@@ -384,7 +381,7 @@ class Base(SQLModel):
     )
 
 
-# --- Word Primary Tables ---
+# --- primary word tables ---
 
 
 class Lemma(Base, table=True):
@@ -472,7 +469,7 @@ class Lemma(Base, table=True):
         return f"{self.lem_text}{pos_tag}"
 
 
-# Morphological Tables
+# morphological tables
 
 
 class Lexeme(Base, table=True):
@@ -572,7 +569,7 @@ class WordForm(Base, table=True):
             return f"#wf-{self.id}"
 
 
-# Auxiliary Linguistic Tables
+# auxiliary linguistic tables
 
 
 class Definition(Base, table=True):
@@ -613,7 +610,7 @@ class Pronunciation(Base, table=True):
     lemmas: "LemmaPronunciation" = Relationship(back_populates="pronunciation")
 
 
-# --- Lemma Junction Tables ---
+# --- lemma junction tables ---
 
 
 class LemmaRelation(Base, table=True):
@@ -772,7 +769,7 @@ class LemmaPronunciation(SQLModel, table=True):
     pronunciation: "Pronunciation" = Relationship(back_populates="lemmas")
 
 
-# --- Lemma Container Organization Tables ---
+# --- lemma container organization tables ---
 
 
 class Module(Base, table=True):
@@ -797,7 +794,7 @@ class LessonList(Base, table=True):
     )
 
 
-# --- Secondary Organization Tables ---
+# --- organization junction tables ---
 
 
 class LemmaInLessonList(SQLModel, table=True):
@@ -831,7 +828,7 @@ class LessonListInModule(SQLModel, table=True):
     in_module: "Module" = Relationship(back_populates="has_less_list")
 
 
-# --- Sentence Tables ---
+# --- sentence tables ---
 
 
 class Sentence(Base, table=True):
@@ -925,7 +922,7 @@ class SentenceToken(Base, table=True):
         return self.lex_raw or f"#tok-{self.id}"
 
 
-# --- Sentence Organization Tables ---
+# --- sentence organization tables ---
 
 
 class Document(Base, table=True):
@@ -946,7 +943,7 @@ class Document(Base, table=True):
         return self.title
 
 
-# --- Users ---
+# --- users ---
 
 
 class User(Base, table=True):
@@ -1000,7 +997,7 @@ class UserInGroup(SQLModel, table=True):
     user_group: "UserGroup" = Relationship(back_populates="users")
 
 
-# --- Questions, Sessions, and Responses ---
+# --- exercises & items tables ---
 
 
 class Exercise(Base, table=True):
@@ -1162,6 +1159,9 @@ class ItemResponse(Base, table=True):
     item: "Item" = Relationship(back_populates="responses")
 
 
+# --- analytics tables ---
+
+
 class KSA(Base, table=True):
     """
     Hierarchical ontology table for Knowledge, Skills, and Abilities (KSAs).
@@ -1176,13 +1176,13 @@ class KSA(Base, table=True):
     name: str = Field(index=True, max_length=96, nullable=False)
     description: Optional[str] = Field(default=None, max_length=255)
 
-    # Self-referential relationship for the KSA tree hierarchy
+    # self-referential relationship for the KSA tree hierarchy
     parent: Optional["KSA"] = Relationship(
         back_populates="children", sa_relationship_kwargs={"remote_side": "KSA.id"}
     )
     children: List["KSA"] = Relationship(back_populates="parent")
 
-    # One KSA can be tested by many item targets
+    # one ksa can be tested by many item targets
     item_targets: List["ItemTarget"] = Relationship(
         back_populates="ksa", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
@@ -1199,8 +1199,8 @@ class ItemTarget(Base, table=True):
     item_id: int = Field(
         foreign_key="items.id", index=True, nullable=False, ondelete="CASCADE"
     )
-    lemma_id: int = Field(
-        foreign_key="lemmas.id", index=True, nullable=False, ondelete="CASCADE"
+    lemma_id: Optional[int] = Field(
+        foreign_key="lemmas.id", index=True, nullable=True, ondelete="CASCADE"
     )
     ksa_id: int = Field(
         foreign_key="ksas.id", index=True, nullable=False, ondelete="CASCADE"
@@ -1217,7 +1217,7 @@ class ItemTarget(Base, table=True):
         default=EnumDirectionality.NEUTRAL,
     )
 
-    # ORM Relationships
+    # orm relationships
     ksa: "KSA" = Relationship(back_populates="item_targets")
     item: "Item" = Relationship(back_populates="targets")
     lemma: "Lemma" = Relationship(back_populates="item_targets")
@@ -1244,17 +1244,21 @@ class StudentKSAState(Base, table=True):
     user_id: int = Field(
         foreign_key="users.id", index=True, nullable=False, ondelete="CASCADE"
     )
-    lemma_id: int = Field(
-        foreign_key="lemmas.id", index=True, nullable=False, ondelete="CASCADE"
+    lemma_id: Optional[int] = Field(
+        default=None,
+        foreign_key="lemmas.id",
+        index=True,
+        nullable=True,
+        ondelete="CASCADE",
     )
     ksa_id: int = Field(
         foreign_key="ksas.id", index=True, nullable=False, ondelete="CASCADE"
     )
 
-    # BKT probability that the learner has mastered this KSA-Lemma pair (0.0 to 1.0)
+    # bkt probability that the learner has mastered this ksa-lemma pair (0.0 to 1.0)
     p_known: float = Field(default=0.1, nullable=False)
 
-    # Memory retention strength for Ebbinghaus spacing decay calculations
+    # memory retention strength for ebbinghaus spacing decay calculations
     memory_strength: float = Field(default=1.0, nullable=False)
 
     last_practiced: datetime = Field(
@@ -1263,13 +1267,17 @@ class StudentKSAState(Base, table=True):
         description="Timestamp of last interaction used for forgetting curve decay",
     )
 
-    # Composite index for high-performance lookup during adaptive question generation
+    # composite index for high-performance lookup during adaptive question generation
     __table_args__ = (
-        Index("ix_student_ksa_lookup", "user_id", "lemma_id", "ksa_id", unique=True),
+        Index(
+            "ix_student_ksa_lookup",
+            "user_id",
+            "lemma_id",
+            "ksa_id",
+            unique=True,
+            postgresql_nulls_not_distinct=True,
+        ),
     )
-
-
-# Additions to app/backend/db/models.py
 
 
 class ItemIRT(Base, table=True):
