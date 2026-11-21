@@ -5,7 +5,7 @@ import logging
 import math
 from collections import defaultdict
 from datetime import datetime, timezone
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set, Tuple
 
 from sqlalchemy import and_, func, select
 from sqlalchemy.orm import Session
@@ -14,10 +14,13 @@ import alite_backend.db.schemas as schemas
 from alite_backend.db.models import (
     KSA,
     EnumItemFormat,
+    EnumKSAStatusBand,
     Exercise,
     Item,
     ItemResponse,
     ItemTarget,
+    LemmaInLessonList,
+    LessonListInModule,
     StudentKSAState,
     UserGroup,
     UserInGroup,
@@ -70,21 +73,19 @@ def update_bkt_probability(
 
 
 def calculate_ebbinghaus_retention(
-    memory_strength: float, last_practiced: datetime
+    memory_strength: float,
+    last_practiced: datetime,
+    as_of: Optional[datetime] = None,
 ) -> float:
     """
-    Calculates current memory retention probability using an exponential forgetting curve.
-    R = exp(-delta_t / S)
-    """  # noqa: E501
-    now = datetime.now(timezone.utc)
-    delta_days = (now - last_practiced).total_seconds() / 86400.0
-    if delta_days < 0:
-        delta_days = 0.0
-
-    # avoid division by zero
+    Computes R = exp(-delta_t / S) using UTC-aware timestamps.
+    Accepting `as_of` ensures dashboard snapshots evaluate decay at a single reference time.
+    """
+    now = _to_utc(as_of, datetime.now(timezone.utc))
+    last = _to_utc(last_practiced, now)
+    delta_days = max(0.0, (now - last).total_seconds() / 86400.0)
     strength = max(0.01, memory_strength)
-    retention = math.exp(-delta_days / strength)
-    return retention
+    return math.exp(-delta_days / strength)
 
 
 def apply_response_to_student_ksa_states(
@@ -184,6 +185,7 @@ def apply_response_to_student_ksa_states(
         _ = calculate_ebbinghaus_retention(
             memory_strength=state.memory_strength,
             last_practiced=prior_last_practiced,
+            as_of=now,
         )
 
         if is_correct:
@@ -197,16 +199,185 @@ def apply_response_to_student_ksa_states(
     return updated_states
 
 
-def build_student_dashboard(
+def _classify_ksa_band(
+    p_known: float,
+    retention: float,
+    review_cutoff: float = 0.80,
+) -> EnumKSAStatusBand:
+    """Maps BKT mastery and Ebbinghaus retention to a learner-facing status band[cite: 23]."""
+    if retention < review_cutoff and p_known >= 0.35:
+        return EnumKSAStatusBand.NEEDS_REVIEW
+    if p_known < 0.30:
+        return EnumKSAStatusBand.FOUNDATIONAL_GAP
+    if p_known <= 0.70:
+        return EnumKSAStatusBand.ZPD_FOCUS
+    return EnumKSAStatusBand.STRONG
+
+
+def build_enriched_student_summary(
     db: Session,
     user_id: int,
     as_of: Optional[datetime] = None,
-) -> schemas.StudentDashboardSummary:
+    review_retention_threshold: float = 0.80,
+) -> Dict[str, object]:
     """
-    Aggregates a learner's BKT mastery (p_known), time-decayed Ebbinghaus retention,
-    and first-attempt accuracy across StudentKSAState and ItemResponse rows.
+    Extends the base /analytics/student/me aggregation with ZPD focus suggestions,
+    retention-risk flags, and parent-domain rollups for the student dashboard.
     """
     now = _to_utc(as_of, datetime.now(timezone.utc))
+
+    # Query StudentKSAState joined with KSA so we have both leaf metadata and parent_id.
+    stmt = (
+        select(StudentKSAState, KSA)
+        .join(KSA, StudentKSAState.ksa_id == KSA.id)  # type: ignore
+        .where(StudentKSAState.user_id == user_id)  # type: ignore
+    )
+    rows = db.execute(stmt).all()
+
+    # Optional lookup of parent KSA names to label domain rollups cleanly.
+    all_ksas = {k.id: k for k in db.scalars(select(KSA)).all() if k.id is not None}
+
+    grouped_by_ksa: Dict[int, List[tuple[StudentKSAState, KSA]]] = defaultdict(list)
+    for state, ksa in rows:
+        if ksa.id is not None:
+            grouped_by_ksa[ksa.id].append((state, ksa))
+
+    ksa_breakdown: List[Dict[str, object]] = []
+    domain_accum: Dict[Optional[int], List[float]] = defaultdict(list)
+
+    for ksa_id, entries in grouped_by_ksa.items():
+        ksa_meta = entries[0][1]
+        p_vals = [st.p_known for st, _ in entries]
+        r_vals = [
+            calculate_ebbinghaus_retention(
+                memory_strength=st.memory_strength,
+                last_practiced=_to_utc(st.last_practiced, now),
+                as_of=now,
+            )
+            for st, _ in entries
+        ]
+        latest_practiced = max(
+            (_to_utc(st.last_practiced, now) for st, _ in entries),
+            default=None,
+        )
+
+        avg_p = round(sum(p_vals) / len(p_vals), 4)
+        avg_r = round(sum(r_vals) / len(r_vals), 4)
+        domain_accum[ksa_meta.parent_id].append(avg_p)
+
+        ksa_breakdown.append(
+            {
+                "ksa_id": ksa_id,
+                "ksa_name": ksa_meta.name,
+                "parent_id": ksa_meta.parent_id,
+                "avg_p_known": avg_p,
+                "avg_retention": avg_r,
+                "tracked_targets": len(entries),
+                "last_practiced": latest_practiced.isoformat()
+                if latest_practiced
+                else None,
+                "status_band": _classify_ksa_band(
+                    avg_p, avg_r, review_retention_threshold
+                ),
+                "is_due_for_review": avg_r < review_retention_threshold,
+            }
+        )
+
+    # Sort ascending by mastery so immediate bottlenecks appear first.
+    ksa_breakdown.sort(key=lambda item: float(item["avg_p_known"]))  # type: ignore
+
+    # Prioritize skills in the ZPD (0.30–0.70) first, then lowest mastery overall.
+    zpd_candidates = [k for k in ksa_breakdown if k["status_band"] == "zpd_focus"]
+    low_candidates = [k for k in ksa_breakdown if k["status_band"] != "zpd_focus"]
+    recommended_focus = (zpd_candidates + low_candidates)[:3]
+
+    domain_rollups = [
+        {
+            "parent_id": parent_id,
+            "domain_name": all_ksas[parent_id].name
+            if parent_id in all_ksas
+            else "General",
+            "avg_p_known": round(sum(vals) / len(vals), 4),
+            "ksa_count": len(vals),
+        }
+        for parent_id, vals in domain_accum.items()
+    ]
+
+    return {
+        "ksa_breakdown": ksa_breakdown,
+        "recommended_focus": recommended_focus,
+        "domain_rollups": domain_rollups,
+    }
+
+
+def _is_state_in_scope(
+    state: StudentKSAState,
+    scoped_lemma_ids: Optional[set[int]],
+    include_non_lemma_states: bool,
+) -> bool:
+    """
+    Determines whether a StudentKSAState row matches the active module/lesson filter.
+    - When `scoped_lemma_ids is None`, all states for the user are included.
+    - When a scope is active, lemma-backed states match if `state.lemma_id in scoped_lemma_ids`.
+    - Nullable `lemma_id` states are included only when `include_non_lemma_states` is True.
+    """
+    if scoped_lemma_ids is None:
+        return True
+    if state.lemma_id is None:
+        return include_non_lemma_states
+    return state.lemma_id in scoped_lemma_ids
+
+
+def _resolve_scoped_lemma_ids(
+    db: Session,
+    module_id: Optional[int] = None,
+    lesson_id: Optional[int] = None,
+) -> Optional[Set[int]]:
+    """
+    Resolves target Lemma IDs for an optional Module and/or LessonList.
+    Returns `None` when neither filter is set (meaning all lemmas are in scope),
+    or a `set[int]` (possibly empty) when a curriculum filter is active.
+    """
+    if module_id is None and lesson_id is None:
+        return None
+
+    # Build a SQLAlchemy 2.0 select over LemmaInLessonList joined with LessonListInModule
+    # when module_id is provided so both module-wide and single-lesson scopes use one path.
+    stmt = select(LemmaInLessonList.lem_id).join(  # type: ignore
+        LessonListInModule,
+        LemmaInLessonList.less_list_id == LessonListInModule.less_list_id,  # type: ignore[arg-type]
+    )
+
+    if module_id is not None:
+        stmt = stmt.where(LessonListInModule.mod_id == module_id)  # type: ignore[arg-type]
+    if lesson_id is not None:
+        stmt = stmt.where(LemmaInLessonList.less_list_id == lesson_id)  # type: ignore[arg-type]
+
+    return {lem_id for lem_id in db.scalars(stmt).all() if lem_id is not None}
+
+
+def build_student_dashboard(
+    db: Session,
+    user_id: int,
+    module_id: Optional[int] = None,
+    lesson_id: Optional[int] = None,
+    include_non_lemma_states: bool = False,
+    as_of: Optional[datetime] = None,
+    review_retention_threshold: float = 0.80,
+) -> schemas.StudentDashboardSummary:
+    """
+    Builds the complete student analytics summary:
+    - First-attempt empirical accuracy vs. total/retry attempt volume.
+    - Per-KSA BKT mastery and time-decayed retention, sorted lowest-mastery first.
+    - ZPD-prioritized focus recommendations and parent-domain rollups.
+    """
+    now = _to_utc(as_of, datetime.now(timezone.utc))
+
+    scoped_lemma_ids = _resolve_scoped_lemma_ids(
+        db=db,
+        module_id=module_id,
+        lesson_id=lesson_id,
+    )
 
     # fetch first-attempt responses (attempt_num == 1) for empirical accuracy.
     first_attempts = list(
@@ -221,7 +392,7 @@ def build_student_dashboard(
     correct_first = sum(1 for r in first_attempts if r.is_correct)
     first_attempt_acc = (correct_first / total_first) if total_first > 0 else 0.0
 
-    # total logged attempts across all retry counts
+    # logged attempts across all retry counts
     total_attempts = (
         db.scalar(
             select(func.count())
@@ -230,7 +401,9 @@ def build_student_dashboard(
         )
         or 0
     )
+    retry_attempts = max(0, total_attempts - total_first)
 
+    # total exercises completed
     exercises_completed = (
         db.scalar(
             select(func.count())
@@ -243,20 +416,34 @@ def build_student_dashboard(
         or 0
     )
 
+    all_ksas = {
+        k.id: k
+        for k in db.scalars(select(KSA)).all()  # type: ignore
+        if k.id is not None
+    }
+
     # fetch KSA states joined with KSA metadata for readable labels.
     stmt = (
         select(StudentKSAState, KSA)
         .join(KSA, StudentKSAState.ksa_id == KSA.id)  # type: ignore
         .where(StudentKSAState.user_id == user_id)  # type: ignore
     )
-    rows = db.execute(stmt).all()
 
-    grouped_by_ksa: Dict[int, List[tuple[StudentKSAState, KSA]]] = defaultdict(list)
-    for state, ksa in rows:
+    raw_rows: List[Tuple[StudentKSAState, KSA]] = list(db.execute(stmt).all())
+    scoped_rows = [
+        (state, ksa)
+        for state, ksa in raw_rows
+        if _is_state_in_scope(state, scoped_lemma_ids, include_non_lemma_states)
+    ]
+
+    grouped_by_ksa: Dict[int, List[Tuple[StudentKSAState, KSA]]] = defaultdict(list)
+    for state, ksa in scoped_rows:
         if ksa.id is not None:
             grouped_by_ksa[ksa.id].append((state, ksa))
 
     ksa_items: List[schemas.StudentKSAMasteryItem] = []
+    domain_p_accum: Dict[Optional[int], List[float]] = defaultdict(list)
+    domain_r_accum: Dict[Optional[int], List[float]] = defaultdict(list)
     all_p_known: List[float] = []
     all_retentions: List[float] = []
 
@@ -267,6 +454,7 @@ def build_student_dashboard(
             calculate_ebbinghaus_retention(
                 memory_strength=st.memory_strength,
                 last_practiced=_to_utc(st.last_practiced, now),
+                as_of=now,
             )
             for st, _ in entries
         ]
@@ -279,6 +467,8 @@ def build_student_dashboard(
         avg_r = sum(r_vals) / len(r_vals)
         all_p_known.extend(p_vals)
         all_retentions.extend(r_vals)
+        domain_p_accum[ksa_meta.parent_id].append(avg_p)
+        domain_r_accum[ksa_meta.parent_id].append(avg_r)
 
         ksa_items.append(
             schemas.StudentKSAMasteryItem(
@@ -289,14 +479,44 @@ def build_student_dashboard(
                 avg_retention=round(avg_r, 4),
                 tracked_targets=len(entries),
                 last_practiced=latest_practiced,
+                status_band=_classify_ksa_band(
+                    avg_p, avg_r, review_retention_threshold
+                ),
+                is_due_for_review=avg_r < review_retention_threshold,
             )
         )
 
+    # sort ascending by mastery so immediate gaps surface first
     ksa_items.sort(key=lambda item: item.avg_p_known)
+
+    # prioritize zpd skills first, then remaining lowest-mastery skills (up to 3)
+    zpd_items = [
+        k for k in ksa_items if k.status_band == schemas.EnumKSAStatusBand.ZPD_FOCUS
+    ]
+    other_items = [
+        k for k in ksa_items if k.status_band != schemas.EnumKSAStatusBand.ZPD_FOCUS
+    ]
+    recommended_focus = (zpd_items + other_items)[:3]
+
+    domain_rollups = [
+        schemas.StudentDomainRollup(
+            parent_id=parent_id,
+            domain_name=all_ksas[parent_id].name
+            if parent_id in all_ksas
+            else "General",
+            avg_p_known=round(sum(p_list) / len(p_list), 4),
+            avg_retention=round(
+                sum(domain_r_accum[parent_id]) / len(domain_r_accum[parent_id]), 4
+            ),
+            ksa_count=len(p_list),
+        )
+        for parent_id, p_list in domain_p_accum.items()
+    ]
 
     return schemas.StudentDashboardSummary(
         user_id=user_id,
         total_attempts=total_attempts,
+        retry_attempts=retry_attempts,
         first_attempt_accuracy=round(first_attempt_acc, 4),
         exercises_completed=exercises_completed,
         mean_p_known=round(sum(all_p_known) / len(all_p_known), 4)
@@ -305,6 +525,8 @@ def build_student_dashboard(
         mean_retention=round(sum(all_retentions) / len(all_retentions), 4)
         if all_retentions
         else 0.0,
+        recommended_focus=recommended_focus,
+        domain_rollups=domain_rollups,
         ksa_breakdown=ksa_items,
     )
 

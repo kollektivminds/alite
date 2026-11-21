@@ -1,20 +1,18 @@
+// app/frontend/src/components/modals/AppModal.jsx
 import * as Dialog from "@radix-ui/react-dialog";
 import { useTranslation } from "react-i18next";
-import DashboardContent from "./DashboardModal";
 import FeedbackModal from "./FeedbackModal";
 import InfoModal from "./InfoModal";
 import SettingsModal from "./SettingsModal";
 
-/*
- * Reflexive modal that swaps content based on `activePage` prop
- */
+const MODAL_PAGES = ["settings", "info", "feedback"];
+
 export default function AppModal({ open, onClose, activePage, setActivePage }) {
   const { t } = useTranslation();
 
   return (
     <Dialog.Root open={open} onOpenChange={onClose}>
       <Dialog.Portal>
-        {/* Background overlay */}
         <Dialog.Overlay className="fixed inset-0 bg-black/40 z-40" />
         <Dialog.Content
           className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
@@ -23,16 +21,15 @@ export default function AppModal({ open, onClose, activePage, setActivePage }) {
                     w-full h-auto max-w-2xl max-h-[75vh] overflow-auto
                     flex flex-col border border-transparent dark:border-slate-800"
         >
-          {/* Modal Title */}
           <Dialog.Title className="content-center text-lg font-semibold mb-4 capitalize flex-shrink-0 pb-4 border-b border-slate-200 dark:border-slate-800">
-            {t(`modal.menu.${activePage}`)}
+            {activePage ? t(`modal.menu.${activePage}`) : ""}
           </Dialog.Title>
 
-          {/* Navigation buttons inside modal */}
           <div className="flex gap-4 mb-6 border-b border-slate-100 pb-2 dark:border-slate-800/60">
-            {["dashboard", "settings", "info", "feedback"].map((page) => (
+            {MODAL_PAGES.map((page) => (
               <button
                 key={page}
+                type="button"
                 onClick={() => setActivePage(page)}
                 className={`font-medium transition-colors ${
                   activePage === page
@@ -45,9 +42,7 @@ export default function AppModal({ open, onClose, activePage, setActivePage }) {
             ))}
           </div>
 
-          {/* Modal content swapping based on activePage */}
           <div className="space-y-4">
-            {activePage === "dashboard" && <DashboardContent />}
             {activePage === "settings" && <SettingsModal />}
             {activePage === "info" && <InfoModal />}
             {activePage === "feedback" && <FeedbackModal />}

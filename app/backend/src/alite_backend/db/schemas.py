@@ -26,6 +26,7 @@ from alite_backend.db.models import (
     EnumGramGender,
     EnumItemDifficulty,
     EnumItemFormat,
+    EnumKSAStatusBand,
     EnumLookupStatus,
     EnumPartOfSpeech,
     EnumPronType,
@@ -1848,8 +1849,19 @@ class StudentKSAMasteryItem(BaseModel):
     avg_retention: float = Field(..., ge=0.0, le=1.0)
     tracked_targets: int = Field(..., ge=0)
     last_practiced: Optional[datetime] = None
+    # Actionable student fields:
+    status_band: EnumKSAStatusBand = EnumKSAStatusBand.FOUNDATIONAL_GAP
+    is_due_for_review: bool = False
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class StudentDomainRollup(BaseModel):
+    parent_id: Optional[int] = None
+    domain_name: str
+    avg_p_known: float = Field(..., ge=0.0, le=1.0)
+    avg_retention: float = Field(..., ge=0.0, le=1.0)
+    ksa_count: int = Field(..., ge=0)
 
 
 class StudentDashboardSummary(BaseModel):
@@ -1859,6 +1871,10 @@ class StudentDashboardSummary(BaseModel):
     exercises_completed: int = Field(..., ge=0)
     mean_p_known: float = Field(..., ge=0.0, le=1.0)
     mean_retention: float = Field(..., ge=0.0, le=1.0)
+    # Actionable summary & breakdown fields:
+    retry_attempts: int = Field(default=0, ge=0)
+    recommended_focus: List[StudentKSAMasteryItem] = Field(default_factory=list)
+    domain_rollups: List[StudentDomainRollup] = Field(default_factory=list)
     ksa_breakdown: List[StudentKSAMasteryItem] = Field(default_factory=list)
 
 
@@ -1904,3 +1920,68 @@ class AdminPlatformSummary(BaseModel):
     total_first_attempt_responses: int = Field(..., ge=0)
     calibrated_irt_items: int = Field(..., ge=0)
     ksa_health: List[AdminKSAHealthRow] = Field(default_factory=list)
+
+
+class UserGroupMembership(BaseModel):
+    """Lightweight group descriptor for profile and instructor group selection."""
+
+    id: int
+    group_name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserMeResponse(BaseModel):
+    """
+    Safe profile & session payload returned by GET /api/v1/users/me.
+    Intentionally omits `hashed_password` to enforce credential non-exposure.
+    """
+
+    id: int
+    username: Optional[str] = None
+    email: EmailStr
+    role: Optional[EnumUserRole] = None
+    alias: Optional[str] = None
+    created_at: datetime
+    groups: List[UserGroupMembership] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class LessonListSummaryOption(BaseModel):
+    """Lightweight curriculum option without nested `has_lemma` vocabulary payloads."""
+
+    id: int
+    name: str
+    module_id: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CurriculumLessonSummary(BaseModel):
+    """Lightweight lesson/list identifier and display label without vocabulary lemmas."""
+
+    id: int
+    label: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CurriculumModuleSummary(BaseModel):
+    """Module metadata paired with its ordered/associated lessons or lists."""
+
+    module_id: int
+    module_name: str
+    lessons: List[CurriculumLessonSummary] = []
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AnalyticsScopeInfo(BaseModel):
+    """Describes the active curriculum filter applied to the student analytics view."""
+
+    module_id: Optional[int] = None
+    module_name: Optional[str] = None
+    lesson_id: Optional[int] = None
+    lesson_title: Optional[str] = None
+    scoped_lemma_count: int = Field(default=0, ge=0)

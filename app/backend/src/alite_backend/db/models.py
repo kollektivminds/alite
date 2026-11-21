@@ -1308,3 +1308,12 @@ class ItemIRT(Base, table=True):
     )
 
     item: "Item" = Relationship(back_populates="irt_params")
+
+
+class EnumKSAStatusBand(str, enum.Enum):
+    """Learner-facing pedagogical status classification computed server-side."""
+
+    NEEDS_REVIEW = "needs_review"
+    FOUNDATIONAL_GAP = "foundational_gap"
+    ZPD_FOCUS = "zpd_focus"
+    STRONG = "strong"

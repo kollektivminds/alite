@@ -3,10 +3,11 @@ import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from alite_backend.api import deps
-from alite_backend.db import schemas
+from alite_backend.db import models, schemas
 from alite_backend.db.crud import orgi_crud
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,42 @@ def read_lesson_lists(
         return []
 
     return lesson_lists
+
+
+@router.get("/options", response_model=List[schemas.LessonListSummaryOption])
+def read_lesson_list_options(
+    db: Session = Depends(deps.get_db),  # noqa: B008
+) -> List[schemas.LessonListSummaryOption]:
+    """
+    Returns lesson/list IDs, names, and optional module IDs without loading lemma vocab,
+    keeping analytics scope dropdowns fast and lightweight.
+    """
+    # Query LessonList outer-joined with LessonListInModule so lessons outside a module still appear.
+    stmt = (
+        select(models.LessonList, models.LessonListInModule.mod_id)  # type: ignore
+        .outerjoin(
+            models.LessonListInModule,
+            models.LessonListInModule.less_list_id == models.LessonList.id,  # type: ignore[arg-type]
+        )
+        .order_by(models.LessonList.id)
+    )
+
+    options: List[schemas.LessonListSummaryOption] = []
+    for less_list, mod_id in db.execute(stmt).all():
+        if less_list.id is not None:
+            label = (
+                getattr(less_list, "title", None)
+                or getattr(less_list, "name", None)
+                or f"Lesson {less_list.id}"
+            )
+            options.append(
+                schemas.LessonListSummaryOption(
+                    id=less_list.id,
+                    name=label,
+                    module_id=mod_id,
+                )
+            )
+    return options
 
 
 @router.get("/{lesslist_id}", response_model=schemas.LessonListReturn)

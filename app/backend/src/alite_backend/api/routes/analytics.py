@@ -1,7 +1,8 @@
 # app/backend/api/routes/analytics.py
 import logging
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from alite_backend.api import deps
@@ -29,12 +30,43 @@ def _require_roles(user: models.User, allowed_roles: set[models.EnumUserRole]) -
 
 @router.get("/student/me", response_model=schemas.StudentDashboardSummary)
 def get_my_student_analytics(
+    # Optional curriculum filters narrow StudentKSAState rollups to lemmas in a module
+    # and/or lesson list; omitting both returns overall learner mastery[cite: 2, 25].
+    module_id: Optional[int] = Query(
+        default=None,
+        ge=1,
+        description="Optional Module ID to scope vocabulary KSA mastery and retention.",
+    ),
+    lesson_id: Optional[int] = Query(
+        default=None,
+        ge=1,
+        description="Optional LessonList ID to scope vocabulary KSA mastery and retention.",
+    ),
+    include_non_lemma_states: bool = Query(
+        default=False,
+        description="Include states with lemma_id IS NULL when a module/lesson scope is active.",
+    ),
     db: Session = Depends(deps.get_db),  # noqa: B008
     current_user: models.User = Depends(deps.get_current_user),  # noqa: B008
 ) -> schemas.StudentDashboardSummary:
-    """Returns personal BKT mastery, retention risk, and first-attempt accuracy."""
-    assert current_user.id is not None  # noqa: S101
-    return build_student_dashboard(db=db, user_id=current_user.id)
+    """
+    Returns personal BKT mastery, Ebbinghaus retention, ZPD focus suggestions,
+    and domain rollups for the authenticated learner[cite: 15, 25].
+    """
+    if current_user.id is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authenticated user session.",
+        )
+
+    # Delegate filtering and statistical aggregation to the service layer.
+    return build_student_dashboard(
+        db=db,
+        user_id=current_user.id,
+        module_id=module_id,
+        lesson_id=lesson_id,
+        include_non_lemma_states=include_non_lemma_states,
+    )
 
 
 @router.get(
